@@ -14,6 +14,9 @@ BOT_NAME = 'ebay'
 SPIDER_MODULES = ['ebay.spiders']
 NEWSPIDER_MODULE = 'ebay.spiders'
 
+# Close dupefilter
+DUPEFILTER_CLASS = "scrapy.dupefilters.BaseDupeFilter"
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ebay (+http://www.yourdomain.com)'
