@@ -3,8 +3,8 @@
 from scrapy import Item, Field, Request, Spider
 
 
-class ItemSpider(Spider):
-    name = "item_spider"
+class ListingSpider(Spider):
+    name = "listing_spider"
     start_urls = [
         'http://www.baidu.com',
         'http://www.baidu.com',
