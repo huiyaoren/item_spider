@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def run():
     from scrapy.crawler import CrawlerProcess
     from scrapy.utils.project import get_project_settings
@@ -10,6 +12,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-
-
-
