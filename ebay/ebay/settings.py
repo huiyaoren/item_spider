@@ -24,6 +24,9 @@ DUPEFILTER_CLASS = "scrapy.dupefilters.BaseDupeFilter"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_FILE = None
+LOG_LEVEL = 'DEBUG'
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
