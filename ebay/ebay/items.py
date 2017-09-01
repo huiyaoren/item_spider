@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
 
-# Define here the models for your scraped items
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/items.html
-
-import scrapy
+from scrapy import Item, Field
 
 
-class EbayItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class ListingItem(Item):
+    price = Field()
+    categories = Field()
+    itemLocation = Field()
+    shippingOptions = Field()
+    seller = Field()
+    title = Field()
+    conditionId = Field()
+    image = Field()
+    currentBidPrice = Field()
+    buyingOptions = Field()
+    condition = Field()
+    itemId = Field()
+    itemAffiliateWebUrl = Field()
+    itemWebUrl = Field()
+    itemHref = Field()
+    additionalImages = Field()
+    data = Field()
