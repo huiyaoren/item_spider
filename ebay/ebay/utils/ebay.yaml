@@ -1,0 +1,29 @@
+name: ebay_api_config
+
+# Trading API Sandbox - https://www.x.com/developers/ebay/products/trading-api
+api.sandbox.ebay.com:
+    compatability: 719
+    appid: laicanfu-logic-SBX-9090fc79c-6455016d
+    certid: SBX-090fc79c9ecb-5725-472d-b748-ea35
+    devid: 91993bea-0c14-4475-b1f7-5db8c984396f
+    token: v^1.1#i^1#f^0#p^3#I^3#r^0#t^H4sIAAAAAAAAAOVXW2wUVRju9kYAaRMBRSS6DEQidXbP7Mzu7EzY1W1LZQO9yJYGECRnZs60Q2dn1pkzbTcgLJuAGCExREgf0GKChgcwQrzgBYyo9QIBEoxIQI2BoJSYGGJCDInxzPbCtkR6I6aJ+7KZc/7b9/3ff2YOyJROXrhtybab0zyTCvdlQKbQ42GmgsmlJRVlRYWzSwpAnoFnX2Z+pjhb9NsiGyb1lLgc2SnTsJG3I6kbtphbjFCOZYgmtDVbNGAS2SKWxUSsdpkY8AExZZnYlE2d8sarI1SYgQoH+BDHcConcQJZNfpjNpoRSghDRg6oECgyQCHAkX3bdlDcsDE0cIQKAIanQZAOsI1AEFlGBGEfx4RXU94mZNmaaRATH6CiuXLFnK+VV+vdS4W2jSxMglDReKwmUR+LVy+ua1zkz4sV7eMhgSF27MFPVaaCvE1Qd9Dd09g5azHhyDKybcof7c0wOKgY6y9mDOXnqFY4VlUhK0CWJ3Qq94bKGtNKQnz3OtwVTaHVnKmIDKzh9HCMEjak9UjGfU91JES82uv+PeNAXVM1ZEWoxZWxVSsSi5dT3kRDg2W2aQpSXKQMywaBwPMMFcXIJhQia51uNmtyX6LeaH00D8lUZRqK5pJme+tMXIlI1WgoN4E8bohRvVFvxVTsVpRnxzADHAZWu03t7aKDWwy3ryhJiPDmHofvQL8kbovgXokCQYmHEmLCfEDiZXSnKNxZH4Mwom5vYg0NfrcWJME0nYRWK8IpHcqIlgm9ThJZmiKyQTXAhlVEKyFBpTlBVWkpqIRoRkUIICRJshD+P+kDY0uTHIwGNDJ0IwcyQiVkM4UaTF2T09RQk9yZ06eIDjtCtWCcEv3+9vZ2XzvrM61mfwAAxr+ydllCbkFJSA3YasMb01pOGzIiXrYm4nSKVNNBpEeSG81UlLWUBmjhdKWTJs8JpOvkr1++gyqMDl39F6i2C3VigXT9bRIApjSfq26fbCb9JiTT7C6ty1XsHYmRX3LSJL+CLJ+FoGIaenrkfs0OUW+v98icbNINX+8gEhh3ZHRnfTQBRpFUM9qIlk0rPUqYg51H4QNl2XQMPJZ0fa6j8FAdXdV03R3XsSTMcx9NmQbU01iT7YGU45qyWCoVVybWlOlQk6GhOnTucKYTlStpAQhAlXlBpkNcMAiYkDIu0Apq02S0TptgwA1H18eFqxq1DdNMMuudugREEVkKQBjLD0RzHB2mJUXk6qEhh8p7nWCGkjgt3bfNEa2WdPzYuRFW6Ro6FxvREewMuMW2Mxjd8VeRDdGKBck+Y/gNGQLJEB/lAkOb4gEJLPBemEWSDI4U8ZCHve+6OT3n/4Lt0tCD3Y7KeYyDr+ZBcxwEPaKYCPF5atKK46D7K1jDy2dBQJLPDp0HVZ2vNBrkqWsjXitIpqFmFpZ7ayztWbc67xe9bC2YN3OMnFzFT8y71YM7tnRKm/MFpDA+CARYILAPCq8G827vFzAPFM74/09L1wWORHRt/X9pzSjj8TdmGXy6AaQNGHk9JQXHWU/CdZHiyFcK1T7uues++E17fvUt/4uZDPZf/XPmt3T3r+s6Dkw7Re4K3ZmQ/efbJhhW3qrvKM9zV49drWrN1WFjzVvmBI8ftKdN/PvYUnnP4kcKT9IUrB39q2rjwwK9bu1+uW/CGFN/fM3thWetXW8yXll7xdW4uOXPt3bLL5zPV5/44verrsvi86emzD89sx3+nPvriy7+OrP2xXC2esudG14LUTPOSPO/Qi517j342q2cr8/F7uAZvunFcu3DylVPvz3/uMnXlP2fx5p2XBx7pbdp394etfV+hM7T26s6H7+yCXFv6mwLOO/eM4jbK2fu3tm0r779qNU0/YUDAlvU+fqavZvaj2aLfG/C3jb+AxBdUHNfEQAA
+
+
+# Trading API - https://www.x.com/developers/ebay/products/trading-api
+api.ebay.com:
+    compatability: 719
+    appid: laicanfu-logic-PRD-e08fa563f-34011811
+    certid: PRD-08fa563fd0a7-aca1-44a9-b1fe-b61a
+    devid: 91993bea-0c14-4475-b1f7-5db8c984396f
+    token: AgAAAA**AQAAAA**aAAAAA**TFk/WQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ACkoWoD5CHoQydj6x9nY+seQ**kMADAA**AAMAAA**7VtL67+uDGoPGwpzzegnSCLgL9ZwsNRQHBaZ8T6zTQuqDg8NXWGU37zosAe7c/KcRGEzb60QX3nV1ujxFDsMwI9Kw4CAPTqVOBXz72l6mhT9m2oiVX0dCAsYd0GKMTgIrO1+uhizmiIXej3Uh7NIF8L/76k/tiS/E304JsrTmKrk2r2Rr+dST1ONfj8fb5TFzeDen0hmBzgRctchyjPesIFTRd7WupOtbi6ciScQ/yYCqfH7GRGQADCIaiMnIpdQUfnwigoNoi4OyP/mH7tr03WfCDlHTAi1Ret2LsfXh0UAYi8rwuMtVSAvP52fRtwe4lom3DzBt2jB7U7rj8KZ89ea30SAIXVsag/vo3B0jkl64pSB5/zKbBPRrG5qZ+28aDKuUSuAfn9lPNCF//esp4QIF7HIPUeioLgQK5WoPT9/BCPmn0Y+tNMAPSEcUWTY42WwahoN1eYpBgqX/hZolTvupd5907NkDTxYHfij6WtcGQdHfHBWCPGHrgWcdLefochtz7pDpVzdHYCUQbv4bVzHQNbVfhNHCMp4LZ63qrkJVpWsmSeSgZi5dVECI7gp0t/Rq1y5uBsRJK6OViZS02jYw0MR7kjAyrIsK43bP4Pz8wwvpfyuaoxkgvziCaM35taQuB3qlUPeawULUSFX6olCC0kMZqdUT5HPqYD2+YTj2n0wBXvP7Lbkj3gejSbelCwS6XHdKqAXP2gY93eBtbogLic7//FGdnQvbbISceo/9hgdXKbNBcMh0zoQ0KRm
+
+
+# Finding API - https://www.x.com/developers/ebay/products/finding-api
+svcs.ebay.com:
+    appid: laicanfu-logic-PRD-e08fa563f-34011811
+    version: 1.0.0
+
+# Shopping API - https://www.x.com/developers/ebay/products/shopping-api
+open.api.ebay.com:
+    appid: laicanfu-logic-PRD-e08fa563f-34011811
+    version: 671
