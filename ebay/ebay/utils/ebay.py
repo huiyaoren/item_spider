@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+from datetime import datetime
+
 from requests import Request, Session
 from base64 import b64encode
 
@@ -27,25 +29,9 @@ def get_new_token():
     return resp.content
 
 
-def ebay_test():
-    from ebaysdk.exception import ConnectionError
-    from ebaysdk.trading import Connection as Trading
-
-    try:
-        api = Trading(config_file='ebay.yaml', debug=True)
-        print(api.config.get('token'), 123)
-
-        api.execute('GetTokenStatus', {'CharityID': 3897})
-        # dump(api)
-        print(api.response.reply)
-        return api.response.reply
-
-    except ConnectionError as e:
-        print(e)
-        print(e.response.dict())
-        return e.response.dict()
-
+def date():
+    n = datetime.utcnow()
+    return
 
 if __name__ == '__main__':
     get_new_token()
-    # ebay_test()

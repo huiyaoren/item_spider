@@ -118,7 +118,8 @@ def item_data_sample():
             ],
             'categoryDistributions': [
                 {
-                    'categoryName': 'Camera Drones', 'categoryId': '179697',
+                    'categoryName': 'Camera Drones',
+                    'categoryId': '179697',
                     'refinementHref': 'https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search?limit=3&fieldgroups=FULL&category_ids=179697'
                 }
             ]
@@ -133,7 +134,11 @@ def item_data_sample():
                 'categories': [{'categoryId': '179697'}, {'categoryId': '625'}],
                 'itemLocation': {'country': 'US'},
                 'shippingOptions': [
-                    {'shippingCostType': 'FIXED', 'shippingCost': {'value': '0.00', 'currency': 'USD'}}],
+                    {
+                        'shippingCostType': 'FIXED',
+                        'shippingCost': {'value': '0.00', 'currency': 'USD'}
+                    }
+                ],
                 'seller': {'feedbackPercentage': '0.0', 'feedbackScore': 1},
                 'title': '3DR - Solo Gimbal - Black',
                 'conditionId': '1000',
