@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from scrapy import Request
-
+from requests import Request, Session
 from base64 import b64encode
 
 
@@ -14,4 +13,14 @@ def get_new_token():
     query = '?grant_type=client_credentials&redirect_uri=hanlin_zheng-hanlinzh-sample-wbcrx&scope=https://api.ebay.com/oauth/api_scope'
     url = 'https://api.sandbox.ebay.com/identity/v1/oauth2/token' + query
     method = 'POST'
-    return Request(headers=header, url=url, method=method)
+    # return Request(headers=header, url=url, method=method)
+
+    s = Session()
+    req = Request(headers=header, url=url, method=method)
+    prepped = req.prepare()
+    resp = s.send(prepped)
+    return resp.content
+
+
+if __name__ == '__main__':
+    get_new_token()
