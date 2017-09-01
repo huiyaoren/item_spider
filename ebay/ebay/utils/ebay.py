@@ -23,9 +23,29 @@ def get_new_token():
     prepped = req.prepare()
     resp = s.send(prepped)
     logger.info(' '.join(["Get new ebay application token | http_code:", str(resp.status_code)]))
-    logger.info(' '.join(['resp.content:' ,str(resp.content)]))
+    logger.info(' '.join(['resp.content:', str(resp.content)]))
     return resp.content
+
+
+def ebay_test():
+    from ebaysdk.exception import ConnectionError
+    from ebaysdk.trading import Connection as Trading
+
+    try:
+        api = Trading(config_file='ebay.yaml', debug=True)
+        print(api.config.get('token'), 123)
+
+        api.execute('GetTokenStatus', {'CharityID': 3897})
+        # dump(api)
+        print(api.response.reply)
+        return api.response.reply
+
+    except ConnectionError as e:
+        print(e)
+        print(e.response.dict())
+        return e.response.dict()
 
 
 if __name__ == '__main__':
     get_new_token()
+    # ebay_test()
