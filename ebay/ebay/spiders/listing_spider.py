@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from scrapy import Item, Field, Request, Spider
+from ..utils.ebay import get_new_token
 
 
 class ListingSpider(Spider):
@@ -14,9 +14,10 @@ class ListingSpider(Spider):
     def start_requests(self):
         for url in self.start_urls:
             yield Request(url, dont_filter=True)
+        get_new_token()
 
     def parse(self, response):
-        pass
+        print(response.text)
 
 
 class LinkItem(Item):
