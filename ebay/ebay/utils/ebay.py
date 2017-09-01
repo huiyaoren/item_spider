@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 from requests import Request, Session
 from base64 import b64encode
+
+logger = logging.getLogger(__name__)
 
 
 def get_new_token():
@@ -19,6 +22,8 @@ def get_new_token():
     req = Request(headers=header, url=url, method=method)
     prepped = req.prepare()
     resp = s.send(prepped)
+    logger.info(' '.join(["Get new ebay application token | http_code:", str(resp.status_code)]))
+    logger.info(' '.join(['resp.content:' ,str(resp.content)]))
     return resp.content
 
 
