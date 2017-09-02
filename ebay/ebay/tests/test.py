@@ -6,7 +6,7 @@ from requests import Session, Request
 logger = logging.getLogger(__name__)
 
 
-def get_items():
+def test_get_items():
     url = 'https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search?limit=3&category_ids=179697&fieldgroups=FULL'
     headers = {
         'Authorization': 'Bearer v^1.1#i^1#r^0#p^1#f^0#I^3#t^H4sIAAAAAAAAAOVXa2wUVRTudvugwdrw8knMdjAarTN7Z2Z3uzPprtm2EIrQFrctT8U7M3faobszk7mzbFcqWWqCJYoRJSYYMUTFkAgJETHFyEP8JRI09oe8oiGBqBiCISIRa/DO7FK2lUCFEkncP5t77rnnfuc737l3LsiWVTy+Zvaai5We8uLNWZAt9njYiaCirLTmbm/xA6VFoMDBszn7cLakz/tTHYbJhCk+jbBp6Bj5epIJHYuuMUKlLF00INawqMMkwqIti/HYvLkixwDRtAzbkI0E5WtqjFBBKNdybEDh1XCYl6BCrPqVmG1GhJKRJCCgynJIQJwiATKPcQo16diGuh2hOMDW0kCgAdsGQmKAF9kAwwX5xZSvA1lYM3TiwgAq6sIV3bVWAdbrQ4UYI8smQahoU2xWvCXW1Dizua3OXxArmuchbkM7hUeOGgwF+TpgIoWuvw12vcV4SpYRxpQ/mtthZFAxdgXMTcB3qVaQBDhFllUlzKmwVhkXKmcZVhLa18fhWDSFVl1XEem2ZmduxChhQ1qOZDs/aiYhmhp9zt/8FExoqoasCDWzPrYo1tpKRbugntD057to4mwmEDTpeP1CmlUkmRUUFKRZNRTiFE7Ib5SLlqd51E4Nhq5oDmnY12zY9YigRqO54Qu4IU4teosVU20HUaFf+AqHAbDYKWquiim7S3fqipKECJ87vHEFhlfbtqVJKRsNRxg94VIUoaBpago1etLVYl4+PThCddm2Kfr96XSaSfOMYXX6OQBY/8J5c+NyF0pCivg6vZ7z1268gNbcVGREVmJNtDMmwdJDtEoA6J1UlKsN8Wwwz/tIWNHR1n8YCnL2j+yI8eoQNsijkMBKPBcIkgNnXDokmhep38GBJJihk9DqRraZgDKiZaKzVBJZmiLyQZXjwyqilZCg0gFBVWkpqISIdhECCEmSLIT/T40yVqnHZcNErUZCkzPjIvhxEztvKa3QsjP1qQwZx1GCMN85Vu1fM1XspHobk3R6/SYSdWJgEgSaGuMonJGNpN+A5GhzTMtc1L6xOPmlVIbpTCFsExQKuV3GvEgjEmFIoyhjX5Jrw1stiUYu7DtKdSTdXN6akrtpGTd5Bq+QGQthI2WRjwymxbl42oxupJM2ti0jkUBWB3tLTIzflfMfXTfXzEpOaITGZXdaZv/yHL9G7iV9nqGx6Bvad1bmbBAEuECYFQK3VNcGt65tmdt6nt5EerMNbCPlNnwh+Ue+16JF7o/t8+wBfZ7d5MkHagHN1oDHyrztJd67KEyOVAZDXZGMHkaDKoO1Tp08RyzEdKOMCTWruMyz5MEzTw4VvBQ3PwPuG34rVnjZiQUPRzD96kwpW3VvJVsLBMCCUIBnA4vBjKuzJew9JVPTG3+ZUH+5d/UfdVtnnqzbFcvO3RoClcNOHk9pEZFw0ab9+/qrm+fdv7fkiHfJAFN16eUPqfeWHPOGJnW/+uiBnVNPnPh8OhxMV3zx7rEX3prcvsf6dlU1Prvz3IqBhy52n6n2zdmwbu0Mofi8mt5rDob1+YNHDnZvquo7f7yqbv2kczWPdGz4jf/1o2nbxC2h/mWeExRYd7l6wZaXPp5A+Y72Ltr+9ezf39w+WPP2rqHs0SnHv1pafmnOobPPvjh51RtHfyz/M9jf9eWW16d9uvbC0GGq9ZND6z39F5YHDiyto5q+AWF9e3/ZK9+thM+V7t7xzo6G8v0ro8JTQvWUip89B1+bKFanhVNZfuOC9ZWHT+37q/f709sOtZeefH+o1/hs9eQfjjV+cPryE9ZArox/A1pyfU7DDwAA',
@@ -21,7 +21,7 @@ def get_items():
     return resp.content
 
 
-def ebay_api_test():
+def test_ebay_api():
     from ebaysdk.exception import ConnectionError
     from ebaysdk.trading import Connection as Trading
 
@@ -40,7 +40,7 @@ def ebay_api_test():
         return e.response.dict()
 
 
-def mongodb_test():
+def test_mongodb():
     from pymongo import MongoClient
 
     # 连接 MongoClient
@@ -97,7 +97,25 @@ def mongodb_test():
     print(c)
 
 
-def item_data_sample():
+def test_mysql():
+    import pymysql
+    db = pymysql.connect('192.168.1.248', 'root', 'root', 'erp')
+    cursor = db.cursor()
+    sql = 'select * from erp_saas_goods_category where platform_category_id = 179697;'
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+        # 获取所有记录列表
+        results = cursor.fetchall()
+        for row in results:
+            print(row)
+    except:
+        print("Error: unable to fetch data")
+    db.close()
+    return
+
+
+def sample_item_data():
     item = {
         'refinement': {
             'buyingOptionDistributions': [
@@ -210,5 +228,14 @@ def item_data_sample():
     }
 
 
+def test_pprint():
+    from pprint import pprint
+    l = {'x': 1, 'y': 2, }
+    pprint(l)
+    pprint(locals())
+    pprint(globals())
+    print(vars(l))
+
+
 if __name__ == '__main__':
-    get_items()
+    test_mysql()
