@@ -20,4 +20,5 @@ class ListingItem(Item):
     itemWebUrl = Field()
     itemHref = Field()
     additionalImages = Field()
+    time = Field()
     data = Field()
