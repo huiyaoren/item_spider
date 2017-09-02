@@ -11,10 +11,12 @@ def run():
 
 
 def test():
-    from ebay.utils import common
-    common.insert_category_ids()
+    from ebay.utils import ebay as e
+    from ebay.utils import common as c
+    token = e.new_token()
+    print(token)
 
 
 if __name__ == '__main__':
-    # run()
-    test()
+    run()
+    # test()

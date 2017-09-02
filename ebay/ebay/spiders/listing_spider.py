@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 class ListingSpider(Spider):
     name = "listing_spider"
     start_urls = [
-        'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids=179697&fieldgroups=FULL', ]
+        'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids=179697&fieldgroups=FULL',
+    ]
     token = None
     headers = {
         'Authorization': 'Bearer ',
@@ -25,7 +26,7 @@ class ListingSpider(Spider):
     def __init__(self):
         super().__init__()
         # 为 header 添加 token
-        self.token = new_token() # todo 若要改为分布式 此项应存至 Redis
+        self.token = new_token()  # todo 若要改为分布式 此项应存至 Redis
         self.headers['Authorization'] += self.token
 
     def start_requests(self):

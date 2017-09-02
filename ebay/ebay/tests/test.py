@@ -103,9 +103,7 @@ def test_mysql():
     cursor = db.cursor()
     sql = 'select * from erp_saas_goods_category where platform_category_id = 179697;'
     try:
-        # 执行SQL语句
         cursor.execute(sql)
-        # 获取所有记录列表
         results = cursor.fetchall()
         for row in results:
             print(row)
