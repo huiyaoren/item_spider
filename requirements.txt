@@ -1,6 +1,8 @@
 ebaysdk==2.1.4
 ipython==6.1.0
+requests==2.18.4
 pymongo==3.5.1
 PyMySQL==0.7.11
-requests==2.18.4
+redis==2.10.6
 Scrapy==1.4.0
+scrapy-redis==0.6.8
