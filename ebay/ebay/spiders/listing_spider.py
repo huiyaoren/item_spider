@@ -5,7 +5,7 @@ from datetime import datetime
 
 from scrapy import Request, Spider
 from ..items import ListingItem
-from ..utils.common import category_ids
+from ..utils.data import category_ids
 from ..utils.ebay import new_token
 
 logger = logging.getLogger(__name__)
@@ -43,8 +43,8 @@ class ListingSpider(Spider):
         # 商品数据
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
-                self.clean_item(item, i)
-                yield item
+                l = self.clean_item(item, i)
+                yield l
         # 下一页请求
         if 'next' in data.keys():
             url_next = data['next']
@@ -69,5 +69,5 @@ class ListingSpider(Spider):
         item['itemHref'] = i.get('itemHref')
         item['additionalImages'] = i.get('additionalImages')
         item['time'] = datetime.utcnow()
-        # item['data'] = i
+        item['data'] = i
         return item
