@@ -25,19 +25,24 @@ def test_ebay_api():
     from ebaysdk.exception import ConnectionError
     from ebaysdk.trading import Connection as Trading
 
-    try:
-        api = Trading(config_file='ebay.yaml', debug=True)
-        print(api.config.get('token'), 123)
+    # try:
+    #     api = Trading(config_file='ebay.yaml', debug=True)
+    #     print(api.config.get('token'), 123)
+    #
+    #     api.execute('GetTokenStatus', {'CharityID': 3897})
+    #     # dump(api)
+    #     print(api.response.reply)
+    #     return api.response.reply
+    #
+    # except ConnectionError as e:
+    #     print(e)
+    #     print(e.response.dict())
+    #     return e.response.dict()
 
-        api.execute('GetTokenStatus', {'CharityID': 3897})
-        # dump(api)
-        print(api.response.reply)
-        return api.response.reply
-
-    except ConnectionError as e:
-        print(e)
-        print(e.response.dict())
-        return e.response.dict()
+    api = Trading(config_file='ebay.yaml', debug=True)
+    print(api.config.get('token'))
+    api.execute('GetItem', {'ItemID': 'v1|292191373015|591122882367'})
+    print(api.response.reply)
 
 
 def test_mongodb():

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from pymongo import MongoClient
-from pymysql import connect
-
 import logging
-from ..configs.database_config import Config
+from pymysql import connect
+from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+from redis import Redis
+from ..configs.database_config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,11 @@ def db_mysql():
         Config['mysql']['username'],
         Config['mysql']['password'],
     )
+
+
+def db_redis():
+    redis = Redis(password=Config['redis']['password'])
+    return redis
 
 
 def category_ids_from_mysql():

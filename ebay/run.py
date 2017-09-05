@@ -13,10 +13,13 @@ def run():
 def test():
     from ebay.utils import ebay as e
     from ebay.utils import common as c
-    token = e.new_token()
-    print(token)
+    from ebay.utils import data as d
+    from ebay.tests import test as t
+
+    return c.clean_item_id()
 
 
 if __name__ == '__main__':
+    # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
     run()
     # test()

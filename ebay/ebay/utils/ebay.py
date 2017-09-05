@@ -37,10 +37,31 @@ def new_token():
     return result['access_token']
 
 
-def date():
-    # todo 获取当日日期
-    n = datetime.utcnow()
-    return
+def item_detail():
+    # todo-1
+    header = {
+       'X-EBAY-API-APP-ID': 'hanlinzh-sampleap-PRD-5090738eb-9f22a2e9',
+       'X-EBAY-API-SITE-ID': '0',
+       'X-EBAY-API-CALL-NAME': 'GetMultipleItems',
+       'X-EBAY-API-VERSION': '863',
+       'X-EBAY-API-REQUEST-ENCODING': 'xml',
+    }
+    url = 'https://open.api.ebay.com/shopping'
+    method = 'POST'
+    data='''<?xml version="1.0" encoding="utf-8"?>
+<GetMultipleItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+   	<!-- Enter valid item IDs that exist in the environment 
+        (Sandbox, Production, etc.) you are using --> 
+     <ItemID>xxxxxxxxxxxx</ItemID>
+  	<ItemID>xxxxxxxxxxxx</ItemID>
+</GetMultipleItemsRequest>'''
+
+    s = Session()
+    req = Request(headers=header, url=url, method=method, data=data)
+    prepped = req.prepare()
+    resp = s.send(prepped)
+    print(resp)
+    return resp
 
 
 if __name__ == '__main__':
