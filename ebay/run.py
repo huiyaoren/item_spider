@@ -19,7 +19,12 @@ def test():
     return c.clean_item_id()
 
 
+def init():
+    from ebay.utils.data import insert_category_ids
+    insert_category_ids()
+
+
 if __name__ == '__main__':
     # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
-    run()
-    # test()
+    # run()
+    init()
