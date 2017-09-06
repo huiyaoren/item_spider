@@ -16,15 +16,16 @@ def test():
     from ebay.utils import data as d
     from ebay.tests import test as t
 
-    return c.clean_item_id()
+    return t.test_insert_category_ids_to_redis()
 
 
 def init():
     from ebay.utils.data import insert_category_ids
     insert_category_ids('redis')
+    print('Done')
 
 
 if __name__ == '__main__':
     # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
     # run()
-    init()
+    test()

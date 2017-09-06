@@ -21,6 +21,11 @@ DUPEFILTER_CLASS = "scrapy.dupefilters.BaseDupeFilter"
 DUPEFILTER_CLASS = "ebay.dupefilters.NoneDupeFilter"
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
+# Retry
+RETRY_ENABLED = True
+RETRY_TIMES = 3
+RETRY_HTTP_CODECS = [500, 502, 503, 504, 400, 408]
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ebay (+http://www.yourdomain.com)'
 

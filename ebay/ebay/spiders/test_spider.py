@@ -6,16 +6,16 @@ from datetime import datetime
 from scrapy import Request, Spider
 from scrapy_redis.spiders import RedisSpider
 from ..items import ListingItem
-from ..utils.data import category_ids
+from ..utils.data import category_ids, db_redis
 from ..utils.ebay import new_token
-
+from ..utils.common import bytes_to_str
 
 logger = logging.getLogger(__name__)
 
 
 class ListingRedisSpider(RedisSpider):
     name = "listing_redis_spider"
-    redis_key = "ebay:start_urls"
+    redis_key = "ebay:category_urls"
     token = None
     headers = {
         'Authorization': 'Bearer ',
@@ -26,37 +26,28 @@ class ListingRedisSpider(RedisSpider):
     def __init__(self):
         super().__init__()
         # 为 header 添加 token
-        # self.token = new_token()  # todo 若要改为分布式 此项应存至 Redis
-        # self.headers['Authorization'] += self.token
-
-    # def start_requests(self):
-    #     for category_id in category_ids():
-    #         url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
-    #         url = url.format(category_id)
-    #         logger.info("start_request: " + url)
-    #         yield Request(url, dont_filter=True, headers=self.headers, method='GET')
+        self.token = new_token()  # todo 若要改为分布式 此项应存至 Redis
+        self.headers['Authorization'] += self.token
 
     def make_request_from_data(self, data):
         # todo 重写 添加 header
         url = bytes_to_str(data, self.redis_encoding)
-        return Request(url='http://www.baidu.com')
+        return Request(url, dont_filter=True, headers=self.headers, method='GET')
 
     def parse(self, response):
-        yield Request(url='http://www.baidu.com')
-
-        # logger.info(response)
-        # item = ListingItem()
-        # data = json.loads(response.text)
-        # # 下一页请求
-        # if 'next' in data.keys():
-        #     url_next = data['next']
-        #     yield Request(url_next, dont_filter=True, headers=self.headers, method='GET')
+        logger.info(response)
+        item = ListingItem()
+        data = json.loads(response.text)
+        # 下一页请求
+        if 'next' in data.keys():
+            url_next = data['next']
+            self.server.lpush('ebay:category_urls', url_next)
+            # yield Request(url_next, dont_filter=True, headers=self.headers, method='GET')
         # # 商品数据
         # if 'itemSummaries' in data.keys():
         #     for i in data['itemSummaries']:
         #         l = self.clean_item(item, i)
         #         yield l
-
 
     def clean_item(self, item, data):
         i = data
@@ -79,12 +70,3 @@ class ListingRedisSpider(RedisSpider):
         item['time'] = datetime.utcnow()
         item['data'] = i
         return item
-
-import six
-
-
-def bytes_to_str(s, encoding='utf-8'):
-    """Returns a str if a bytes object is given."""
-    if six.PY3 and isinstance(s, bytes):
-        return s.decode(encoding)
-    return s

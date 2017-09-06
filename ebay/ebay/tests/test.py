@@ -240,5 +240,15 @@ def test_pprint():
     print(vars(l))
 
 
+def test_insert_category_ids_to_redis():
+    from ..utils.data import db_redis
+    redis = db_redis()
+    ids = [11450, 15724, 63869, 15775, 155226, 11567, 63865, 11556, 11553, 63863, 11554,]
+    for id in ids:
+        url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
+        url = url.format(id)
+        redis.lpush('ebay:category_urls', url)
+
+
 if __name__ == '__main__':
     test_mysql()
