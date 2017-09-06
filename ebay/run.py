@@ -21,7 +21,7 @@ def test():
 
 def init():
     from ebay.utils.data import insert_category_ids
-    insert_category_ids()
+    insert_category_ids('redis')
 
 
 if __name__ == '__main__':

@@ -17,6 +17,9 @@ NEWSPIDER_MODULE = 'ebay.spiders'
 # Close dupefilter
 DUPEFILTER_CLASS = "scrapy.dupefilters.BaseDupeFilter"
 
+# todo 非分布式时关闭此项
+DUPEFILTER_CLASS = "ebay.dupefilters.NoneDupeFilter"
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ebay (+http://www.yourdomain.com)'
