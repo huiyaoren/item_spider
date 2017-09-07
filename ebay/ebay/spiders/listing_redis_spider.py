@@ -3,12 +3,13 @@ import json
 import logging
 from datetime import datetime
 
-from scrapy import Request, Spider
+from scrapy import Request
 from scrapy_redis.spiders import RedisSpider
+
 from ..items import ListingItem
-from ..utils.data import category_ids, db_redis
 from ..utils.ebay import new_token
-from ..utils.common import bytes_to_str
+from ..utils.common import bytes_to_str, clean_item_id
+from ..utils.data import insert_item_url_to_redis
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +43,15 @@ class ListingRedisSpider(RedisSpider):
         if 'next' in data.keys():
             url_next = data['next']
             self.server.lpush('ebay:category_urls', url_next)
-        # # 商品数据
+        # 商品数据
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
                 l = self.clean_item(item, i)
-                yield l
+                # yield l
+                ''' Insert item url or item id '''
+                if 'itemHref' in i.keys():
+                    item_id = int(clean_item_id(i['itemId']))
+                    insert_item_url_to_redis(item_id, i['itemHref'], self.server)
 
     def clean_item(self, item, data):
         i = data
