@@ -94,6 +94,7 @@ def insert_category_ids_to_redis(redis=None):
     r = redis
     if r is None:
         r = db_redis()
+    r.delete('ebay:category_urls')
     for listing in category_ids_from_mysql():
         try:
             url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
