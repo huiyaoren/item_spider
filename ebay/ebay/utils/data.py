@@ -102,6 +102,7 @@ def insert_category_ids_to_redis(redis=None):
             r.lpush('ebay:category_urls', url)
         except:
             print("Redis Error")
+    print('count: {0}'.format(r.llen('ebay:category_urls')))
     print('Done')
 
 
