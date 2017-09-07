@@ -126,12 +126,22 @@ def item_id_from_redis(redis):
     pass
 
 
-def item_id_is_duplicated(item_id, redis):
-    ''' 商品分类是否重复 todo
-    :param category_id: 
-    :return: 
-    '''
-    return False
+def item_id_is_duplicated(item_id, redis=None):
+    ''' 商品分类是否重复 '''
+    r = redis or db_redis()
+    return 0 == r.sadd('ebay:item_ids_filter', item_id)
+
+
+def insert_item_url_to_redis(item_id, item_url, redis=None):
+    r = redis or db_redis()
+    if not item_id_is_duplicated(item_id, r):
+        r.lpush('ebay:item_urls', item_url)
+
+
+def insert_item_id_to_redis(item_id, redis=None):
+    r = redis or db_redis()
+    if not item_id_is_duplicated(item_id, r):
+        r.lpush('ebay:item_ids', item_id)
 
 
 if __name__ == '__main__':
