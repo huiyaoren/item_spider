@@ -42,12 +42,11 @@ class ListingRedisSpider(RedisSpider):
         if 'next' in data.keys():
             url_next = data['next']
             self.server.lpush('ebay:category_urls', url_next)
-            # yield Request(url_next, dont_filter=True, headers=self.headers, method='GET')
         # # 商品数据
-        # if 'itemSummaries' in data.keys():
-        #     for i in data['itemSummaries']:
-        #         l = self.clean_item(item, i)
-        #         yield l
+        if 'itemSummaries' in data.keys():
+            for i in data['itemSummaries']:
+                l = self.clean_item(item, i)
+                yield l
 
     def clean_item(self, item, data):
         i = data
