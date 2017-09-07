@@ -27,8 +27,8 @@ def init():
 
 def run_multi():
     from multiprocessing import Pool
-    p = Pool(16)
-    for i in range(17):
+    p = Pool(32)
+    for i in range(33):
         p.apply_async(run)
     p.close()
     p.join()
