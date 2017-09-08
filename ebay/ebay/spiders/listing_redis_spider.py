@@ -47,7 +47,7 @@ class ListingRedisSpider(RedisSpider):
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
                 l = self.clean_item(item, i)
-                # yield l
+                yield l
                 ''' Insert item url or item id '''
                 if 'itemHref' in i.keys():
                     item_id = int(clean_item_id(i['itemId']))
