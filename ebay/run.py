@@ -6,7 +6,7 @@ def run():
 
     process = CrawlerProcess(get_project_settings())
 
-    process.crawl('listing_spider')
+    process.crawl('listing_redis_spider')
     process.start()
 
 
