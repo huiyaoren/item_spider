@@ -9,7 +9,7 @@ from scrapy_redis.spiders import RedisSpider
 from ..items import ListingItem
 from ..utils.ebay import new_token
 from ..utils.common import bytes_to_str, clean_item_id
-from ..utils.data import insert_item_url_to_redis
+from ..utils.data import insert_item_id_to_redis
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +46,13 @@ class ListingRedisSpider(RedisSpider):
         # 商品数据
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
-                l = self.clean_item(item, i)
-                yield l
+                # l = self.clean_item(item, i)
+                # yield l
                 ''' Insert item url or item id '''
                 if 'itemHref' in i.keys():
                     item_id = int(clean_item_id(i['itemId']))
-                    insert_item_url_to_redis(item_id, i['itemHref'], self.server)
+                    insert_item_id_to_redis(item_id, self.server)
+                    # insert_item_url_to_redis(item_id, i['itemHref'], self.server)
 
     def clean_item(self, item, data):
         i = data
@@ -66,7 +67,7 @@ class ListingRedisSpider(RedisSpider):
         item['currentBidPrice'] = i.get('currentBidPrice')
         item['buyingOptions'] = i.get('buyingOptions')
         item['condition'] = i.get('condition')
-        item['itemId'] = i.get('itemId')
+        item['itemId'] = clean_item_id(i.get('itemId'))
         item['itemAffiliateWebUrl'] = i.get('itemAffiliateWebUrl')
         item['itemWebUrl'] = i.get('itemWebUrl')
         item['itemHref'] = i.get('itemHref')

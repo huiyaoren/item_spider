@@ -6,3 +6,5 @@ redis==2.10.6
 Scrapy==1.4.0
 scrapy-redis==0.6.8
 xmltodict==0.11.0
+Flask==0.12.2
+psutil==5.3.0

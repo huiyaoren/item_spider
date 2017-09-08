@@ -466,8 +466,7 @@ def sample_detail_json_data():
 
 
 def sample_detail_xml_data():
-    detail = '''
-    <?xml version="1.0" encoding="UTF-8"?>
+    detail = '''<?xml version="1.0" encoding="UTF-8"?>
 <GetItemResponse 
   xmlns="urn:ebay:apis:eBLBaseComponents">
   <Timestamp>2017-09-07T03:37:56.407Z</Timestamp>
