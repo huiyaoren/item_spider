@@ -14,14 +14,8 @@
     <!-- Bootstrap Core CSS -->
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
-    <!-- MetisMenu CSS -->
-    <link href="{{ url_for('static', filename='vendor/metisMenu/metisMenu.min.css') }}" rel="stylesheet">
-
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='dist/css/sb-admin-2.css') }}" rel="stylesheet">
-
-    <!-- Morris Charts CSS -->
-    <link href="{{ url_for('static', filename='vendor/morrisjs/morris.css') }}" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="{{ url_for('static', filename='vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
@@ -48,7 +42,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="index.html">SB Admin v2.0</a>
+            <a class="navbar-brand" href="#">SB Admin v2.0</a>
         </div>
         <!-- /.navbar-header -->
 
@@ -277,7 +271,7 @@
                         <!-- /input-group -->
                     </li>
                     <li>
-                        <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                        <a href="#"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                     </li>
                 </ul>
             </div>
@@ -295,7 +289,7 @@
         </div>
         <!-- /.row -->
         <div class="row">
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-3 col-md-6" id="cpu">
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         <div class="row">
@@ -317,7 +311,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-3 col-md-6" id="mem">
                 <div class="panel panel-green">
                     <div class="panel-heading">
                         <div class="row">
@@ -339,7 +333,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-3 col-md-6" id="disk">
                 <div class="panel panel-yellow">
                     <div class="panel-heading">
                         <div class="row">
@@ -361,7 +355,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-3 col-md-6" id="net">
                 <div class="panel panel-red">
                     <div class="panel-heading">
                         <div class="row">
@@ -412,7 +406,7 @@
                     </div>
                     <!-- /.panel-heading -->
                     <div class="panel-body">
-                        <div id="morris-area-chart"></div>
+                        <div id="morris-area-chart" style="width: 100%; height: 200px"></div>
                     </div>
                     <!-- /.panel-body -->
                 </div>
@@ -443,7 +437,7 @@
                     <!-- /.panel-heading -->
                     <div class="panel-body">
                         <div class="row">
-                            <div class="col-lg-4">
+                            <div class="col-lg-12">
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
@@ -508,17 +502,12 @@
                                 </div>
                                 <!-- /.table-responsive -->
                             </div>
-                            <!-- /.col-lg-4 (nested) -->
-                            <div class="col-lg-8">
-                                <div id="morris-bar-chart"></div>
-                            </div>
-                            <!-- /.col-lg-8 (nested) -->
+                            <!-- /.col-lg-12 (nested) -->
                         </div>
                         <!-- /.row -->
                     </div>
                     <!-- /.panel-body -->
                 </div>
-
             </div>
             <!-- /.col-lg-8 -->
             <div class="col-lg-4">
@@ -599,19 +588,36 @@
 <!-- Bootstrap Core JavaScript -->
 <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 
-<!-- Metis Menu Plugin JavaScript -->
-<script src="{{ url_for('static', filename='vendor/metisMenu/metisMenu.min.js') }}"></script>
-
-<!-- Morris Charts JavaScript -->
-<script src="{{ url_for('static', filename='vendor/raphael/raphael.min.js') }}"></script>
-<script src="{{ url_for('static', filename='vendor/morrisjs/morris.min.js') }}"></script>
-<script src="{{ url_for('static', filename='data/morris-data.js') }}"></script>
-
 <!-- Custom Theme JavaScript -->
 <script src="{{ url_for('static', filename='dist/js/sb-admin-2.js') }}"></script>
+<script src="{{ url_for('static', filename='dist/js/echarts.js') }}"></script>
 
 </body>
 <script>
+    var log = console.log.bind(log);
+    var e = (d) => $(document.querySelector(d));
+
+    e('#cpu > div > div > div > div.col-xs-3 > i').hide();
+    e('#mem > div > div > div > div.col-xs-3 > i').hide();
+    e('#disk > div > div > div > div.col-xs-3 > i').hide();
+    e('#net > div > div > div > div.col-xs-3 > i').hide();
+
+    setInterval(function () {
+        $.ajax({
+            type: 'post',
+            url: './data',
+            success: function (data) {
+                log(data);
+                e('#cpu > div > div > div > div.col-xs-9.text-right').html('CPU 占用: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'CPU 物理核心: ' + data['cpu_count'] + '<br> CPU 逻辑核心: ' + data['cpu_count_logical'])
+            },
+            error: function (e) {
+                log(e)
+            }
+        });
+    }, 2100)
+
+
+    var myChart = echarts.init(document.querySelector('#morris-area-chart'));
     option = {
         title: {
             text: '动态数据',
@@ -683,8 +689,7 @@
             }
         ]
     };
-
-    app.count = 11;
+    window.count = 11;
     setInterval(function () {
         var data0 = option.series[0].data;
 
@@ -692,7 +697,7 @@
         data0.push((Math.random() * 10 + 5).toFixed(1) - 0);
 
         option.xAxis[0].data.shift();
-        option.xAxis[0].data.push(app.count++);
+        option.xAxis[0].data.push(window.count++);
 
         myChart.setOption(option);
     }, 2100);
