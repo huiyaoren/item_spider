@@ -9,15 +9,11 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'ebay'
+BOT_NAME = 'suck-your-data'
 
 SPIDER_MODULES = ['ebay.spiders']
 NEWSPIDER_MODULE = 'ebay.spiders'
 
-# Close dupefilter
-DUPEFILTER_CLASS = "scrapy.dupefilters.BaseDupeFilter"
-
-# todo 非分布式时关闭此项
 DUPEFILTER_CLASS = "ebay.dupefilters.NoneDupeFilter"
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
@@ -36,7 +32,7 @@ LOG_FILE = None
 LOG_LEVEL = 'DEBUG'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 128
+CONCURRENT_REQUESTS = 256
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
