@@ -5,3 +5,4 @@ PyMySQL==0.7.11
 redis==2.10.6
 Scrapy==1.4.0
 scrapy-redis==0.6.8
+xmltodict==0.11.0
