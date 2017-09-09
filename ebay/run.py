@@ -20,9 +20,11 @@ def test():
 
 
 def init():
-    from ebay.utils.data import insert_category_ids
+    from ebay.utils.data import insert_category_ids, delete_item_ids_filter
+    delete_item_ids_filter()
     insert_category_ids('redis')
-    print('Done')
+    # todo 重启 mongod
+    print('Init Done.')
 
 
 def run_multi():
