@@ -51,10 +51,14 @@ class DetailXmlRedisSpider(RedisSpider):
             logger.warning('Request Failre. url: {0} data: {1}'.format(response.url, response.text))
             return
 
-        i = self.clean_item(item, data.get('Item'))
-        del data
-        print(i)
-        yield i
+        try:
+            i = self.clean_item(item, data.get('Item'))
+        except AttributeError:
+            logger.warning('Request Failre. url: {0} data: {1}'.format(response.url, response.text))
+        else:
+            del data
+            print(i)
+            yield i
 
     def clean_item(self, item, data):
         i = data

@@ -26,7 +26,6 @@ class ListingRedisSpider(RedisSpider):
 
     def __init__(self):
         super().__init__()
-        # 为 header 添加 token
         self.token = new_token()  # todo 若要改为分布式 此项应存至 Redis
         self.headers['Authorization'] += self.token
 

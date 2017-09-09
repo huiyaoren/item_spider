@@ -9,7 +9,7 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'suck-your-data'
+BOT_NAME = 's'
 
 SPIDER_MODULES = ['ebay.spiders']
 NEWSPIDER_MODULE = 'ebay.spiders'
@@ -23,7 +23,7 @@ RETRY_TIMES = 3
 RETRY_HTTP_CODECS = [500, 502, 503, 504, 400, 408]
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'ebay (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -32,7 +32,7 @@ LOG_FILE = None
 LOG_LEVEL = 'DEBUG'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 256
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay

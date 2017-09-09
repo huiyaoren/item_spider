@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def new_token():
     """ Get new ebay application token """
-    c = config['product'][0]
+    c = config['product'][2]
 
     credentials = ':'.join([c['appid'], c['certid']])
     header = {'Authorization': b'Basic ' + b64encode(bytes(credentials, encoding="utf8")), }

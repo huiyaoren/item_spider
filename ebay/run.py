@@ -40,5 +40,5 @@ def run_multi():
 
 if __name__ == '__main__':
     # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
-    # run()
-    run_multi()
+    run('detail_json_redis_spider')
+    # run_multi()
