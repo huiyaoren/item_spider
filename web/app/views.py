@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from . import app
 from flask import render_template, json
 import psutil
@@ -6,7 +8,6 @@ from pymongo import MongoClient
 
 r = Redis()
 m = MongoClient()['test_database']
-collection_name = 'd_20170908'
 cpu_count_logical = psutil.cpu_count()
 cpu_count = psutil.cpu_count(logical=False)
 
@@ -42,10 +43,12 @@ def data():
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
 
+    collection_name = 'c_{0}'.format(datetime.now().strftime("%Y%m%d"))
     data['mongodb'] = {}
     data['mongodb']['count'] = m[collection_name].count()
+    data['mongodb']['collection'] = collection_name
 
-    data['pids'] = psutil.pids()
+    # data['pids'] = psutil.pids()
     # for proc in psutil.process_iter(attrs=['pid', 'name']):
     #     print(proc.info)
     # data['disk_partitions'] = psutil.disk_partitions()
