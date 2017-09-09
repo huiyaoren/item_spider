@@ -43,7 +43,7 @@ def data():
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
 
-    collection_name = 'c_{0}'.format(datetime.now().strftime("%Y%m%d"))
+    collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
     data['mongodb'] = {}
     data['mongodb']['count'] = m[collection_name].count()
     data['mongodb']['collection'] = collection_name
