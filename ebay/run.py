@@ -31,9 +31,9 @@ def init():
 def run_multi():
     from multiprocessing import Pool
     p = Pool(16)
-    p.apply_async(run, args=('listing_redis_spider'))
+    p.apply_async(run, args=('listing_redis_spider',))
     for i in range(16):
-        p.apply_async(run, args=('detail_xml_redis_spider'))
+        p.apply_async(run, args=('detail_xml_redis_spider',))
     p.close()
     p.join()
 
@@ -41,4 +41,4 @@ def run_multi():
 if __name__ == '__main__':
     # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
     # run()
-    test()
+    run_multi()
