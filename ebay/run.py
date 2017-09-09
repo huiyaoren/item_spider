@@ -32,7 +32,7 @@ def run_multi():
     p = Pool(16)
     p.apply_async(run, args=('listing_redis_spider'))
     for i in range(16):
-        p.apply_async(run, args=('detail_json_redis_spider'))
+        p.apply_async(run, args=('detail_xml_redis_spider'))
     p.close()
     p.join()
 
