@@ -144,5 +144,10 @@ def insert_item_id_to_redis(item_id, redis=None):
         r.lpush('ebay:item_ids', item_id)
 
 
+def delete_item_ids_filter(redis=None):
+    r = redis or db_redis()
+    r.delete('ebay:item_ids_filter')
+
+
 if __name__ == '__main__':
     pass
