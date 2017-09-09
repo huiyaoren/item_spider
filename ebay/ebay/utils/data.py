@@ -149,5 +149,10 @@ def delete_item_ids_filter(redis=None):
     r.delete('ebay:item_ids_filter')
 
 
+def delete_item_ids(redis=None):
+    r = redis or db_redis()
+    r.delete('ebay:item_ids')
+
+
 if __name__ == '__main__':
     pass

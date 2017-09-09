@@ -20,8 +20,9 @@ def test():
 
 
 def init():
-    from ebay.utils.data import insert_category_ids, delete_item_ids_filter
+    from ebay.utils.data import insert_category_ids, delete_item_ids_filter, delete_item_ids
     delete_item_ids_filter()
+    delete_item_ids()
     insert_category_ids('redis')
     # todo 重启 mongod
     print('Init Done.')
