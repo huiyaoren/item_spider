@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-def run():
+def run(name='listing_redis_spider'):
     from scrapy.crawler import CrawlerProcess
     from scrapy.utils.project import get_project_settings
 
     process = CrawlerProcess(get_project_settings())
 
-    process.crawl('listing_redis_spider')
+    process.crawl(name)
     process.start()
 
 
@@ -27,9 +27,10 @@ def init():
 
 def run_multi():
     from multiprocessing import Pool
-    p = Pool(32)
-    for i in range(33):
-        p.apply_async(run)
+    p = Pool(16)
+    p.apply_async(run, args=('listing_redis_spider'))
+    for i in range(16):
+        p.apply_async(run, args=('detail_json_redis_spider'))
     p.close()
     p.join()
 
