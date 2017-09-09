@@ -289,7 +289,7 @@
         </div>
         <!-- /.row -->
         <div class="row">
-            <div class="col-lg-3 col-md-6" id="cpu">
+            <div class="col-lg-2 col-md-6" id="cpu">
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         <div class="row">
@@ -311,7 +311,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6" id="mem">
+            <div class="col-lg-2 col-md-6" id="mem">
                 <div class="panel panel-green">
                     <div class="panel-heading">
                         <div class="row">
@@ -333,7 +333,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6" id="disk">
+            <div class="col-lg-2 col-md-6" id="disk">
                 <div class="panel panel-yellow">
                     <div class="panel-heading">
                         <div class="row">
@@ -355,7 +355,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6" id="net">
+            <div class="col-lg-2 col-md-6" id="net">
                 <div class="panel panel-red">
                     <div class="panel-heading">
                         <div class="row">
@@ -510,57 +510,17 @@
                 </div>
             </div>
             <!-- /.col-lg-8 -->
-            <div class="col-lg-4">
+            <div class="col-lg-4" id="redis">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <i class="fa fa-bell fa-fw"></i> Notifications Panel
+                        <i class="fa fa-bell fa-fw"></i> Redis keys
                     </div>
                     <!-- /.panel-heading -->
                     <div class="panel-body">
                         <div class="list-group">
                             <a href="#" class="list-group-item">
-                                <i class="fa fa-comment fa-fw"></i> New Comment
-                                <span class="pull-right text-muted small"><em>4 minutes ago</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-twitter fa-fw"></i> 3 New Followers
-                                <span class="pull-right text-muted small"><em>12 minutes ago</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-envelope fa-fw"></i> Message Sent
-                                <span class="pull-right text-muted small"><em>27 minutes ago</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
                                 <i class="fa fa-tasks fa-fw"></i> New Task
                                 <span class="pull-right text-muted small"><em>43 minutes ago</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-upload fa-fw"></i> Server Rebooted
-                                <span class="pull-right text-muted small"><em>11:32 AM</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-bolt fa-fw"></i> Server Crashed!
-                                <span class="pull-right text-muted small"><em>11:13 AM</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-warning fa-fw"></i> Server Not Responding
-                                <span class="pull-right text-muted small"><em>10:57 AM</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-shopping-cart fa-fw"></i> New Order Placed
-                                <span class="pull-right text-muted small"><em>9:49 AM</em>
-                                    </span>
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <i class="fa fa-money fa-fw"></i> Payment Received
-                                <span class="pull-right text-muted small"><em>Yesterday</em>
                                     </span>
                             </a>
                         </div>
@@ -602,19 +562,32 @@
     e('#disk > div > div > div > div.col-xs-3 > i').hide();
     e('#net > div > div > div > div.col-xs-3 > i').hide();
 
+    get_data();
     setInterval(function () {
+        get_data();
+    }, 2100);
+
+    function get_data() {
         $.ajax({
             type: 'post',
             url: './data',
             success: function (data) {
                 log(data);
-                e('#cpu > div > div > div > div.col-xs-9.text-right').html('CPU 占用: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'CPU 物理核心: ' + data['cpu_count'] + '<br> CPU 逻辑核心: ' + data['cpu_count_logical'])
+                e('#cpu > div > div > div > div.col-xs-9.text-right').html('CPU 占用: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'Physical Cores: ' + data['cpu_count'] + '<br> Logical Cores: ' + data['cpu_count_logical']);
+                e('#mem > div > div > div > div.col-xs-9.text-right').html('内存 占用: <div class="huge">' + data['virtual_memory'][2] + '%</div>' + 'Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G<br> used: ' + (data['virtual_memory'][3]/1024/1024/1024).toFixed(2) + 'G');
+                e('#disk > div > div > div > div.col-xs-9.text-right').html('MongoDB: <div class="huge">' + data['mongodb']['count'] + '</div>' + 'Mem: ' + data['cpu_count'] + '<br> CPU 逻辑核心: ' + data['cpu_count_logical']);
+                e('#net > div > div > div > div.col-xs-9.text-right').html('CPU 占用: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'CPU 物理核心: ' + data['cpu_count'] + '<br> CPU 逻辑核心: ' + data['cpu_count_logical']);
+                var redis_html = '';
+                for (var i in data['redis']) {
+                    redis_html += '<a href="#" class="list-group-item"><i class="fa fa-tasks fa-fw"></i> ' + i + '<span class="pull-right text-muted small"><em>' + data['redis'][i] + '</em></span></a>';
+                }
+                e('#redis > div > div.panel-body > div').html(redis_html);
             },
             error: function (e) {
                 log(e)
             }
         });
-    }, 2100)
+    }
 
 
     var myChart = echarts.init(document.querySelector('#morris-area-chart'));
