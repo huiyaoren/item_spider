@@ -9,7 +9,7 @@ from scrapy_redis.spiders import RedisSpider
 from ..items import ListingItem
 from ..utils.ebay import new_token
 from ..utils.common import bytes_to_str, clean_item_id
-from ..utils.data import insert_item_id_to_redis
+from ..utils.data import insert_item_id_to_redis, insert_item_url_to_redis
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ class ListingRedisSpider(RedisSpider):
                 ''' Insert item url or item id '''
                 if 'itemHref' in i.keys():
                     item_id = int(clean_item_id(i['itemId']))
-                    insert_item_id_to_redis(item_id, self.server)
-                    # insert_item_url_to_redis(item_id, i['itemHref'], self.server)
+                    # insert_item_id_to_redis(item_id, self.server)
+                    insert_item_url_to_redis(item_id, i['itemHref'], self.server)
 
     def clean_item(self, item, data):
         i = data
