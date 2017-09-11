@@ -16,6 +16,7 @@ class EbayPipeline(object):
         self.collection = self.mongodb['c_{0}'.format(self.date)]
         self.collection.ensure_index('itemId')
         self.collection_detail = self.mongodb['d_{0}'.format(self.date)]
+        # todo 索引构建应在 app.init() 中实现
 
         # self.mysql = db_mysql()
         # self.cursor = self.mysql.cursor()
