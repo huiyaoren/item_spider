@@ -21,7 +21,8 @@ def test():
 
 def init():
     from ebay.utils.data import insert_category_ids, delete_item_ids_filter, delete_item_ids, copy_item_ids
-    if True:
+    is_testing = True
+    if is_testing:
         # 测试
         delete_item_ids()
         copy_item_ids()
@@ -39,7 +40,7 @@ def run_multi():
     p = Pool(16)
     p.apply_async(run, args=('listing_redis_spider',))
     for i in range(16):
-        p.apply_async(run, args=('detail_xml_redis_spider',))
+        p.apply_async(run, args=('detail_json_redis_spider',))
     p.close()
     p.join()
 

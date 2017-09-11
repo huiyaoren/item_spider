@@ -25,13 +25,16 @@ class EbayPipeline(object):
             self.process_item_listing(item, spider)
         elif spider.name == 'detail_xml_redis_spider':
             self.process_item_detail(item, spider)
+        elif spider.name == 'detail_json_redis_spider':
+            self.process_item_detail(item, spider)
 
     def process_item_detail(self, item, spider):
         d = self.collection_detail
         item['date'] = self.date
         logger.info(item)
+
         try:
-            d.insert_one(item)
+            d.insert_one(dict(item))
         except:
             logger.info("Mongodb Error")
         else:
