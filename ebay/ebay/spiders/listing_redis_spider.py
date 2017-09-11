@@ -4,12 +4,13 @@ import logging
 from datetime import datetime
 
 from scrapy import Request
+from scrapy.exceptions import CloseSpider
 from scrapy_redis.spiders import RedisSpider
 
 from ..items import ListingItem
 from ..utils.ebay import new_token
 from ..utils.common import bytes_to_str, clean_item_id
-from ..utils.data import insert_item_id_to_redis, insert_item_url_to_redis
+from ..utils.data import insert_item_id_to_redis, insert_item_url_to_redis, is_item_ids_enough
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,10 @@ class ListingRedisSpider(RedisSpider):
         self.headers['Authorization'] += self.token
 
     def make_request_from_data(self, data):
-        # todo 重写 添加 header
+        # 生成 20000 条 item 测试队列 todo
+        if is_item_ids_enough(20000):
+            raise CloseSpider('Item ids are enough.')
+        #
         url = bytes_to_str(data, self.redis_encoding)
         return Request(url, dont_filter=True, headers=self.headers, method='GET')
 
@@ -45,13 +49,12 @@ class ListingRedisSpider(RedisSpider):
         # 商品数据
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
-                # l = self.clean_item(item, i)
-                # yield l
+                # yield self.clean_item(item, i)
                 ''' Insert item url or item id '''
                 if 'itemHref' in i.keys():
                     item_id = int(clean_item_id(i['itemId']))
-                    # insert_item_id_to_redis(item_id, self.server)
-                    insert_item_url_to_redis(item_id, i['itemHref'], self.server)
+                    insert_item_id_to_redis(item_id, self.server)
+                    # insert_item_url_to_redis(item_id, i['itemHref'], self.server)
 
     def clean_item(self, item, data):
         i = data
