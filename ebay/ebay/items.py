@@ -4,36 +4,24 @@ from scrapy import Item, Field
 
 
 class ListingItem(Item):
-    categories = Field()
-    itemLocation = Field()
-    shippingOptions = Field()
-    seller = Field()
-    conditionId = Field()
-    currentBidPrice = Field()
-    buyingOptions = Field()
-    condition = Field()
-    itemAffiliateWebUrl = Field()
-    itemWebUrl = Field()
-    itemHref = Field()
-    additionalImages = Field()
-    time = Field()
-    data = Field()
+    currency = Field()                  # 商品货币类型
+    category = Field()                  # 商品分类
+    date = Field()                      # 商品爬取日期
+    hitCount = Field()                  # 商品访问量
+    itemURL = Field()                   # 商品页面链接
+    itemLocation = Field()              # 商品所在地
+    itemId = Field()                    # 商品 id
+    imageURL = Field()                  # 商品图片链接
+    shipToLocations = Field()           # 商品发货地区
+    site = Field()                      # 商品所属站点
+    startTime = Field()                 # 商品上架时间
+    price = Field()                     # 商品价格
+    quantitySold = Field()              # 商品历史销量
+    title = Field()                     # 商品标题
 
-    price = Field()
-    country = Field()
-    currency = Field()
-    itemId = Field()
-    startTime = Field()
-    viewItemURL = Field()
-    categoryID = Field()
-    feedbackScore = Field()
-    positiveFeedbackPercent = Field()
-    newUser = Field()
-    registrationDate = Field()
-    storeURL = Field()
-    quantitySold = Field()
-    image = Field()
-    hitCount = Field()
-    title = Field()
-    shipToLocations = Field()
-    site = Field()
+    sellerRegistrationDate = Field()    # 卖家注册时间
+    sellerFeedbackScore = Field()       # 卖家评价反馈评分
+    sellerFeedbackPercentage = Field()  # 卖家好评率
+    sellerName = Field()                # 卖家用户名
+
+    data = Field()
