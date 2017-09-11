@@ -15,6 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class DetailJsonRedisSpider(RedisSpider):
+    ''' 
+    0.该 spider 已被弃用
+    1.ebay 对 json 接口限制较为严格. 
+    2.据测试 16 线程 * 8 进程时60% 以上的请求数据丢失 
+    3.请求错误类型多为 429 400
+    4.不再推荐使用 json 接口获取商品数据 
+    5.需要对同为调用 json 接口的 listing_redis_spider 的可靠性进行检验
+    '''
     name = "detail_json_redis_spider"
     redis_key = "ebay:item_ids"
     token = None
