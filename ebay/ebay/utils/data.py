@@ -154,5 +154,17 @@ def delete_item_ids(redis=None):
     r.delete('ebay:item_ids')
 
 
+def is_item_ids_enough(count, redis=None):
+    ''' 判断获取的 item_id 是否达到预设值 '''
+    r = redis or db_redis()
+    return r.llen('ebay:item_ids') >= count
+
+
+def copy_item_ids(redis=None):
+    r = redis or db_redis()
+    for id in r.smembers('ebay:item_ids_filter'):
+        r.lpush('ebay:item_ids', id)
+
+
 if __name__ == '__main__':
     pass
