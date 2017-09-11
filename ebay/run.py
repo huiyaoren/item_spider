@@ -37,8 +37,8 @@ def init():
 
 def run_multi():
     from multiprocessing import Pool
-    p = Pool(16)
-    p.apply_async(run, args=('listing_redis_spider',))
+    p = Pool()
+    # p.apply_async(run, args=('listing_redis_spider',))
     for i in range(16):
         p.apply_async(run, args=('detail_json_redis_spider',))
     p.close()
