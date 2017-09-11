@@ -20,10 +20,16 @@ def test():
 
 
 def init():
-    from ebay.utils.data import insert_category_ids, delete_item_ids_filter, delete_item_ids
-    delete_item_ids_filter()
-    delete_item_ids()
-    insert_category_ids('redis')
+    from ebay.utils.data import insert_category_ids, delete_item_ids_filter, delete_item_ids, copy_item_ids
+    if True:
+        # 测试
+        delete_item_ids()
+        copy_item_ids()
+    else:
+        # 生产
+        delete_item_ids_filter()
+        delete_item_ids()
+        insert_category_ids('redis')
     # todo 重启 mongod
     print('Init Done.')
 
@@ -39,6 +45,4 @@ def run_multi():
 
 
 if __name__ == '__main__':
-    # todo 每天第一次执行时在 MongoDB 生成 category_ids 数据
-    run('detail_json_redis_spider')
-    # run_multi()
+    run_multi()
