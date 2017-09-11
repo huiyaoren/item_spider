@@ -36,7 +36,6 @@ class DetailJsonRedisSpider(RedisSpider):
         return Request(url, dont_filter=True, headers=self.headers, method='GET')
 
     def parse(self, response):
-        print(response.text)
         item = ListingItem()
         data = json.loads(response.text)
         item = self.clean_item(item, data)

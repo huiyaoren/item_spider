@@ -39,7 +39,7 @@ def run_multi():
     from multiprocessing import Pool
     p = Pool()
     # p.apply_async(run, args=('listing_redis_spider',))
-    for i in range(16):
+    for i in range(8):
         p.apply_async(run, args=('detail_json_redis_spider',))
     p.close()
     p.join()
