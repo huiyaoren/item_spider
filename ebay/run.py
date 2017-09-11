@@ -30,7 +30,7 @@ def init():
         # 生产
         delete_item_ids_filter()
         delete_item_ids()
-        insert_category_ids('redis')
+    insert_category_ids('redis')
     # todo 重启 mongod
     print('Init Done.')
 
