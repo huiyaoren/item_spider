@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class DetailXmlRedisSpider(RedisSpider):
     name = "detail_xml_redis_spider"
     redis_key = "ebay:item_ids"
-    token = config['product'][0]['token_old']
+    token = config['product'][2]['token_old']
     url = 'https://api.ebay.com/ws/api.dll'
     headers = {
         'X-EBAY-API-SITEID': '0',
@@ -27,13 +27,13 @@ class DetailXmlRedisSpider(RedisSpider):
     data = '''
         <?xml version="1.0" encoding="utf-8"?>
             <GetItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-              <RequesterCredentials>
-                <eBayAuthToken>{0}</eBayAuthToken>
-              </RequesterCredentials>
+                <RequesterCredentials>
+                    <eBayAuthToken>{0}</eBayAuthToken>
+                </RequesterCredentials>
                 <ErrorLanguage>en_US</ErrorLanguage>
                 <WarningLevel>High</WarningLevel>
-                  <!--Enter an ItemID-->
-              <ItemID>{1}</ItemID>
+                <!--Enter an ItemID-->
+                <ItemID>{1}</ItemID>
             </GetItemRequest>
     '''
 
