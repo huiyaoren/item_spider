@@ -4,7 +4,10 @@ from pymysql import connect
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from redis import Redis
+
+from ..utils.common import bytes_to_str
 from ..configs.database_config import Config
+from ..configs.ebay_config import config as ebay_config
 
 logger = logging.getLogger(__name__)
 
@@ -107,23 +110,23 @@ def insert_category_ids_to_redis(redis=None):
 
 
 def token_from_redis(redis):
-    # 从 redis 获取 token todo
-    pass
+    r = redis or db_redis()
+    token = r.zrange('ebay:tokens', 0, 0)[0]
+    use_token(token, r)
+    return bytes_to_str(token)
 
 
-def keep_token_available():
-    # todo 定期获取 token
-    pass
+def reset_token(redis=None):
+    r = redis or db_redis()
+    r.delete('ebay:tokens')
+    for config in ebay_config['product']:
+        r.zadd('ebay:tokens', config['token_old'], 0)
+    print('Reset Token Done.')
 
 
-def category_id_from_redis(redis):
-    # 从 redis 获取 category_id todo
-    pass
-
-
-def item_id_from_redis(redis):
-    # 从 redis 获取 category_id todo
-    pass
+def use_token(token, redis=None):
+    r = redis or db_redis()
+    r.zincrby('ebay:tokens', token, 1)
 
 
 def item_id_is_duplicated(item_id, redis=None):
