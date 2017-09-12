@@ -10,6 +10,7 @@ from scrapy_redis.spiders import RedisSpider
 from ..configs.ebay_config import config
 from ..items import ListingItem
 from ..utils.common import bytes_to_str
+from ..utils.data import token_from_redis
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class DetailXmlRedisSpider(RedisSpider):
 
     def make_request_from_data(self, data):
         item_id = bytes_to_str(data, self.redis_encoding)
-        body = self.data.format(self.token, item_id)
+        token = token_from_redis(self.server)
+        body = self.data.format(token, item_id)
         return Request(self.url, dont_filter=True, headers=self.headers, method='POST', body=body)
 
     def parse(self, response):
@@ -47,7 +49,7 @@ class DetailXmlRedisSpider(RedisSpider):
         data = dict(xmltodict.parse(response.text))
         data = data.get('GetItemResponse')
 
-        if 'Ack' not in data.keys() or data.get('Ack') == 'Failre':
+        if 'Ack' not in data.keys() or data.get('Ack') == 'Failure':
             logger.warning('Request Failre. \n\nurl: {0} data: {1}'.format(response.url, response.text))
             return
         try:
@@ -56,7 +58,6 @@ class DetailXmlRedisSpider(RedisSpider):
             logger.warning('Get Item Error. \n\nurl: {0} data: {1}'.format(response.url, response.text))
         else:
             del data
-            # print(i)
             yield i
 
     def clean_item(self, item, data):
