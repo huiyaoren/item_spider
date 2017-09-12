@@ -35,15 +35,14 @@ def init():
     print('Init Done.')
 
 
-def run_multi():
+def run_multi(name, processes=8):
     from multiprocessing import Pool
     p = Pool()
-    # p.apply_async(run, args=('listing_redis_spider',))
-    for i in range(8):
-        p.apply_async(run, args=('detail_json_redis_spider',))
+    for i in range(processes):
+        p.apply_async(run, args=(name,))
     p.close()
     p.join()
 
 
 if __name__ == '__main__':
-    run_multi()
+    run_multi('listing_redis_spider', 1)
