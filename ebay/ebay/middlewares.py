@@ -4,8 +4,10 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+import xmltodict
 from scrapy import signals
+from scrapy.utils.response import response_status_message
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
 
 class EbaySpiderMiddleware(object):
@@ -54,3 +56,19 @@ class EbaySpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class MyRetryMiddleware(RetryMiddleware):
+
+    def process_response(self, request, response, spider):
+        if request.meta.get('dont_retry', False):
+            return response
+        if response.status in self.retry_http_codes:
+            reason = response_status_message(response.status)
+            return self._retry(request, reason, spider) or response
+        data = dict(xmltodict.parse(response.text))
+        data = data.get('GetItemResponse')
+        if 'Ack' not in data.keys() or data.get('Ack') == 'Failre':
+            print(data['Ack'])
+            return self._retry(request, 'Ack Error', spider) or response
+        return response
