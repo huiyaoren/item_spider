@@ -106,7 +106,7 @@ def insert_category_ids_to_redis(redis=None):
         except:
             print("Redis Error")
     print('count: {0}'.format(r.llen('ebay:category_urls')))
-    print('Done')
+    print('Insert Category Ids to Redis Done.')
 
 
 def token_from_redis(redis):

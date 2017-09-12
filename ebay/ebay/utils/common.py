@@ -17,7 +17,7 @@ def previous_date(date):
     pass
 
 
-def clean_item_id(item_id='v1|292191373015|591122882367'):
+def clean_item_id(item_id):
     '''
     :param item_id: v1|292191373015|591122882367
     :return: 292191373015
