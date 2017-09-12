@@ -47,17 +47,16 @@ class DetailXmlRedisSpider(RedisSpider):
         data = dict(xmltodict.parse(response.text))
         data = data.get('GetItemResponse')
 
-        if 'Ack' not in data.keys() or data['Ack'] == 'Failre':
-            logger.warning('Request Failre. url: {0} data: {1}'.format(response.url, response.text))
+        if 'Ack' not in data.keys() or data.get('Ack') == 'Failre':
+            logger.warning('Request Failre. \n\nurl: {0} data: {1}'.format(response.url, response.text))
             return
-
         try:
             i = self.clean_item(item, data.get('Item'))
         except AttributeError:
-            logger.warning('Request Failre. url: {0} data: {1}'.format(response.url, response.text))
+            logger.warning('Get Item Error. \n\nurl: {0} data: {1}'.format(response.url, response.text))
         else:
             del data
-            print(i)
+            # print(i)
             yield i
 
     def clean_item(self, item, data):
