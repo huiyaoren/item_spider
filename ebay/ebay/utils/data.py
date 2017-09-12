@@ -6,7 +6,7 @@ from pymongo.errors import DuplicateKeyError
 from redis import Redis
 
 from ..utils.common import bytes_to_str
-from ..configs.database_config import Config
+from ..configs.database_config import config
 from ..configs.ebay_config import config as ebay_config
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,9 @@ def db_mongodb_base(db_name, host, port):
 
 def db_mongodb():
     return db_mongodb_base(
-        Config['mongodb']['database'],
-        Config['mongodb']['host'],
-        Config['mongodb']['port'])
+        config['mongodb']['database'],
+        config['mongodb']['host'],
+        config['mongodb']['port'])
 
 
 def category_ids():
@@ -40,10 +40,10 @@ def db_mysql_base(db_name, host, username, password):
 
 def db_mysql():
     return db_mysql_base(
-        Config['mysql']['database'],
-        Config['mysql']['host'],
-        Config['mysql']['username'],
-        Config['mysql']['password'],
+        config['mysql']['database'],
+        config['mysql']['host'],
+        config['mysql']['username'],
+        config['mysql']['password'],
     )
 
 

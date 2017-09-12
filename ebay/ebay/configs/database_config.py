@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Config = {
+config = {
     'mysql': {
         'host': '192.168.1.248',
         'database': 'erp',
