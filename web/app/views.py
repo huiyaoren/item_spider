@@ -42,7 +42,7 @@ def data():
     data['redis']['category_urls'] = r.llen('ebay:category_urls')
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
-    data['redis']['tokens'] = r.llen('ebay:tokens')
+    data['redis']['tokens'] = r.zcard('ebay:tokens')
     # todo 自动遍历 redis 中的 key
 
     collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
