@@ -573,10 +573,31 @@
             url: './data',
             success: function (data) {
                 log(data);
-                e('#cpu > div > div > div > div.col-xs-9.text-right').html('CPU 占用: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'Physical Cores: ' + data['cpu_count'] + '<br> Logical Cores: ' + data['cpu_count_logical']);
-                e('#mem > div > div > div > div.col-xs-9.text-right').html('内存 占用: <div class="huge">' + data['virtual_memory'][2] + '%</div>' + 'Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G<br> used: ' + (data['virtual_memory'][3]/1024/1024/1024).toFixed(2) + 'G');
-                e('#disk > div > div > div > div.col-xs-9.text-right').html('MongoDB: <div class="huge">' + data['mongodb']['count'] + '</div>' + 'Mem: ' + data['cpu_count'] + '<br>' + data['mongodb']['collection']);
-                e('#net > div > div > div > div.col-xs-9.text-right').html('Python: <div class="huge">' + data['cpu_percent'] + '%</div>' + 'CPU 物理核心: ' + data['cpu_count'] + '<br> ' + data['mongodb']['collection']);
+                e('#cpu > div > div > div > div.col-xs-9.text-right')
+                    .empty()
+                    .append($('<div>CPU: <div>'))
+                    .append($('<div class="huge">' + data['cpu_percent'] + '%</div>'))
+                    .append($('<div>Physical Cores: ' + data['cpu_count'] + '<div>'))
+                    .append($('<div>Logical Cores: ' + data['cpu_count_logical'] + '<div>'))
+//                    .append($('<div>Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G</div>'))
+                e('#mem > div > div > div > div.col-xs-9.text-right')
+                    .empty()
+                    .append($('<div>内存: <div>'))
+                    .append($('<div class="huge">' + data['virtual_memory'][2] + '%</div>'))
+                    .append($('<div>Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G<div>'))
+                    .append($('<div>Used: ' + (data['virtual_memory'][3]/1024/1024/1024).toFixed(2) + 'G<div>'))
+                e('#disk > div > div > div > div.col-xs-9.text-right')
+                    .empty()
+                    .append($('<div>'+data['mongodb']['collection']+' | Mongo: <div>'))
+                    .append($('<div class="huge">' + data['mongodb']['count'] + '</div>'))
+                    .append($('<div>Mem: ' + (data['mongodb']['memory']/1024/1024/1024).toFixed(2) + 'G<div>'))
+                    .append($('<div>CPU: ' + data['mongodb']['cpu_percent'] + '%<div>'))
+                e('#net > div > div > div > div.col-xs-9.text-right')
+                    .empty()
+                    .append($('<div>Redis: <div>'))
+                    .append($('<div class="huge">' + (data['redis_data']['used_memory']/1024/1024).toFixed(2) + 'M</div>'))
+                    .append($('<div>Mem: ' + (data['redis_data']['memory']/1024/1024/1024).toFixed(2) + 'G<div>'))
+                    .append($('<div>CPU: ' + data['redis_data']['cpu_percent'] + '%<div>'))
                 var redis_html = '';
                 for (var i in data['redis']) {
                     redis_html += '<a href="#" class="list-group-item"><i class="fa fa-tasks fa-fw"></i> ' + i + '<span class="pull-right text-muted small"><em>' + data['redis'][i] + '</em></span></a>';
