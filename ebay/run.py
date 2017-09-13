@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from ebay.utils.data import *
+
 
 def run(name='listing_redis_spider'):
     from scrapy.crawler import CrawlerProcess
@@ -20,11 +22,11 @@ def test():
 
 
 def init():
-    from ebay.utils.data import insert_category_ids, delete_item_ids_filter, delete_item_ids, copy_item_ids, reset_token
     is_testing = True
     if is_testing:
         # 测试
         delete_item_ids()
+        read_item_ids_from_file()
         copy_item_ids()
     else:
         # 生产
@@ -33,6 +35,8 @@ def init():
     insert_category_ids('redis')
     reset_token()
     # todo 重启 mongod
+    # todo mongodb create collection
+    # todo mongodb create unique key
     print('Init Done.')
 
 
@@ -46,4 +50,5 @@ def run_multi(name, processes=8):
 
 
 if __name__ == '__main__':
-    run_multi('listing_redis_spider', 1)
+    init()
+    run_multi('detail_xml_redis_spider', 8)
