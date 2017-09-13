@@ -6,7 +6,7 @@ import psutil
 from redis import Redis
 from pymongo import MongoClient
 
-r = Redis()
+r = Redis(host='192.168.1.200', password='root')
 m = MongoClient()['test_database']
 cpu_count_logical = psutil.cpu_count()
 cpu_count = psutil.cpu_count(logical=False)
