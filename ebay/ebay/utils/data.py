@@ -175,6 +175,15 @@ def write_item_ids_to_file(redis=None):
     with open('item_ids.txt', 'w') as f:
         for id in r.smembers('ebay:item_ids_filter'):
             f.write(bytes_to_str(id) + '\n')
+    print('Write Item Ids To File Done.')
+
+
+def read_item_ids_from_file(file='item_ids.txt', redis=None):
+    r = redis or db_redis()
+    with open(file, 'r') as f:
+        for id in f.readlines():
+            r.sadd('ebay:item_ids_filter', id)
+    print('Read Item Ids From File Done.')
 
 
 def is_item_id_duplicated(item_id, redis=None):
