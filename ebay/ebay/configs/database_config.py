@@ -19,7 +19,7 @@ config = {
         'port': 27017,
     },
     'redis': {
-        'host': 'localhost',
+        'host': '192.168.1.200',
         'password': 'root',
         'port': 6379,
     }
