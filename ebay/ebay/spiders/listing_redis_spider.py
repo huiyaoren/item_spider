@@ -10,7 +10,7 @@ from scrapy_redis.spiders import RedisSpider
 from ..items import ListingItem
 from ..utils.ebay import new_token
 from ..utils.common import bytes_to_str, clean_item_id
-from ..utils.data import insert_item_id_to_redis, insert_item_url_to_redis, is_item_ids_enough
+from ..utils.data import insert_item_id_to_redis, is_item_ids_enough
 
 logger = logging.getLogger(__name__)
 
