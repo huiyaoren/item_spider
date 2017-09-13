@@ -48,7 +48,8 @@ def db_mysql():
 
 
 def db_redis():
-    redis = Redis()
+    redis = Redis(host=config['redis']['password'],
+                  password=config['redis']['password'])
     return redis
 
 

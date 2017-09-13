@@ -6,7 +6,7 @@ config = {
         'database': 'erp',
         'username': 'root',
         'password': 'root',
-        'port': '3306',
+        'port': 3306,
     },
     'mongodb_remote': {
         'host': '192.168.1.200',
@@ -20,6 +20,7 @@ config = {
     },
     'redis': {
         'host': 'localhost',
-        'password': 123,
+        'password': 'root',
+        'port': 6379,
     }
 }
