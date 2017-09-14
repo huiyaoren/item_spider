@@ -44,6 +44,7 @@ def init():
 def run_multi(name, processes=8):
     from multiprocessing import Pool
     p = Pool()
+    p.apply_async(run, args=('listing_redis_spider',))
     for i in range(processes):
         p.apply_async(run, args=(name,))
     p.close()
