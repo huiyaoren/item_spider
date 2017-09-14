@@ -1,20 +1,26 @@
 # -*- coding: utf-8 -*-
 import six
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def date():
     return datetime.now().strftime("%Y%m%d")
 
 
-def next_date(date):
-    # todo 后一天日期
-    pass
+def last_week(date):
+    y = date[0:4]
+    m = date[4:6]
+    d = date[6:8]
+    date = datetime(int(y), int(m), int(d)) - timedelta(days=7)
+    return date.strftime("%Y%m%d")
 
 
 def previous_date(date):
-    # todo 前一天日期
-    pass
+    y = date[0:4]
+    m = date[4:6]
+    d = date[6:8]
+    date = datetime(int(y), int(m), int(d)) - timedelta(days=1)
+    return date.strftime("%Y%m%d")
 
 
 def clean_item_id(item_id):

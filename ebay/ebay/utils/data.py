@@ -189,6 +189,7 @@ def write_item_ids_to_file(redis=None):
 
 
 def read_item_ids_from_file(file='item_ids.txt', redis=None):
+    ''' 从文件中读取 item id 写入 ebay:item_ids_filter '''
     r = redis or db_redis()
     with open(file, 'r') as f:
         for id in f.readlines():
@@ -206,6 +207,16 @@ def is_item_ids_enough(count, redis=None):
     ''' 判断获取的 item_id 是否达到预设值 '''
     r = redis or db_redis()
     return r.llen('ebay:item_ids') >= count
+
+
+# item
+
+
+def items_from_mongodb(collection, mongodb=None):
+    m = mongodb or db_mongodb()
+    c = m[collection]
+    for data in c.find():
+        yield data
 
 
 if __name__ == '__main__':
