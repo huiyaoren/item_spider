@@ -77,6 +77,16 @@ def category_ids_from_mysql():
         mysql.close()
 
 
+def insert_category_id(category_ids, redis=None):
+    r = redis or db_redis()
+    r.delete('ebay:category_urls')
+    for i in category_ids:
+        url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
+        url = url.format(i)
+        r.lpush('ebay:category_urls', url)
+    print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
+
+
 def insert_category_ids(to='mongodb', db=None):
     if to == 'mongodb':
         insert_category_ids_to_mongodb(db)

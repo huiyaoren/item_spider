@@ -32,7 +32,7 @@ class ListingRedisSpider(RedisSpider):
 
     def make_request_from_data(self, data):
         # 生成 20000 条 item 测试队列 todo
-        if is_item_ids_enough(20000):
+        if False and is_item_ids_enough(20000):
             raise CloseSpider('Item ids are enough.')
         #
         url = bytes_to_str(data, self.redis_encoding)
@@ -43,7 +43,8 @@ class ListingRedisSpider(RedisSpider):
         item = ListingItem()
         data = json.loads(response.text)
         # 下一页请求
-        if 'next' in data.keys():
+        print('Offset: {0}. Total: {1}'.format(data['offset'], data['total']))
+        if 'next' in data.keys() and int(data['offset']) <= int(data['total']):
             url_next = data['next']
             self.server.lpush('ebay:category_urls', url_next)
         # 商品数据

@@ -23,16 +23,17 @@ def test():
 
 def init():
     is_testing = True
+    delete_item_ids_filter()
+    delete_item_ids()
     if is_testing:
         # 测试
-        delete_item_ids()
-        read_item_ids_from_file()
-        copy_item_ids()
+        # delete_item_ids()
+        # read_item_ids_from_file()
+        # copy_item_ids()
+        insert_category_id([179457, 37802, 15274])
     else:
         # 生产
-        delete_item_ids_filter()
-        delete_item_ids()
-    insert_category_ids('redis')
+        insert_category_ids('redis')
     reset_token()
     # todo 重启 mongod
     # todo mongodb create collection
