@@ -1,4 +1,4 @@
-from ebay.ebay.statics import *
+from .ebay.statics import *
 from multiprocessing import Pool
 from datetime import datetime
 
