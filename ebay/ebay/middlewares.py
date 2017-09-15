@@ -69,7 +69,7 @@ class MyRetryMiddleware(RetryMiddleware):
         if spider.name == 'detail_xml_redis_spider':
             data = dict(xmltodict.parse(response.text))
             data = data.get('GetItemResponse')
-            if 'Ack' not in data.keys() or data.get('Ack') == 'Failre':
+            if 'Ack' not in data.keys() or data.get('Ack') == 'Failure':
                 print(data['Ack'])
                 return self._retry(request, 'Ack Error', spider) or response
         return response
