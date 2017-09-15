@@ -555,7 +555,7 @@
 </body>
 <script>
     var log = console.log.bind(log);
-    var e = (d) => $(document.querySelector(d));
+    var e = d => $(document.querySelector(d));
 
     e('#cpu > div > div > div > div.col-xs-3 > i').hide();
     e('#mem > div > div > div > div.col-xs-3 > i').hide();
@@ -579,7 +579,6 @@
                     .append($('<div class="huge">' + data['cpu_percent'] + '%</div>'))
                     .append($('<div>Physical Cores: ' + data['cpu_count'] + '<div>'))
                     .append($('<div>Logical Cores: ' + data['cpu_count_logical'] + '<div>'))
-//                    .append($('<div>Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G</div>'))
                 e('#mem > div > div > div > div.col-xs-9.text-right')
                     .empty()
                     .append($('<div>内存: <div>'))
