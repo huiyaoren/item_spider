@@ -1,4 +1,3 @@
-# statics
 from .utils.common import date, previous_date, last_week
 from .utils.data import db_mongodb, items_from_mongodb
 
@@ -24,6 +23,7 @@ def count_sales_last_week(day=None, mongodb=None):
 
 
 def count_sales(collection, collection_other_day, mongodb, filed):
+    ''' 计算某天到指定日期间的销量并记录到当天数据的某字段中 '''
     m = mongodb
     c = collection
     c_y = collection_other_day
@@ -38,5 +38,20 @@ def count_sales(collection, collection_other_day, mongodb, filed):
 
 
 def copy_sales_two_weeks_ago(day=None, mongodb=None):
-    ''' 统计上上周销量 '''
-    pass
+    ''' 将上周数据中的上周销量复制到当天数据中 '''
+    m = mongodb or db_mongodb()
+    d = day or date()
+    c = 'd_{0}'.format(d)
+    c_y = 'd_{0}'.format(last_week(d))
+    for item in items_from_mongodb(c):
+        id = item['itemId']
+        item_y = m[c_y].find_one({'itemId': id})
+        if item_y is not None:
+            sold = item_y.get('quantitySoldLastWeek', -2)
+            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': sold}})
+        else:
+            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': -1}})
+    print('Copy Sales Two Weeks Ago Done.')
+
+
+
