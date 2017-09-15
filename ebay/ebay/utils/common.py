@@ -7,6 +7,28 @@ def date():
     return datetime.now().strftime("%Y%m%d")
 
 
+def is_within_eight_weeks(utc_date):
+    u = utc_date
+    y = u[0:4]
+    m = u[5:7]
+    d = u[8:10]
+    h = u[11:13]
+    i = u[14:16]
+    s = u[17:19]
+    return (datetime.now() - datetime(int(y), int(m), int(d), int(h), int(i), int(s))) < timedelta(days=7 * 8)
+
+
+def is_within_six_mouths(utc_date):
+    u = utc_date
+    y = u[0:4]
+    m = u[5:7]
+    d = u[8:10]
+    h = u[11:13]
+    i = u[14:16]
+    s = u[17:19]
+    return (datetime.now() - datetime(int(y), int(m), int(d), int(h), int(i), int(s))) < timedelta(days=30 * 6)
+
+
 def last_week(date):
     y = date[0:4]
     m = date[4:6]
@@ -20,6 +42,14 @@ def previous_date(date):
     m = date[4:6]
     d = date[6:8]
     date = datetime(int(y), int(m), int(d)) - timedelta(days=1)
+    return date.strftime("%Y%m%d")
+
+
+def previous_days(date, count):
+    y = date[0:4]
+    m = date[4:6]
+    d = date[6:8]
+    date = datetime(int(y), int(m), int(d)) - timedelta(days=count)
     return date.strftime("%Y%m%d")
 
 

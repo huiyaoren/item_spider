@@ -1,4 +1,4 @@
-from .utils.common import date, previous_date, last_week
+from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
 from .utils.data import db_mongodb, items_from_mongodb
 
 
@@ -54,4 +54,45 @@ def copy_sales_two_weeks_ago(day=None, mongodb=None):
     print('Copy Sales Two Weeks Ago Done.')
 
 
+def judge_is_new(day=None, mongodb=None):
+    ''' 八周内新上架 且出过单'''
+    m = mongodb or db_mongodb()
+    d = day or date()
+    c = 'd_{0}'.format(d)
+    for item in items_from_mongodb(c):
+        id = item['itemId']
+        if is_within_eight_weeks(item['startTime']) and int(item['quantitySold']) > 0:
+            m[c].update_one({'itemId': id}, {'$set': {'is_new': 1}})
+        else:
+            m[c].update_one({'itemId': id}, {'$set': {'is_new': 0}})
+    print('Judge Is New Done.')
 
+
+def judge_is_hot(day=None, mongodb=None):
+    ''' 六个月内上架 总售出大于50 前7天至少有三天出单 '''
+    m = mongodb or db_mongodb()
+    d = day or date()
+    c = 'd_{0}'.format(d)
+    for item in items_from_mongodb(c):
+        id = item['itemId']
+        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(d, id, 3, m):
+            m[c].update_one({'itemId': id}, {'$set': {'is_hot': 1}})
+        else:
+            m[c].update_one({'itemId': id}, {'$set': {'is_hot': 0}})
+    print('Judge Is Hot Done.')
+
+
+def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
+    ''' 商品一周内有销量的天数是否达到指定值 '''
+    m = mongodb or db_mongodb()
+    days = days_have_sales
+    sales = set([])
+    for i in range(7, -1, -1):
+        d = previous_days(date, i)
+        c = 'd_{0}'.format(d)
+        item = m[c].find_one()
+        if item is not None:
+            sales.add(item['quantitySold'])
+            if len(sales) > days:
+                return True
+    return False
