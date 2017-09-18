@@ -3,7 +3,7 @@
 config = {
     'mysql': {
         'host': '192.168.1.248',
-        'database': 'erp',
+        'database': 'erp_spider',
         'username': 'root',
         'password': 'root',
         'port': 3306,

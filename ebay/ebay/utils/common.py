@@ -30,6 +30,7 @@ def is_within_six_mouths(utc_date):
 
 
 def last_week(date):
+    # todo
     y = date[0:4]
     m = date[4:6]
     d = date[6:8]
@@ -38,6 +39,7 @@ def last_week(date):
 
 
 def previous_date(date):
+    # todo
     y = date[0:4]
     m = date[4:6]
     d = date[6:8]
