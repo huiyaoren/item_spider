@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from pymysql import connect
+from datetime import datetime
+
+from pymysql import connect, IntegrityError
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from redis import Redis
@@ -29,7 +31,7 @@ def db_mongodb():
 
 
 def db_mysql_base(db_name, host, username, password):
-    db = connect(host, username, password, db_name)
+    db = connect(host=host, user=username, passwd=password, db=db_name, charset='utf8')
     return db
 
 
@@ -40,6 +42,61 @@ def db_mysql():
         config['mysql']['username'],
         config['mysql']['password'],
     )
+
+
+def create_table_in_mysql(date):
+    mysql = db_mysql()
+    cursor = mysql.cursor()
+    sql = '''
+        create table if not EXISTS goods_{0}(
+            id varchar(100) not null comment '商品id'primary key,
+            site varchar(255) null comment '商品所属站点',
+            title varchar(255) null comment '商品信息',
+            price decimal(10,2) null comment '商品售价',
+            currency varchar(255) null comment '货币符号',
+            total_sold int null comment '总销量',
+            hit_count int null comment '访问量',
+            goods_category varchar(255) null comment '商品分类',
+            goods_url varchar(255) null comment '商品页面访问地址',
+            shop_name varchar(255) null comment '店铺名称',
+            shop_feedback_score int null comment '店铺评分',
+            shop_feedback_percentage double(10,2) null comment '店铺好评率',
+            shop_open_time timestamp null comment '店铺开张时间',
+            publish_time timestamp null comment '上架时间',
+            weeks_sold int null comment '周销量',
+            last_weeks_sold int null comment '上上周销量',
+            is_hot enum('0', '1') default '0' null comment '是否爆款，0-否，1-是',
+            is_new enum('0', '1') default '0' null comment '是否新品，0-否，1-是',
+            created_at timestamp default CURRENT_TIMESTAMP not null comment '添加时间',
+            platform varchar(20) default 'ebay' not null comment '平台',
+            default_image varchar(0) null comment '主图',
+            other_images text null comment '商品其他图片，json格式',
+            trade_increase_rate double(10,4) null comment '交易增幅比率，比如：0.1256 表示12.56%'
+        );
+        comment '商品表';
+        create index idx_goods_category on goods_{0} (goods_category);
+        create index idx_shop_name on goods_{0} (shop_name);
+        create index idx_title on goods_{0} (title);
+        create index idx_price on goods_{0} (price);
+        create index idx_total_sold on goods_{0} (total_sold);
+        create index idx_weeks_sold on goods_{0} (weeks_sold);
+        create index idx_shop_open_time on goods_{0} (shop_open_time);
+        create index idx_trade_increase_rate on goods_{0} (trade_inicrease_rate);'''
+
+    sql = sql.format(date)
+    try:
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        for row in results:
+            print(row)
+    except:
+        print("Error: unable to fetch data")
+        logger.info("Mysql error")
+        return False
+    else:
+        mysql.close()
+        print('Create Table In Mysql Done.')
+        return True
 
 
 def db_redis():
@@ -217,6 +274,59 @@ def items_from_mongodb(collection, mongodb=None):
     c = m[collection]
     for data in c.find():
         yield data
+
+
+def insert_items_into_mysql(day='20170914'):
+    ''' 将商品数据从 mongodb 转移至 mysql'''
+    date = day or datetime.now().strftime("%Y%m%d")
+    c = 'd_{0}'.format(date)
+    m = db_mongodb()
+    if not create_table_in_mysql(date):
+        return False
+    for item in items_from_mongodb(c, m):
+        print(item)
+        item['registrationDate'] = ' '.join([item['registrationDate'][0:10], item['registrationDate'][11:19]])
+        item['startTime'] = ' '.join([item['startTime'][0:10], item['startTime'][11:19]])
+        insert_item_into_mysql(item, date)
+
+
+def insert_item_into_mysql(item, datetime):
+    ''' 插入单条商品数据至 mysql '''
+    mysql = db_mysql()
+    cursor = mysql.cursor()
+    data = item
+    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_inicrease_rate)" \
+          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_inicrease_rate)s)"
+    sql = sql.format(datetime=datetime)
+    print(sql)
+    try:
+        cursor.execute(sql, {
+            'id': data.get('itemId', 0),
+            'site': data.get('site', 0),
+            'title': data.get('title', 0),
+            'default_image': data.get('image', 0),
+            'price': data.get('price', 0),
+            'total_sold': data.get('quantitySold', 0),
+            'hit_count': data.get('hitCount', 0),
+            'goods_category': data.get('categoryID', 0),
+            'goods_url': data.get('viewItemURL', 0),
+            'shop_name': data.get('shop_name', 0),
+            'shop_feedback_score': data.get('feedbackScore', 0),
+            'shop_feedback_percentage': data.get('positiveFeedbackPercent', 0),
+            'shop_open_time': data.get('registrationDate', '0000-00-00 00:00:00'),
+            'publish_time': data.get('startTime', '0000-00-00 00:00:00'),
+            'weeks_sold': data.get('quantitySoldLastWeek', 0),
+            'last_weeks_sold': data.get('quantitySoldTwoWeeksAgo', 0),
+            'is_hot': data.get('is_hot') or data.get('isHot', 0),
+            'is_new': data.get('is_new') or data.get('isNew', 0),
+            'other_images': 0,
+            'trade_increase_rate': 0,
+        })
+    except IntegrityError:
+        print("Error: Duplicate")
+    else:
+        mysql.commit()
+        mysql.close()
 
 
 if __name__ == '__main__':
