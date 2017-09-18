@@ -34,7 +34,7 @@ def count_sales(collection, collection_other_day, mongodb, filed):
             sold = int(item['quantitySold']) - int(item_y['quantitySold'])
             m[c].update_one({'itemId': id}, {'$set': {filed: sold}})
         else:
-            m[c].update_one({'itemId': id}, {'$set': {filed: -1}})
+            m[c].update_one({'itemId': id}, {'$set': {filed: 0}})
 
 
 def copy_sales_two_weeks_ago(day=None, mongodb=None):
@@ -47,10 +47,10 @@ def copy_sales_two_weeks_ago(day=None, mongodb=None):
         id = item['itemId']
         item_y = m[c_y].find_one({'itemId': id})
         if item_y is not None:
-            sold = item_y.get('quantitySoldLastWeek', -2)
+            sold = item_y.get('quantitySoldLastWeek', 0)
             m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': sold}})
         else:
-            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': -1}})
+            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': 0}})
     print('Copy Sales Two Weeks Ago Done.')
 
 
@@ -75,7 +75,8 @@ def judge_is_hot(day=None, mongodb=None):
     c = 'd_{0}'.format(d)
     for item in items_from_mongodb(c):
         id = item['itemId']
-        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(d, id, 3, m):
+        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(d, id,
+                                                                                                                 3, m):
             m[c].update_one({'itemId': id}, {'$set': {'is_hot': 1}})
         else:
             m[c].update_one({'itemId': id}, {'$set': {'is_hot': 0}})
@@ -96,3 +97,45 @@ def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
             if len(sales) > days:
                 return True
     return False
+
+
+class Cleaner():
+    def __init__(self, date, mongodb):
+        self.date = date
+        self.mongodb = mongodb or db_mongodb()
+        self.collection = self.mongodb['d_{0}'.format(date)]
+
+    def quantity_sold(self, item_id, date):
+        c = self.collection
+        item = c.find_one({'itemId': item_id})
+        if item is not None:
+            return int(item['quantitySold'])
+        else:
+            return 0
+
+    def sales_yesterday(self, item_id):
+        return 0
+
+    def sales_last_week(self, item_id):
+        return 0
+
+    def sales_two_weeks_ago(self, item_id):
+        return 0
+
+    def is_new(self, item_id):
+        return 0
+
+    def is_hot(self, item_id):
+        return 0
+
+    def clean(self, item_id):
+        c = self.collection
+        item = c.find_one({'itemId': item_id})
+        data = {}
+        data['isHot'] = self.is_hot(item_id)
+        data['isNew'] = self.is_new(item_id)
+        data['quantitySoldYesterday'] = self.sales_yesterday(item_id)
+        data['quantitySoldLastWeek'] = self.sales_last_week(item_id)
+        data['quantitySoldTwoWeeksAgo'] = self.sales_two_weeks_ago(item_id)
+        print(data)
+        # c.update_one({'itemId': item_id}, {'$set': data})
