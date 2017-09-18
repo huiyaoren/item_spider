@@ -80,4 +80,5 @@ class DetailXmlRedisSpider(RedisSpider):
         item['title'] = i.get('Title')
         item['shipToLocations'] = i.get('ShipToLocations')
         item['site'] = i.get('Site')
+        item['seller'] = i.get('Seller').get('UserID')
         return item
