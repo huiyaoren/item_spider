@@ -231,10 +231,10 @@ def delete_item_ids(redis=None):
     r.delete('ebay:item_ids')
 
 
-def copy_item_ids(redis=None):
+def copy_item_ids_to_clean(redis=None):
     r = redis or db_redis()
     for id in r.smembers('ebay:item_ids_filter'):
-        r.lpush('ebay:item_ids', id)
+        r.lpush('ebay:item_ids_unclean', id)
 
 
 def write_item_ids_to_file(redis=None):

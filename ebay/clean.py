@@ -2,6 +2,8 @@ from ebay.statics import *
 from multiprocessing import Pool
 from datetime import datetime
 
+from ebay.utils.data import copy_item_ids_to_clean
+
 
 def run(date=None):
     d = datetime.now()
@@ -26,5 +28,9 @@ def run_multi(date=None):
     print(datetime.now() - d)
 
 
+def init():
+    copy_item_ids_to_clean()
+
+
 if __name__ == '__main__':
-    run_multi('20170912')
+    init()

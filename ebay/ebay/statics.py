@@ -105,37 +105,53 @@ class Cleaner():
         self.mongodb = mongodb or db_mongodb()
         self.collection = self.mongodb['d_{0}'.format(date)]
 
-    def quantity_sold(self, item_id, date):
+    def item_someday(self, item_id, date):
         c = self.collection
         item = c.find_one({'itemId': item_id})
-        if item is not None:
-            return int(item['quantitySold'])
+        return item
+
+    def sales_yesterday(self, item):
+        id = item['itemId']
+        date = previous_date(self.date)
+        item_y = self.item_someday(id, date)
+        if item_y is None:
+            return 0
+        return item_y.get('quantitySoldLastWeek', 0)
+
+    def sales_last_week(self, item):
+        id = item['itemId']
+        date = last_week(self.date)
+        item_y = self.item_someday(id, date)
+        if item_y is None:
+            return 0, 0
+        sold_last_week = int(item['quantitySold']) - int(item_y['quantitySold'])
+        sold_two_weeks_ago = item_y.get('quantitySoldLastWeek', 0)
+        return sold_last_week, sold_two_weeks_ago
+
+    def is_new(self, item):
+        if is_within_eight_weeks(item['startTime']) and int(item['quantitySold']) > 0:
+            return 1
         else:
             return 0
 
-    def sales_yesterday(self, item_id):
-        return 0
-
-    def sales_last_week(self, item_id):
-        return 0
-
-    def sales_two_weeks_ago(self, item_id):
-        return 0
-
-    def is_new(self, item_id):
-        return 0
-
-    def is_hot(self, item_id):
-        return 0
+    def is_hot(self, item):
+        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(
+                self.date, item['itemId'], 3, self.mongodb):
+            return 1
+        else:
+            return 0
 
     def clean(self, item_id):
         c = self.collection
         item = c.find_one({'itemId': item_id})
+        if item is None:
+            return
+        print(item)
         data = {}
-        data['isHot'] = self.is_hot(item_id)
-        data['isNew'] = self.is_new(item_id)
-        data['quantitySoldYesterday'] = self.sales_yesterday(item_id)
-        data['quantitySoldLastWeek'] = self.sales_last_week(item_id)
-        data['quantitySoldTwoWeeksAgo'] = self.sales_two_weeks_ago(item_id)
+        data['isHot'] = self.is_hot(item)
+        data['isNew'] = self.is_new(item)
+        data['quantitySoldLastWeek'] = self.sales_last_week(item)[0]
+        data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)[1]
+        data['quantitySoldYesterday'] = self.sales_yesterday(item)
         print(data)
-        # c.update_one({'itemId': item_id}, {'$set': data})
+        c.update_one({'itemId': item_id}, {'$set': data})
