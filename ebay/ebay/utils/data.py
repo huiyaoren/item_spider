@@ -278,8 +278,9 @@ def items_from_mongodb(collection, mongodb=None):
         yield data
 
 
-def insert_items_into_mysql(day='20170919'):
+def insert_items_into_mysql(day):
     ''' 将商品数据从 mongodb 转移至 mysql'''
+    start = datetime.now()
     date = day or datetime.now().strftime("%Y%m%d")
     c = 'd_{0}'.format(date)
     m = db_mongodb()
@@ -319,6 +320,7 @@ def insert_items_into_mysql(day='20170919'):
             o['trade_increase_rate'] = 0
         print(o)
         insert_item_into_mysql(o, date)
+    print('Insert Items Into Mysql.{0}'.format(datetime.now() - start))
 
 
 def insert_item_into_mysql(item, datetime):
