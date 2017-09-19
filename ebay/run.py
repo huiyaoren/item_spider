@@ -41,10 +41,11 @@ def init():
     print('Init Done.')
 
 
-def run_multi(name, processes=8):
+def run_multi(name, processes=8, prepared=False):
     from multiprocessing import Pool
     p = Pool()
-    p.apply_async(run, args=('listing_redis_spider',))
+    if prepared:
+        p.apply_async(run, args=('listing_redis_spider',))
     for i in range(processes):
         p.apply_async(run, args=(name,))
     p.close()
@@ -53,4 +54,4 @@ def run_multi(name, processes=8):
 
 if __name__ == '__main__':
     init()
-    run_multi('detail_xml_redis_spider', 8)
+    run_multi('detail_xml_redis_spider', 8, True)
