@@ -106,7 +106,7 @@ class Cleaner():
         self.collection = self.mongodb['d_{0}'.format(date)]
 
     def item_someday(self, item_id, date):
-        c = self.collection
+        c = self.mongodb['d_{0}'.format(date)]
         item = c.find_one({'itemId': item_id})
         return item
 
