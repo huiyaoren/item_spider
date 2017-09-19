@@ -122,6 +122,7 @@ class Cleaner():
         id = item['itemId']
         date = last_week(self.date)
         item_y = self.item_someday(id, date)
+        print(item_y)
         if item_y is None:
             return 0, 0
         sold_last_week = int(item['quantitySold']) - int(item_y['quantitySold'])
@@ -146,7 +147,7 @@ class Cleaner():
         item = c.find_one({'itemId': item_id})
         if item is None:
             return
-        # print(item)
+        print(item)
         data = {}
         data['isHot'] = self.is_hot(item)
         data['isNew'] = self.is_new(item)
