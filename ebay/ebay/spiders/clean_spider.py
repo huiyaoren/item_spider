@@ -15,7 +15,6 @@ class CleanSpider(RedisSpider):
     name = "clean_spider"
     redis_key = "ebay:item_ids_unclean"
     date = datetime.now().strftime("%Y%m%d")
-    date = '20170914'
     mongodb = db_mongodb()
 
     def __init__(self):
