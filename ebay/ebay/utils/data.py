@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from datetime import datetime
 
@@ -49,7 +50,7 @@ def create_table_in_mysql(date):
     cursor = mysql.cursor()
     sql = '''
         create table if not EXISTS goods_{0}(
-            id varchar(100) not null comment '商品id'primary key,
+            id varchar(100) not null comment '商品id' primary key,
             site varchar(255) null comment '商品所属站点',
             title varchar(255) null comment '商品信息',
             price decimal(10,2) null comment '商品售价',
@@ -69,7 +70,7 @@ def create_table_in_mysql(date):
             is_new enum('0', '1') default '0' null comment '是否新品，0-否，1-是',
             created_at timestamp default CURRENT_TIMESTAMP not null comment '添加时间',
             platform varchar(20) default 'ebay' not null comment '平台',
-            default_image varchar(0) null comment '主图',
+            default_image varchar(255) null comment '主图',
             other_images text null comment '商品其他图片，json格式',
             trade_increase_rate double(10,4) null comment '交易增幅比率，比如：0.1256 表示12.56%'
         );
@@ -81,7 +82,7 @@ def create_table_in_mysql(date):
         create index idx_total_sold on goods_{0} (total_sold);
         create index idx_weeks_sold on goods_{0} (weeks_sold);
         create index idx_shop_open_time on goods_{0} (shop_open_time);
-        create index idx_trade_increase_rate on goods_{0} (trade_inicrease_rate);'''
+        create index idx_trade_increase_rate on goods_{0} (trade_increase_rate);'''
 
     sql = sql.format(date)
     try:
@@ -277,7 +278,7 @@ def items_from_mongodb(collection, mongodb=None):
         yield data
 
 
-def insert_items_into_mysql(day='20170914'):
+def insert_items_into_mysql(day='20170919'):
     ''' 将商品数据从 mongodb 转移至 mysql'''
     date = day or datetime.now().strftime("%Y%m%d")
     c = 'd_{0}'.format(date)
@@ -286,9 +287,36 @@ def insert_items_into_mysql(day='20170914'):
         return False
     for item in items_from_mongodb(c, m):
         print(item)
-        item['registrationDate'] = ' '.join([item['registrationDate'][0:10], item['registrationDate'][11:19]])
-        item['startTime'] = ' '.join([item['startTime'][0:10], item['startTime'][11:19]])
-        insert_item_into_mysql(item, date)
+        registration_date = item.get('registrationDate', '0000-00-00 00:00:00')
+        start_time = item.get('startTime', '0000-00-00 00:00:00')
+        o = {}
+        o['id'] = item.get('itemId')
+        o['site'] = item.get('site')
+        o['title'] = item.get('title')
+        o['price'] = item.get('price')
+        o['currency'] = item.get('currency')
+        o['total_sold'] = item.get('quantitySold')
+        o['hit_count'] = item.get('hitCount')
+        o['goods_category'] = item.get('categoryID')
+        o['goods_url'] = item.get('viewItemURL')
+        o['shop_name'] = item.get('seller')
+        o['shop_feedback_score'] = item.get('feedbackScore')
+        o['shop_feedback_percentage'] = item.get('positiveFeedbackPercent')
+        o['shop_open_time'] = ' '.join([registration_date[0:10], registration_date[11:19]])
+        o['publish_time'] = ' '.join([start_time[0:10], start_time[11:19]])
+        o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
+        o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
+        o['is_hot'] = str(item.get('isHot', 0))
+        o['is_new'] = str(item.get('isNew', 0))
+        o['default_image'] = item.get('image')
+        o['other_images'] = json.dumps([{'url': img} for img in item.get('otherImages', [])])
+        print(o['other_images'])
+        if o['last_weeks_sold'] > 0 and o['weeks_sold'] > 0:
+            o['trade_increase_rate'] = (o['weeks_sold'] - o['last_weeks_sold']) / o['last_weeks_sold']
+        else:
+            o['trade_increase_rate'] = 0
+        print(o)
+        insert_item_into_mysql(o, date)
 
 
 def insert_item_into_mysql(item, datetime):
@@ -296,35 +324,37 @@ def insert_item_into_mysql(item, datetime):
     mysql = db_mysql()
     cursor = mysql.cursor()
     data = item
-    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_inicrease_rate)" \
-          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_inicrease_rate)s)"
+    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate)" \
+          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s)"
     sql = sql.format(datetime=datetime)
-    print(sql)
     try:
         cursor.execute(sql, {
-            'id': data.get('itemId', 0),
+            'id': data.get('id', 0),
             'site': data.get('site', 0),
             'title': data.get('title', 0),
-            'default_image': data.get('image', 0),
+            'default_image': data.get('default_image', 0),
             'price': data.get('price', 0),
-            'total_sold': data.get('quantitySold', 0),
-            'hit_count': data.get('hitCount', 0),
-            'goods_category': data.get('categoryID', 0),
-            'goods_url': data.get('viewItemURL', 0),
+            'currency': data.get('currency', 0),
+            'total_sold': data.get('total_sold', 0),
+            'hit_count': data.get('hit_count', 0),
+            'goods_category': data.get('goods_category', 0),
+            'goods_url': data.get('goods_url', 0),
             'shop_name': data.get('shop_name', 0),
-            'shop_feedback_score': data.get('feedbackScore', 0),
-            'shop_feedback_percentage': data.get('positiveFeedbackPercent', 0),
-            'shop_open_time': data.get('registrationDate', '0000-00-00 00:00:00'),
-            'publish_time': data.get('startTime', '0000-00-00 00:00:00'),
-            'weeks_sold': data.get('quantitySoldLastWeek', 0),
-            'last_weeks_sold': data.get('quantitySoldTwoWeeksAgo', 0),
-            'is_hot': data.get('is_hot') or data.get('isHot', 0),
-            'is_new': data.get('is_new') or data.get('isNew', 0),
-            'other_images': 0,
-            'trade_increase_rate': 0,
+            'shop_feedback_score': data.get('shop_feedback_score', 0),
+            'shop_feedback_percentage': data.get('shop_feedback_percentage', 0),
+            'shop_open_time': data.get('shop_open_time', '0000-00-00 00:00:00'),
+            'publish_time': data.get('publish_time', '0000-00-00 00:00:00'),
+            'weeks_sold': data.get('weeks_sold', 0),
+            'last_weeks_sold': data.get('last_weeks_sold', 0),
+            'is_hot': data.get('is_hot'),
+            'is_new': data.get('is_new'),
+            'other_images': data.get('other_images'),
+            'trade_increase_rate': data.get('trade_increase_rate'),
         })
     except IntegrityError:
         print("Error: Duplicate")
+    except:
+        print(cursor._last_executed)
     else:
         mysql.commit()
         mysql.close()
