@@ -152,6 +152,5 @@ class Cleaner():
         data['isNew'] = self.is_new(item)
         data['quantitySoldLastWeek'] = self.sales_last_week(item)[0]
         data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)[1]
-        data['quantitySoldYesterday'] = self.sales_yesterday(item)
         print(data)
         c.update_one({'itemId': item_id}, {'$set': data})
