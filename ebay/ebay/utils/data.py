@@ -309,7 +309,9 @@ def insert_items_into_mysql(day='20170919'):
         o['is_hot'] = str(item.get('isHot', 0))
         o['is_new'] = str(item.get('isNew', 0))
         o['default_image'] = item.get('image')
-        o['other_images'] = json.dumps([{'url': img} for img in item.get('otherImages', [])])
+        other_images = item.get('otherImages', [" "])
+        other_images = other_images if type(other_images) is list else [other_images]
+        o['other_images'] = json.dumps([{'url': img} for img in other_images])
         print(o['other_images'])
         if o['last_weeks_sold'] > 0 and o['weeks_sold'] > 0:
             o['trade_increase_rate'] = (o['weeks_sold'] - o['last_weeks_sold']) / o['last_weeks_sold']
