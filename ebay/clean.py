@@ -1,7 +1,7 @@
 from ebay.statics import *
 from multiprocessing import Pool
 from datetime import datetime
-from .run import run as run_spider
+from run import run as run_spider
 
 from ebay.utils.data import copy_item_ids_to_clean
 
