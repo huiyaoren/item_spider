@@ -146,7 +146,7 @@ class Cleaner():
         item = c.find_one({'itemId': item_id})
         if item is None:
             return
-        print(item)
+        # print(item)
         data = {}
         data['isHot'] = self.is_hot(item)
         data['isNew'] = self.is_new(item)
