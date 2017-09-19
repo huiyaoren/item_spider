@@ -63,15 +63,13 @@ class DetailXmlRedisSpider(RedisSpider):
     def clean_item(self, item, data):
         i = data
         item['price'] = i.get('SellingStatus').get('CurrentPrice').get('#text')
-        # item['country'] = i.get('Country')
         item['currency'] = i.get('Currency')
         item['itemId'] = i.get('ItemID')
         item['startTime'] = i.get('ListingDetails').get('StartTime')
         item['viewItemURL'] = i.get('ListingDetails').get('ViewItemURL')
         item['categoryID'] = i.get('PrimaryCategory').get('CategoryID')
-        item['feedbackScore'] = i.get('Seller').get('FeedbackScore')
-        item['positiveFeedbackPercent'] = i.get('Seller').get('PositiveFeedbackPercent')
-        # item['newUser'] = i.get('Seller').get('NewUser')
+        item['feedbackScore'] = int(i.get('Seller').get('FeedbackScore'))
+        item['positiveFeedbackPercent'] = float(i.get('Seller').get('PositiveFeedbackPercent'))
         item['registrationDate'] = i.get('Seller').get('RegistrationDate')
         item['storeURL'] = i.get('Seller').get('SellerInfo').get('StoreURL')
         item['quantitySold'] = i.get('SellingStatus').get('QuantitySold')
