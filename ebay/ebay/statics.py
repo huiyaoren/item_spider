@@ -146,10 +146,16 @@ class Cleaner():
         item = c.find_one({'itemId': item_id})
         if item is None:
             return
+        data = self.data_cleaned(item)
+        print(data)
+        if data is None:
+            return
+        self.collection.update_one({'itemId': item_id}, {'$set': data})
+
+    def data_cleaned(self, item):
         data = {}
         data['isHot'] = self.is_hot(item)
         data['isNew'] = self.is_new(item)
         data['quantitySoldLastWeek'] = self.sales_last_week(item)[0]
         data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)[1]
-        print(data)
-        c.update_one({'itemId': item_id}, {'$set': data})
+        return data
