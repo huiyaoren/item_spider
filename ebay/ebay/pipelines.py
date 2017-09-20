@@ -3,7 +3,8 @@ import logging
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 
-from .utils.data import db_mysql, db_mongodb
+from .statics import Cleaner
+from .utils.data import db_mysql, db_mongodb, insert_item_into_mysql, create_table_in_mysql
 from .utils.common import date, clean_item_id
 
 logger = logging.getLogger(__name__)
@@ -17,27 +18,31 @@ class EbayPipeline(object):
         self.collection_detail = self.mongodb['d_{0}'.format(self.date)]
         # self.collection_detail.ensure_index('itemId', unique=True)
         # todo 索引构建应在 app.init() 中实现
-
-        # self.mysql = db_mysql()
-        # self.cursor = self.mysql.cursor()
+        self.mysql = db_mysql()
+        self.cursor = self.mysql.cursor()
+        self.cleaner = Cleaner(self.date, self.mongodb)
+        create_table_in_mysql(self.date)
 
     def process_item(self, item, spider):
         if spider.name == 'listing_redis_spider':
-            self.process_item_listing(item, spider)
+            return self.process_item_listing(item, spider)
         elif spider.name == 'detail_xml_redis_spider':
-            self.process_item_detail(item, spider)
-        elif spider.name == 'detail_json_redis_spider':
-            self.process_item_detail(item, spider)
+            return self.process_item_detail(item, spider)
 
     def process_item_detail(self, item, spider):
-        d = self.collection_detail
-        item['date'] = self.date
         logger.info(item)
+        item = dict(item)
+        item['date'] = self.date
 
         try:
-            d.insert_one(dict(item))
+            # 数据统计
+            data = self.cleaner.data_cleaned(item)
+            item = dict(data, **item)
+            # 写入 mongodb 与 mysql
+            self.collection_detail.insert_one(item)
+            insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
         except:
-            logger.info("Mongodb Error")
+            logger.info("Database Error.")
         else:
             return item
 
