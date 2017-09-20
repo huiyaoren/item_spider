@@ -106,11 +106,13 @@ class Cleaner():
         self.collection = self.mongodb['d_{0}'.format(date)]
 
     def item_someday(self, item_id, date):
+        ''' 返回指定日期的指定商品数据 '''
         c = self.mongodb['d_{0}'.format(date)]
         item = c.find_one({'itemId': item_id})
         return item
 
     def sales_yesterday(self, item):
+        ''' 返回指定商品的昨日数据 '''
         id = item['itemId']
         date = previous_date(self.date)
         item_y = self.item_someday(id, date)
@@ -119,6 +121,7 @@ class Cleaner():
         return item_y.get('quantitySoldLastWeek', 0)
 
     def sales_last_week(self, item):
+        ''' 返回指定商品的上周统计数据 '''
         id = item['itemId']
         date = last_week(self.date)
         item_y = self.item_someday(id, date)
@@ -129,12 +132,14 @@ class Cleaner():
         return sold_last_week, sold_two_weeks_ago
 
     def is_new(self, item):
+        ''' 指定商品是否为新品 '''
         if is_within_eight_weeks(item['startTime']) and int(item['quantitySold']) > 0:
             return 1
         else:
             return 0
 
     def is_hot(self, item):
+        ''' 指定商品是否为爆款 '''
         if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(
                 self.date, item['itemId'], 3, self.mongodb):
             return 1
@@ -142,6 +147,7 @@ class Cleaner():
             return 0
 
     def clean(self, item_id):
+        ''' 统计指定商品数据 '''
         c = self.collection
         item = c.find_one({'itemId': item_id})
         if item is None:
@@ -153,6 +159,7 @@ class Cleaner():
         self.collection.update_one({'itemId': item_id}, {'$set': data})
 
     def data_cleaned(self, item):
+        ''' 返回指定商品的统计数据 '''
         data = {}
         data['isHot'] = self.is_hot(item)
         data['isNew'] = self.is_new(item)

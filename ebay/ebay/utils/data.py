@@ -195,6 +195,7 @@ def token_from_redis(redis):
 
 
 def reset_token(redis=None):
+    ''' 将配置中的 token 导入 redis '''
     r = redis or db_redis()
     r.delete('ebay:tokens')
     for config in ebay_config['product']:
@@ -203,6 +204,7 @@ def reset_token(redis=None):
 
 
 def use_token(token, redis=None):
+    ''' token 的已使用次数 +1 '''
     r = redis or db_redis()
     r.zincrby('ebay:tokens', token, 1)
 
@@ -272,6 +274,7 @@ def is_item_ids_enough(count, redis=None):
 
 
 def items_from_mongodb(collection, mongodb=None):
+    ''' 遍历 mongodb 中的商品数据 '''
     m = mongodb or db_mongodb()
     c = m[collection]
     for data in c.find():
@@ -333,6 +336,7 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
 
 
 def item_cleaned(item):
+    ''' 返回为插入 mysql 而清洗后的商品数据 '''
     registration_date = item.get('registrationDate', '0000-00-00 00:00:00.00')
     start_time = item.get('startTime', '0000-00-00 00:00:00.00')
     o = {}
