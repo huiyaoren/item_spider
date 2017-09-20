@@ -49,40 +49,40 @@ def create_table_in_mysql(date):
     mysql = db_mysql()
     cursor = mysql.cursor()
     sql = '''
-        create table if not EXISTS goods_{0}(
-            id varchar(100) not null comment '商品id' primary key,
-            site varchar(255) null comment '商品所属站点',
-            title varchar(255) null comment '商品信息',
-            price decimal(10,2) null comment '商品售价',
-            currency varchar(255) null comment '货币符号',
-            total_sold int null comment '总销量',
-            hit_count int null comment '访问量',
-            goods_category varchar(255) null comment '商品分类',
-            goods_url varchar(255) null comment '商品页面访问地址',
-            shop_name varchar(255) null comment '店铺名称',
-            shop_feedback_score int null comment '店铺评分',
-            shop_feedback_percentage double(10,2) null comment '店铺好评率',
-            shop_open_time timestamp null comment '店铺开张时间',
-            publish_time timestamp null comment '上架时间',
-            weeks_sold int null comment '周销量',
-            last_weeks_sold int null comment '上上周销量',
-            is_hot enum('0', '1') default '0' null comment '是否爆款，0-否，1-是',
-            is_new enum('0', '1') default '0' null comment '是否新品，0-否，1-是',
-            created_at timestamp default CURRENT_TIMESTAMP not null comment '添加时间',
-            platform varchar(20) default 'ebay' not null comment '平台',
-            default_image varchar(255) null comment '主图',
-            other_images text null comment '商品其他图片，json格式',
-            trade_increase_rate double(10,4) null comment '交易增幅比率，比如：0.1256 表示12.56%'
-        );
-        comment '商品表';
-        create index idx_goods_category on goods_{0} (goods_category);
-        create index idx_shop_name on goods_{0} (shop_name);
-        create index idx_title on goods_{0} (title);
-        create index idx_price on goods_{0} (price);
-        create index idx_total_sold on goods_{0} (total_sold);
-        create index idx_weeks_sold on goods_{0} (weeks_sold);
-        create index idx_shop_open_time on goods_{0} (shop_open_time);
-        create index idx_trade_increase_rate on goods_{0} (trade_increase_rate);'''
+      CREATE TABLE `goods_{0}` (
+          `id` varchar(100) NOT NULL COMMENT '商品id',
+          `platform` varchar(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
+          `site` varchar(255) DEFAULT NULL COMMENT '商品所属站点',
+          `title` varchar(255) NOT NULL COMMENT '商品信息',
+          `default_image` varchar(255) DEFAULT NULL COMMENT '主图',
+          `other_images` text COMMENT '商品其他图片，json格式',
+          `price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '商品售价',
+          `currency` varchar(255) DEFAULT NULL COMMENT '货币符号',
+          `total_sold` int(11) NOT NULL DEFAULT '0' COMMENT '总销量',
+          `hit_count` int(11) DEFAULT NULL COMMENT '访问量',
+          `goods_category` varchar(255) NOT NULL COMMENT '商品分类',
+          `goods_url` varchar(255) DEFAULT NULL COMMENT '商品页面访问地址',
+          `shop_name` varchar(255) DEFAULT NULL COMMENT '店铺名称',
+          `shop_feedback_score` int(11) DEFAULT NULL COMMENT '店铺评分',
+          `shop_feedback_percentage` double(10,2) DEFAULT NULL COMMENT '店铺好评率',
+          `shop_open_time` timestamp NULL DEFAULT NULL COMMENT '店铺开张时间',
+          `publish_time` timestamp NULL DEFAULT NULL COMMENT '上架时间',
+          `weeks_sold` int(11) NOT NULL DEFAULT '0' COMMENT '周销量',
+          `last_weeks_sold` int(11) DEFAULT NULL COMMENT '上上周销量',
+          `trade_increase_rate` double(10,4) DEFAULT NULL COMMENT '交易增幅比率，比如：0.1256 表示12.56%',
+          `is_hot` enum('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
+          `is_new` enum('0','1') DEFAULT '0' COMMENT '是否新品，0-否，1-是',
+          `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+          PRIMARY KEY (`id`),
+          KEY `idx_title` (`title`(250)) COMMENT '商品标题',
+          KEY `idx_goods_category` (`goods_category`(250)),
+          KEY `idx_shop_name` (`shop_name`(250)),
+          KEY `idx_price` (`price`) USING BTREE COMMENT '售价',
+          KEY `idx_weeks_sold` (`weeks_sold`) COMMENT '商品周销量',
+          KEY `idx_trade_increase_rate` (`trade_increase_rate`) COMMENT '交易增幅',
+          KEY `idx_shop_open_time` (`shop_open_time`),
+          KEY `idx_total_sold` (`total_sold`) USING BTREE COMMENT '总销量'
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='商品表';'''
 
     sql = sql.format(date)
     try:
@@ -288,46 +288,15 @@ def insert_items_into_mysql(day):
         return False
     for item in items_from_mongodb(c, m):
         print(item)
-        registration_date = item.get('registrationDate', '0000-00-00 00:00:00')
-        start_time = item.get('startTime', '0000-00-00 00:00:00')
-        o = {}
-        o['id'] = item.get('itemId')
-        o['site'] = item.get('site')
-        o['title'] = item.get('title')
-        o['price'] = item.get('price')
-        o['currency'] = item.get('currency')
-        o['total_sold'] = item.get('quantitySold')
-        o['hit_count'] = item.get('hitCount')
-        o['goods_category'] = item.get('categoryID')
-        o['goods_url'] = item.get('viewItemURL')
-        o['shop_name'] = item.get('seller')
-        o['shop_feedback_score'] = item.get('feedbackScore')
-        o['shop_feedback_percentage'] = item.get('positiveFeedbackPercent')
-        o['shop_open_time'] = ' '.join([registration_date[0:10], registration_date[11:19]])
-        o['publish_time'] = ' '.join([start_time[0:10], start_time[11:19]])
-        o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
-        o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
-        o['is_hot'] = str(item.get('isHot', 0))
-        o['is_new'] = str(item.get('isNew', 0))
-        o['default_image'] = item.get('image')
-        other_images = item.get('otherImages', [" "])
-        other_images = other_images if type(other_images) is list else [other_images]
-        o['other_images'] = json.dumps([{'url': img} for img in other_images])
-        print(o['other_images'])
-        if o['last_weeks_sold'] > 0 and o['weeks_sold'] > 0:
-            o['trade_increase_rate'] = (o['weeks_sold'] - o['last_weeks_sold']) / o['last_weeks_sold']
-        else:
-            o['trade_increase_rate'] = 0
-        print(o)
-        insert_item_into_mysql(o, date)
-    print('Insert Items Into Mysql.{0}'.format(datetime.now() - start))
+        insert_item_into_mysql(item, date)
+    print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
 
-def insert_item_into_mysql(item, datetime):
+def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     ''' 插入单条商品数据至 mysql '''
-    mysql = db_mysql()
-    cursor = mysql.cursor()
-    data = item
+    mysql = mysql or db_mysql()
+    cursor = cursor or mysql.cursor()
+    data = item_cleaned(item)
     sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate)" \
           "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s)"
     sql = sql.format(datetime=datetime)
@@ -346,8 +315,8 @@ def insert_item_into_mysql(item, datetime):
             'shop_name': data.get('shop_name', 0),
             'shop_feedback_score': data.get('shop_feedback_score', 0),
             'shop_feedback_percentage': data.get('shop_feedback_percentage', 0),
-            'shop_open_time': data.get('shop_open_time', '0000-00-00 00:00:00'),
-            'publish_time': data.get('publish_time', '0000-00-00 00:00:00'),
+            'shop_open_time': data.get('shop_open_time'),
+            'publish_time': data.get('publish_time'),
             'weeks_sold': data.get('weeks_sold', 0),
             'last_weeks_sold': data.get('last_weeks_sold', 0),
             'is_hot': data.get('is_hot'),
@@ -357,11 +326,45 @@ def insert_item_into_mysql(item, datetime):
         })
     except IntegrityError:
         print("Error: Duplicate")
-    except:
-        print(cursor._last_executed)
+    # except:
+    #     print(cursor._last_executed)
     else:
         mysql.commit()
-        mysql.close()
+
+
+def item_cleaned(item):
+    registration_date = item.get('registrationDate', '0000-00-00 00:00:00.00')
+    start_time = item.get('startTime', '0000-00-00 00:00:00.00')
+    o = {}
+    o['id'] = item.get('itemId')
+    o['site'] = item.get('site')
+    o['title'] = item.get('title')
+    o['price'] = item.get('price')
+    o['currency'] = item.get('currency')
+    o['total_sold'] = item.get('quantitySold')
+    o['hit_count'] = item.get('hitCount')
+    o['goods_category'] = item.get('categoryID')
+    o['goods_url'] = item.get('viewItemURL')
+    o['shop_name'] = item.get('seller')
+    o['shop_feedback_score'] = item.get('feedbackScore')
+    o['shop_feedback_percentage'] = item.get('positiveFeedbackPercent')
+    o['shop_open_time'] = ' '.join([registration_date[0:10], registration_date[11:19]])
+    o['publish_time'] = ' '.join([start_time[0:10], start_time[11:19]])
+    o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
+    o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
+    o['is_hot'] = str(item.get('isHot', 0))
+    o['is_new'] = str(item.get('isNew', 0))
+    o['default_image'] = item.get('image')
+    other_images = item.get('otherImages', [" "])
+    other_images = other_images if type(other_images) is list else [other_images]
+    other_images = json.dumps([{'url': img} for img in other_images]) if other_images != [" "] else '[]'
+    o['other_images'] = other_images
+    print(o['other_images'])
+    if o['last_weeks_sold'] > 0 and o['weeks_sold'] > 0:
+        o['trade_increase_rate'] = (o['weeks_sold'] - o['last_weeks_sold']) / o['last_weeks_sold']
+    else:
+        o['trade_increase_rate'] = 0
+    return o
 
 
 if __name__ == '__main__':
