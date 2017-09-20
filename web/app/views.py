@@ -43,6 +43,7 @@ def data():
     data['redis']['category_urls'] = r.llen('ebay:category_urls')
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
+    data['redis']['item_ids_unclean'] = r.zcard('ebay:item_ids_unclean')
     data['redis']['tokens'] = r.zcard('ebay:tokens')
 
     collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
