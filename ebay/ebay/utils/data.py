@@ -283,7 +283,7 @@ def items_from_mongodb(collection, mongodb=None):
         yield data
 
 
-def insert_items_into_mysql(day, from_day='20170907'):
+def insert_items_into_mysql(day, process=16, from_day='20170907'):
     ''' 将商品数据从 mongodb 转移至 mysql'''
     start = datetime.now()
     date = day or datetime.now().strftime("%Y%m%d")
@@ -292,7 +292,7 @@ def insert_items_into_mysql(day, from_day='20170907'):
     m = db_mongodb()
     if not create_table_in_mysql(date):
         return False
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool(process)
     for item in items_from_mongodb(c, m):
         pprint(item)
         item_new = {}
