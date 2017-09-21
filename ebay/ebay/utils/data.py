@@ -290,9 +290,9 @@ def insert_items_into_mysql(day, from_day='20170907'):
     c = 'd_{0}'.format(date)
     c = 'c_{0}'.format(from_day)
     m = db_mongodb()
-    pool = multiprocessing.Pool()
     if not create_table_in_mysql(date):
         return False
+    pool = multiprocessing.Pool()
     for item in items_from_mongodb(c, m):
         pprint(item)
         item_new = {}
