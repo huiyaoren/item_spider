@@ -314,7 +314,7 @@ def insert_items_into_mysql(day):
         item_new['isNew'] = 0
         item_new['image'] = item.get('image').get('imageUrl')
 
-        insert_item_into_mysql(item, date)
+        insert_item_into_mysql(item_new, date)
         break
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
@@ -353,8 +353,9 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
         })
     except IntegrityError:
         print("Error: Duplicate")
-    # except:
-    #     print(cursor._last_executed)
+    except:
+        print("Error: ")
+        print(cursor._last_executed)
     else:
         mysql.commit()
 
