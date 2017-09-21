@@ -291,7 +291,8 @@ def insert_items_into_mysql(day):
     if not create_table_in_mysql(date):
         return False
     for item in items_from_mongodb(c, m):
-        print(item)
+        from pprint import pprint
+        pprint(item)
         break
         insert_item_into_mysql(item, date)
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
