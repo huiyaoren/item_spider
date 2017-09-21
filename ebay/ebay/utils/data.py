@@ -306,16 +306,12 @@ def insert_items_into_mysql(day):
         item_new['seller'] = item.get('seller').get('username')
         item_new['feedbackScore'] = item.get('seller').get('feedbackScore')
         item_new['positiveFeedbackPercent'] = item.get('seller').get('feedbackPercentage')
-        item_new['registrationDate'] = '0000-00-00 00:00:00.00'
-        item_new['startTime'] = '0000-00-00 00:00:00.00'
         item_new['quantitySoldLastWeek'] = 0
         item_new['quantitySoldTwoWeeksAgo'] = 0
         item_new['isHot'] = 0
         item_new['isNew'] = 0
         item_new['image'] = item.get('image').get('imageUrl')
-
         insert_item_into_mysql(item_new, date)
-        break
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
 
