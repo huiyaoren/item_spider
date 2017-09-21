@@ -49,30 +49,30 @@ def create_table_in_mysql(date):
     mysql = db_mysql()
     cursor = mysql.cursor()
     sql = '''
-      CREATE TABLE if not EXISTS `goods_{0}` (
-          `id` varchar(100) NOT NULL COMMENT '商品id',
-          `platform` varchar(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
-          `site` varchar(255) DEFAULT NULL COMMENT '商品所属站点',
-          `title` varchar(255) NOT NULL COMMENT '商品信息',
-          `default_image` varchar(255) DEFAULT NULL COMMENT '主图',
-          `other_images` text COMMENT '商品其他图片，json格式',
-          `price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '商品售价',
-          `currency` varchar(255) DEFAULT NULL COMMENT '货币符号',
-          `total_sold` int(11) NOT NULL DEFAULT '0' COMMENT '总销量',
-          `hit_count` int(11) DEFAULT NULL COMMENT '访问量',
-          `goods_category` varchar(255) NOT NULL COMMENT '商品分类',
-          `goods_url` varchar(255) DEFAULT NULL COMMENT '商品页面访问地址',
-          `shop_name` varchar(255) DEFAULT NULL COMMENT '店铺名称',
-          `shop_feedback_score` int(11) DEFAULT NULL COMMENT '店铺评分',
-          `shop_feedback_percentage` double(10,2) DEFAULT NULL COMMENT '店铺好评率',
-          `shop_open_time` timestamp NULL DEFAULT NULL COMMENT '店铺开张时间',
-          `publish_time` timestamp NULL DEFAULT NULL COMMENT '上架时间',
-          `weeks_sold` int(11) NOT NULL DEFAULT '0' COMMENT '周销量',
-          `last_weeks_sold` int(11) DEFAULT NULL COMMENT '上上周销量',
-          `trade_increase_rate` double(10,4) DEFAULT NULL COMMENT '交易增幅比率，比如：0.1256 表示12.56%',
-          `is_hot` enum('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
-          `is_new` enum('0','1') DEFAULT '0' COMMENT '是否新品，0-否，1-是',
-          `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+      CREATE TABLE IF NOT EXISTS `goods_{0}` (
+          `id` VARCHAR(100) NOT NULL COMMENT '商品id',
+          `platform` VARCHAR(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
+          `site` VARCHAR(255) DEFAULT NULL COMMENT '商品所属站点',
+          `title` VARCHAR(255) NOT NULL COMMENT '商品信息',
+          `default_image` VARCHAR(255) DEFAULT NULL COMMENT '主图',
+          `other_images` TEXT COMMENT '商品其他图片，json格式',
+          `price` DECIMAL(10,2) NOT NULL DEFAULT '0.00' COMMENT '商品售价',
+          `currency` VARCHAR(255) DEFAULT NULL COMMENT '货币符号',
+          `total_sold` INT(11) NOT NULL DEFAULT '0' COMMENT '总销量',
+          `hit_count` INT(11) DEFAULT NULL COMMENT '访问量',
+          `goods_category` VARCHAR(255) NOT NULL COMMENT '商品分类',
+          `goods_url` VARCHAR(255) DEFAULT NULL COMMENT '商品页面访问地址',
+          `shop_name` VARCHAR(255) DEFAULT NULL COMMENT '店铺名称',
+          `shop_feedback_score` INT(11) DEFAULT NULL COMMENT '店铺评分',
+          `shop_feedback_percentage` DOUBLE(10,2) DEFAULT NULL COMMENT '店铺好评率',
+          `shop_open_time` TIMESTAMP NULL DEFAULT NULL COMMENT '店铺开张时间',
+          `publish_time` TIMESTAMP NULL DEFAULT NULL COMMENT '上架时间',
+          `weeks_sold` INT(11) NOT NULL DEFAULT '0' COMMENT '周销量',
+          `last_weeks_sold` INT(11) DEFAULT NULL COMMENT '上上周销量',
+          `trade_increase_rate` DOUBLE(10,4) DEFAULT NULL COMMENT '交易增幅比率，比如：0.1256 表示12.56%',
+          `is_hot` ENUM('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
+          `is_new` ENUM('0','1') DEFAULT '0' COMMENT '是否新品，0-否，1-是',
+          `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
           PRIMARY KEY (`id`),
           KEY `idx_title` (`title`(250)) COMMENT '商品标题',
           KEY `idx_goods_category` (`goods_category`(250)),
@@ -120,7 +120,7 @@ def category_ids():
 def category_ids_from_mysql():
     mysql = db_mysql()
     cursor = mysql.cursor()
-    sql = 'select platform_category_id from erp_saas_goods_category where site = 201'
+    sql = 'SELECT platform_category_id FROM erp_saas_goods_category WHERE site = 201'
     try:
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -301,7 +301,7 @@ def insert_items_into_mysql(day):
         item_new['currency'] = item.get('price').get('currency')
         item_new['quantitySold'] = 0
         item_new['hitCount'] = 0
-        item_new['categoryID'] = max([int(i.get('categories')) for i in item.get('categories', ['0'])])
+        item_new['categoryID'] = max([int(i.get('categories')) for i in item.get('categories', [{'categories': '0'}])])
         item_new['viewItemURL'] = item.get('itemWebUrl')
         item_new['seller'] = item.get('seller').get('username')
         item_new['feedbackScore'] = item.get('seller').get('feedbackScore')
@@ -324,7 +324,7 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate)" \
+    sql = "INSERT INTO erp_spider.goods_{DATETIME} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate)" \
           "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s)"
     sql = sql.format(datetime=datetime)
     try:
