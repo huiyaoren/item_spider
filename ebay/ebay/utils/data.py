@@ -310,7 +310,7 @@ def insert_items_into_mysql(day):
         item_new['quantitySoldTwoWeeksAgo'] = 0
         item_new['isHot'] = 0
         item_new['isNew'] = 0
-        item_new['image'] = item.get('image', {'imageUrl': ''}).get('imageUrl')
+        item_new['image'] = item.get('image', {'imageUrl': ''}).get('imageUrl', '')
         insert_item_into_mysql(item_new, date)
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
