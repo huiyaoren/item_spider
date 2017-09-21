@@ -3,10 +3,12 @@ import json
 import logging
 from datetime import datetime
 
+import multiprocessing
 from pymysql import connect, IntegrityError
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from redis import Redis
+from pprint import pprint
 
 from ..utils.common import bytes_to_str
 from ..configs.database_config import config
@@ -281,17 +283,17 @@ def items_from_mongodb(collection, mongodb=None):
         yield data
 
 
-def insert_items_into_mysql(day):
+def insert_items_into_mysql(day, from_day='20170907'):
     ''' 将商品数据从 mongodb 转移至 mysql'''
     start = datetime.now()
     date = day or datetime.now().strftime("%Y%m%d")
     c = 'd_{0}'.format(date)
-    c = 'c_20170907'
+    c = 'c_{0}'.format(from_day)
     m = db_mongodb()
+    pool = multiprocessing.Pool()
     if not create_table_in_mysql(date):
         return False
     for item in items_from_mongodb(c, m):
-        from pprint import pprint
         pprint(item)
         item_new = {}
         item_new['itemId'] = item.get('itemId')
@@ -311,7 +313,10 @@ def insert_items_into_mysql(day):
         item_new['isHot'] = 0
         item_new['isNew'] = 0
         item_new['image'] = item.get('image').get('imageUrl', '') if item.get('image') is not None else ' '
-        insert_item_into_mysql(item_new, date)
+        # insert_item_into_mysql(item_new, date)
+        pool.apply_async(insert_item_into_mysql, args=(item_new, date,))
+    pool.close()
+    pool.join()
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
 
