@@ -49,7 +49,7 @@ def create_table_in_mysql(date):
     mysql = db_mysql()
     cursor = mysql.cursor()
     sql = '''
-      CREATE TABLE `goods_{0}` (
+      CREATE TABLE if not EXISTS `goods_{0}` (
           `id` varchar(100) NOT NULL COMMENT '商品id',
           `platform` varchar(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
           `site` varchar(255) DEFAULT NULL COMMENT '商品所属站点',
@@ -293,8 +293,29 @@ def insert_items_into_mysql(day):
     for item in items_from_mongodb(c, m):
         from pprint import pprint
         pprint(item)
-        break
+        item_new = {}
+        item_new['itemId'] = item.get('itemId')
+        item_new['site'] = item.get('itemLocation').get('country', 'US')
+        item_new['title'] = item.get('title')
+        item_new['price'] = item.get('price').get('value')
+        item_new['currency'] = item.get('price').get('currency')
+        item_new['quantitySold'] = 0
+        item_new['hitCount'] = 0
+        item_new['categoryID'] = max([int(i.get('categories')) for i in item.get('categories', ['0'])])
+        item_new['viewItemURL'] = item.get('itemWebUrl')
+        item_new['seller'] = item.get('seller').get('username')
+        item_new['feedbackScore'] = item.get('seller').get('feedbackScore')
+        item_new['positiveFeedbackPercent'] = item.get('seller').get('feedbackPercentage')
+        item_new['registrationDate'] = '0000-00-00 00:00:00.00'
+        item_new['startTime'] = '0000-00-00 00:00:00.00'
+        item_new['quantitySoldLastWeek'] = 0
+        item_new['quantitySoldTwoWeeksAgo'] = 0
+        item_new['isHot'] = 0
+        item_new['isNew'] = 0
+        item_new['image'] = item.get('image').get('imageUrl')
+
         insert_item_into_mysql(item, date)
+        break
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
 
