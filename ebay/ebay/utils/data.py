@@ -286,11 +286,13 @@ def insert_items_into_mysql(day):
     start = datetime.now()
     date = day or datetime.now().strftime("%Y%m%d")
     c = 'd_{0}'.format(date)
+    c = 'c_20170907'
     m = db_mongodb()
     if not create_table_in_mysql(date):
         return False
     for item in items_from_mongodb(c, m):
         print(item)
+        break
         insert_item_into_mysql(item, date)
     print('Insert Items Into Mysql Done. {0}'.format(datetime.now() - start))
 
