@@ -301,7 +301,7 @@ def insert_items_into_mysql(day):
         item_new['currency'] = item.get('price').get('currency')
         item_new['quantitySold'] = 0
         item_new['hitCount'] = 0
-        item_new['categoryID'] = max([int(i.get('categories')) for i in item.get('categories', [{'categories': '0'}])])
+        item_new['categoryID'] = max([int(i.get('categoryId')) for i in item.get('categories', [{'categories': '0'}])])
         item_new['viewItemURL'] = item.get('itemWebUrl')
         item_new['seller'] = item.get('seller').get('username')
         item_new['feedbackScore'] = item.get('seller').get('feedbackScore')
