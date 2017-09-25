@@ -70,6 +70,7 @@ def create_table_in_mysql(date):
           `shop_open_time` TIMESTAMP NULL DEFAULT NULL COMMENT '店铺开张时间',
           `publish_time` TIMESTAMP NULL DEFAULT NULL COMMENT '上架时间',
           `weeks_sold` INT(11) NOT NULL DEFAULT '0' COMMENT '周销量',
+          `day_sold` INT(11) NOT NULL DEFAULT '0' COMMENT '当日销量',
           `last_weeks_sold` INT(11) DEFAULT NULL COMMENT '上上周销量',
           `trade_increase_rate` DOUBLE(10,4) DEFAULT NULL COMMENT '交易增幅比率，比如：0.1256 表示12.56%',
           `is_hot` ENUM('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
