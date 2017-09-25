@@ -32,9 +32,8 @@ class ListingRedisSpider(RedisSpider):
 
     def make_request_from_data(self, data):
         # 生成 20000 条 item 测试队列 todo
-        if False and is_item_ids_enough(20000):
-            raise CloseSpider('Item ids are enough.')
-        #
+        # if False and is_item_ids_enough(20000):
+        #     raise CloseSpider('Item ids are enough.')
         url = bytes_to_str(data, self.redis_encoding)
         return Request(url, dont_filter=True, headers=self.headers, method='GET')
 
@@ -42,11 +41,15 @@ class ListingRedisSpider(RedisSpider):
         logger.info(response)
         item = ListingItem()
         data = json.loads(response.text)
+        # 生成队列
+        if int(data['offset']) == 0 and int(data['total']) > 200:
+            url = ''.join(response.url.split('&offset=0'))
+            for i in range(200, int(data['total']), 200):
+                self.server.lpush('ebay:category_urls', url + '&offset={0}'.format(i))
         # 下一页请求
-        print('Offset: {0}. Total: {1}'.format(data['offset'], data['total']))
-        if 'next' in data.keys() and int(data['offset']) <= int(data['total']):
-            url_next = data['next']
-            self.server.lpush('ebay:category_urls', url_next)
+        # if 'next' in data.keys() and int(data['offset']) <= int(data['total']):
+        #     url_next = data['next']
+        #     self.server.lpush('ebay:category_urls', url_next)
         # 商品数据
         if 'itemSummaries' in data.keys():
             for i in data['itemSummaries']:
@@ -55,7 +58,6 @@ class ListingRedisSpider(RedisSpider):
                 if 'itemHref' in i.keys():
                     item_id = int(clean_item_id(i['itemId']))
                     insert_item_id_to_redis(item_id, self.server)
-                    # insert_item_url_to_redis(item_id, i['itemHref'], self.server)
 
     def clean_item(self, item, data):
         i = data
