@@ -325,8 +325,8 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate)" \
-          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s)"
+    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate), day_sold)" \
+          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s), %(day_sold)s)"
     sql = sql.format(datetime=datetime)
     try:
         cursor.execute(sql, {
@@ -345,6 +345,7 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
             'shop_feedback_percentage': data.get('shop_feedback_percentage', 0),
             'shop_open_time': data.get('shop_open_time'),
             'publish_time': data.get('publish_time'),
+            'day_sold': data.get('day_sold', 0),
             'weeks_sold': data.get('weeks_sold', 0),
             'last_weeks_sold': data.get('last_weeks_sold', 0),
             'is_hot': data.get('is_hot'),
@@ -380,6 +381,7 @@ def item_cleaned(item):
     o['shop_feedback_percentage'] = item.get('positiveFeedbackPercent')
     o['shop_open_time'] = ' '.join([registration_date[0:10], registration_date[11:19]])
     o['publish_time'] = ' '.join([start_time[0:10], start_time[11:19]])
+    o['weeks_sold'] = int(item.get('quantitySoldYesterday', 0))
     o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
     o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
     o['is_hot'] = str(item.get('isHot', 0))
