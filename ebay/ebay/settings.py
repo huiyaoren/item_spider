@@ -19,7 +19,7 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # Retry
 RETRY_ENABLED = True
-RETRY_TIMES = 128 # fixme
+RETRY_TIMES = 8 # fixme
 RETRY_HTTP_CODECS = [500, 502, 503, 504, 400, 408, 429]
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
