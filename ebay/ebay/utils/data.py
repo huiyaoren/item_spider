@@ -103,8 +103,7 @@ def create_table_in_mysql(date):
 
 
 def db_redis():
-    redis = Redis(host=config['redis']['host'],
-                  password=config['redis']['password'])
+    redis = Redis(host=config['redis']['host'])
     return redis
 
 
@@ -294,7 +293,7 @@ def insert_items_into_mysql(day, process=16, from_day='20170907'):
         return False
     pool = multiprocessing.Pool(process)
     for item in items_from_mongodb(c, m):
-        pprint(item)
+        # print(item)
         item_new = {}
         item_new['itemId'] = item.get('itemId')
         item_new['site'] = item.get('itemLocation').get('country', 'US')
