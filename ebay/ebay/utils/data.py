@@ -381,7 +381,7 @@ def item_cleaned(item):
     o['shop_feedback_percentage'] = item.get('positiveFeedbackPercent')
     o['shop_open_time'] = ' '.join([registration_date[0:10], registration_date[11:19]])
     o['publish_time'] = ' '.join([start_time[0:10], start_time[11:19]])
-    o['weeks_sold'] = int(item.get('quantitySoldYesterday', 0))
+    o['day_sold'] = int(item.get('quantitySoldYesterday', 0))
     o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
     o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
     o['is_hot'] = str(item.get('isHot', 0))
