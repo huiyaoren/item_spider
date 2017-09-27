@@ -30,7 +30,7 @@ def init():
         # delete_item_ids()
         # read_item_ids_from_file()
         # copy_item_ids()
-        insert_category_id([179457, 37802, 15274, 172024, 45002, 165437])
+        insert_category_id([179457, 37802, 15274, 172024, 45002, 165437, 122962, 20690, 44999, 46305])
     else:
         # 生产
         insert_category_ids('redis')
