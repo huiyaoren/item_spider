@@ -1,5 +1,8 @@
 from datetime import datetime
 
+import logging
+from requests import Request, Session
+
 from . import app
 from flask import render_template, json
 import psutil
@@ -11,6 +14,21 @@ m = MongoClient('192.168.1.186')['test_database']
 cpu_count_logical = psutil.cpu_count()
 cpu_count = psutil.cpu_count(logical=False)
 
+# import multiprocessing
+# logger = multiprocessing.log_to_stderr()
+# logger.setLevel(multiprocessing.SUBDEBUG)
+
+def response(request, queue):
+    # s = Session()
+    # req = Request(headers=request['headers'], url=request['url'], method=request['method'], data=request['data'])
+    # prepped = req.prepare()
+    # resp = s.send(prepped)
+    # # queue.put(str(resp.content, encoding='utf8'))
+    # result = str(resp.content, encoding='utf8')
+    # print()
+    # print(result[:200])
+    # return result
+    print(123)
 
 @app.route('/')
 def index():
@@ -84,3 +102,49 @@ def data():
     # data['users'] = psutil.users()
     # data['Process'] = psutil.Process(data['pids'][0])
     return json.jsonify(data)
+
+
+@app.route('/curl', methods=['post', 'get'])
+def curl():
+    from multiprocessing import Pool, Pipe, Queue
+    url = 'https://api.ebay.com/ws/api.dll'
+    data = '''
+    <?xml version="1.0" encoding="utf-8"?>
+        <GetItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+          <RequesterCredentials>
+            <eBayAuthToken>AgAAAA**AQAAAA**aAAAAA**TFk/WQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ACkoWoD5CHoQydj6x9nY+seQ**kMADAA**AAMAAA**7VtL67+uDGoPGwpzzegnSCLgL9ZwsNRQHBaZ8T6zTQuqDg8NXWGU37zosAe7c/KcRGEzb60QX3nV1ujxFDsMwI9Kw4CAPTqVOBXz72l6mhT9m2oiVX0dCAsYd0GKMTgIrO1+uhizmiIXej3Uh7NIF8L/76k/tiS/E304JsrTmKrk2r2Rr+dST1ONfj8fb5TFzeDen0hmBzgRctchyjPesIFTRd7WupOtbi6ciScQ/yYCqfH7GRGQADCIaiMnIpdQUfnwigoNoi4OyP/mH7tr03WfCDlHTAi1Ret2LsfXh0UAYi8rwuMtVSAvP52fRtwe4lom3DzBt2jB7U7rj8KZ89ea30SAIXVsag/vo3B0jkl64pSB5/zKbBPRrG5qZ+28aDKuUSuAfn9lPNCF//esp4QIF7HIPUeioLgQK5WoPT9/BCPmn0Y+tNMAPSEcUWTY42WwahoN1eYpBgqX/hZolTvupd5907NkDTxYHfij6WtcGQdHfHBWCPGHrgWcdLefochtz7pDpVzdHYCUQbv4bVzHQNbVfhNHCMp4LZ63qrkJVpWsmSeSgZi5dVECI7gp0t/Rq1y5uBsRJK6OViZS02jYw0MR7kjAyrIsK43bP4Pz8wwvpfyuaoxkgvziCaM35taQuB3qlUPeawULUSFX6olCC0kMZqdUT5HPqYD2+YTj2n0wBXvP7Lbkj3gejSbelCwS6XHdKqAXP2gY93eBtbogLic7//FGdnQvbbISceo/9hgdXKbNBcMh0zoQ0KRm</eBayAuthToken>
+          </RequesterCredentials>
+            <ErrorLanguage>en_US</ErrorLanguage>
+            <WarningLevel>High</WarningLevel>
+              <!--Enter an ItemID-->
+          <ItemID>112548339313</ItemID>
+        </GetItemRequest>
+    '''
+    headers = {
+        'X-EBAY-API-SITEID': '0',
+        'X-EBAY-API-COMPATIBILITY-LEVEL': '967',
+        'X-EBAY-API-CALL-NAME': 'GetItem',
+    }
+    method = 'POST'
+    requests = [
+        {
+            'url': url,
+            'data': data,
+            'headers': headers,
+            'method': method,
+        },
+    ]
+    start = datetime.now()
+    pool = Pool()
+    queue = Queue(16)
+    for request in requests:
+        print('request')
+        pool.apply_async(response, args=(request, queue,))
+    pool.close()
+    pool.join()
+    print(str(datetime.now() - start))
+    return str(datetime.now() - start)
+    return json.jsonify(response(url, headers, data, method))
+
+
+
