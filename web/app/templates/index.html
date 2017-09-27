@@ -333,7 +333,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-6" id="disk">
+            <div class="col-lg-2 col-md-6" id="mongo">
                 <div class="panel panel-yellow">
                     <div class="panel-heading">
                         <div class="row">
@@ -355,7 +355,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-6" id="net">
+            <div class="col-lg-2 col-md-6" id="redis">
                 <div class="panel panel-red">
                     <div class="panel-heading">
                         <div class="row">
@@ -366,6 +366,47 @@
                                 <div class="huge">13</div>
                                 <div>Support Tickets!</div>
                             </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6" id="net">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-comments fa-5x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div class="huge">26</div>
+                                <div>New Comments!</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6" id="net">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-comments fa-5x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right"></div>
                         </div>
                     </div>
                     <a href="#">
@@ -510,7 +551,7 @@
                 </div>
             </div>
             <!-- /.col-lg-8 -->
-            <div class="col-lg-4" id="redis">
+            <div class="col-lg-4" id="block-redis">
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <i class="fa fa-bell fa-fw"></i> Redis keys
@@ -559,7 +600,8 @@
 
     e('#cpu > div > div > div > div.col-xs-3 > i').hide();
     e('#mem > div > div > div > div.col-xs-3 > i').hide();
-    e('#disk > div > div > div > div.col-xs-3 > i').hide();
+    e('#mongo > div > div > div > div.col-xs-3 > i').hide();
+    e('#redis > div > div > div > div.col-xs-3 > i').hide();
     e('#net > div > div > div > div.col-xs-3 > i').hide();
 
     get_data();
@@ -585,23 +627,29 @@
                     .append($('<div class="huge">' + data['virtual_memory'][2] + '%</div>'))
                     .append($('<div>Total: ' + (data['virtual_memory'][0]/1024/1024/1024).toFixed(2) + 'G<div>'))
                     .append($('<div>Used: ' + (data['virtual_memory'][3]/1024/1024/1024).toFixed(2) + 'G<div>'))
-                e('#disk > div > div > div > div.col-xs-9.text-right')
+                e('#mongo > div > div > div > div.col-xs-9.text-right')
                     .empty()
                     .append($('<div>'+data['mongodb']['collection']+' | Mongo: <div>'))
                     .append($('<div class="huge">' + data['mongodb']['count'] + '</div>'))
                     .append($('<div>Mem: ' + (data['mongodb']['memory']/1024/1024/1024).toFixed(2) + 'G<div>'))
                     .append($('<div>CPU: ' + data['mongodb']['cpu_percent'] + '%<div>'))
-                e('#net > div > div > div > div.col-xs-9.text-right')
+                e('#redis > div > div > div > div.col-xs-9.text-right')
                     .empty()
                     .append($('<div>Redis: <div>'))
                     .append($('<div class="huge">' + (data['redis_data']['used_memory']/1024/1024).toFixed(2) + 'M</div>'))
                     .append($('<div>Mem: ' + (data['redis_data']['memory']/1024/1024/1024).toFixed(2) + 'G<div>'))
                     .append($('<div>CPU: ' + data['redis_data']['cpu_percent'] + '%<div>'))
+                e('#net > div > div > div > div.col-xs-9.text-right')
+                    .empty()
+                    .append($('<div>Network: <div>'))
+                    .append($('<div class="huge">' + (data['network']['recv']/1024/1024).toFixed(2) + 'M</div>'))
+                    .append($('<div>Sent: ' + (data['network']['sent']/1024/1024).toFixed(2) + 'M<div>'))
+                    .append($('<div>' + data['network']['device'] + '<div>'))
                 var redis_html = '';
                 for (var i in data['redis']) {
                     redis_html += '<a href="#" class="list-group-item"><i class="fa fa-tasks fa-fw"></i> ' + i + '<span class="pull-right text-muted small"><em>' + data['redis'][i] + '</em></span></a>';
                 }
-                e('#redis > div > div.panel-body > div').html(redis_html);
+                e('#blok-redis > div > div.panel-body > div').html(redis_html);
             },
             error: function (e) {
                 log(e)

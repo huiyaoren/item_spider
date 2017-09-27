@@ -51,11 +51,20 @@ def index():
 @app.route('/data', methods=['post', 'get'])
 def data():
     data = {}
+    # CPU
     data['cpu_percent'] = psutil.cpu_percent(interval=1)
-    data['virtual_memory'] = psutil.virtual_memory()
     data['cpu_count_logical'] = cpu_count_logical
     data['cpu_count'] = cpu_count
-
+    # MEM
+    data['virtual_memory'] = psutil.virtual_memory()
+    # NET
+    network = psutil.net_io_counters(pernic=True)
+    data['network'] = {}
+    data['network']['device'] = ' | '.join(network.keys())
+    data['network']['recv'] = sum([network[i].bytes_recv for i in network])
+    data['network']['sent'] = sum([network[i].bytes_sent for i in network])
+    del network
+    # REDIS
     data['redis'] = {}
     data['redis']['category_ids'] = r.llen('ebay:category_ids')
     data['redis']['category_urls'] = r.llen('ebay:category_urls')
@@ -63,12 +72,12 @@ def data():
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
     data['redis']['item_ids_unclean'] = r.zcard('ebay:item_ids_unclean')
     data['redis']['tokens'] = r.zcard('ebay:tokens')
-
+    # MONGODB
     collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
     data['mongodb'] = {}
     data['mongodb']['count'] = m[collection_name].count()
     data['mongodb']['collection'] = collection_name
-
+    # PROCESS
     for proc in psutil.process_iter(attrs=[
         'pid',
         'name',
@@ -93,10 +102,8 @@ def data():
             data['redis_data']['memory_percent'] = proc.info['memory_percent']
             data['redis_data']['memory'] = proc.info['memory_info'].vms
             data['redis_data']['used_memory'] = r.info()['used_memory']
-
         if proc.info['name'] == 'python' or proc.info['name'] == 'scrapy':
             pass
-
     # data['disk_partitions'] = psutil.disk_partitions()
     # data['boot_time'] = psutil.boot_time()
     # data['users'] = psutil.users()
