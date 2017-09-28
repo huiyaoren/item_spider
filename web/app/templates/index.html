@@ -614,7 +614,6 @@
             type: 'post',
             url: './data',
             success: function (data) {
-                log(data);
                 e('#cpu > div > div > div > div.text-right')
                     .empty()
                     .append($('<div>CPU: <div>'))
@@ -649,10 +648,10 @@
                 for (var i in data['redis']) {
                     redis_html += '<a href="#" class="list-group-item"><i class="fa fa-tasks fa-fw"></i> ' + i + '<span class="pull-right text-muted small"><em>' + data['redis'][i] + '</em></span></a>';
                 }
-                e('#blok-redis > div > div.panel-body > div').html(redis_html);
+                e('#block-redis > div > div.panel-body > div').html(redis_html);
             },
             error: function (e) {
-                log(e)
+//                log(e)
             }
         });
     }
