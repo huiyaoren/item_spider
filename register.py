@@ -1,5 +1,4 @@
 from selenium import webdriver
-import os
 import time
 
 from selenium.webdriver.common.by import By
@@ -39,6 +38,7 @@ class Register():
 
         # 填写注册资料
         print('Insert data ...')
+        continue_ = input('Continue')
         browser.find_element_by_xpath('//*[@id="w4-w1-registration-username"]').click()
         browser.find_element_by_xpath('//*[@id="w4-w1-registration-username"]').send_keys(username)
         browser.find_element_by_xpath('//*[@id="w4-w1-w1-password"]').send_keys('1234qwer$')
@@ -51,8 +51,8 @@ class Register():
         # 输入验证码
         captcha = input('Insert Captcha :\n')
         browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').send_keys(captcha)
-        browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
-        browser.find_element_by_xpath('//button[@id="w4-w1-join-button"][1]').click()
+        # browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
+        continue_ = input('Continue')
         return
 
         # 提交注册信息
@@ -80,7 +80,6 @@ class Register():
 
 if __name__ == '__main__':
     register = Register()
-    register.run('wslshanlin61')
-    for i in range(61, 71):
-        register.run('wslshanlin{0}'.format(i))
-        break
+    register.run('wslshanlin69')
+    # for i in range(64, 71):
+    #     register.run('wslshanlin{0}'.format(i))

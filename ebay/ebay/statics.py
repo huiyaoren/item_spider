@@ -82,7 +82,9 @@ def judge_is_hot(day=None, mongodb=None):
             m[c].update_one({'itemId': id}, {'$set': {'is_hot': 0}})
     print('Judge Is Hot Done.')
 
+# fixme 以上函数将已被 Cleaner 替代
 
+# fixme 此函数将成为 Cleaner 方法
 def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
     ''' 商品一周内有销量的天数是否达到指定值 '''
     m = mongodb or db_mongodb()
