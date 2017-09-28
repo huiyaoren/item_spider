@@ -53,13 +53,13 @@ class Register():
         browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').send_keys(captcha)
         browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
         browser.find_element_by_xpath('//button[@id="w4-w1-join-button"][1]').click()
+        return
 
         # 提交注册信息
         print('Sent register data ...')
         browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
         print('Write app name ...')
         self.element_loaded('//*[@id="_ip_wth_cntr"]', 20).send_keys('qwer')
-
 
         print('Create product app')
         browser.find_element_by_xpath('//*[@id="w6"]/div[2]/div[2]/div/a').click()
@@ -81,3 +81,6 @@ class Register():
 if __name__ == '__main__':
     register = Register()
     register.run('wslshanlin61')
+    for i in range(61, 71):
+        register.run('wslshanlin{0}'.format(i))
+        break
