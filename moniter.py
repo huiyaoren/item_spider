@@ -1,3 +1,4 @@
+from datetime import datetime
 from time import sleep
 
 from pymongo.errors import DuplicateKeyError
@@ -12,7 +13,7 @@ class Monitor():
         self.mongodb = db_mongodb()
         self.date = date()
         self.collection = self.mongodb['m_{0}'.format(self.date)]
-        self.collection.ensure_index('item_ids_filter', unique=True)
+        self.collection.ensure_index('item_data', unique=True)
 
     def data(self):
         r = self.redis
@@ -23,6 +24,7 @@ class Monitor():
         data['item_ids'] = r.llen('ebay:item_ids')
         data['item_ids_filter'] = r.scard('ebay:item_ids_filter')
         data['item_data'] = m['d_{0}'.format(self.date)].count()
+        data['time'] = datetime.now().strftime("%H:%I:%S")
         return data
 
     def insert_data_to_mongodb(self):
