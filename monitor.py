@@ -24,7 +24,7 @@ class Monitor():
         data['item_ids'] = r.llen('ebay:item_ids')
         data['item_ids_filter'] = r.scard('ebay:item_ids_filter')
         data['item_data'] = m['d_{0}'.format(self.date)].count()
-        data['time'] = datetime.now().strftime("%H:%I:%S")
+        data['time'] = datetime.now().strftime("%H:%M:%S")
         return data
 
     def insert_data_to_mongodb(self):
