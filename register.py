@@ -1,7 +1,8 @@
+import time
+from multiprocessing.pool import Pool
+
 from pymongo.errors import DuplicateKeyError
 from selenium import webdriver
-import time
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -10,11 +11,8 @@ from ebay.ebay.utils.data import db_mongodb
 
 
 class Register():
-    def __init__(self):
-        option = webdriver.ChromeOptions()
-        option.add_argument('--user-data-dir=~/.config/google-chrome')
-        option.add_extension('/host/DL/92jiasu.crx')
-        self.browser = webdriver.Chrome(chrome_options=option)
+    def __init__(self, browser):
+        self.browser = browser
         self.mongodb = db_mongodb()
         self.collection = self.mongodb['tokens']
         self.collection.ensure_index('username', unique=True)
@@ -80,7 +78,7 @@ class Register():
         # browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
 
         # 新建应用
-        print('Write app name ...') # todo 因未知原因返回登录页面
+        print('Write app name ...')  # todo 因未知原因返回登录页面
         self.element_loaded('//*[@id="_ip_wth_cntr"]').send_keys('qwer')
         print('Create product app ...')
         browser.find_element_by_xpath('//*[@id="w6"]/div[2]/div[2]/div/a').click()
@@ -90,7 +88,7 @@ class Register():
         browser.find_element_by_xpath('//*[@id="w4-w0-continue"]').click()
 
         # 获取应用信息
-        print('Get app msg ...') # todo 因未知原因定在此处
+        print('Get app msg ...')  # todo 因未知原因定在此处
         app_id = self.element_loaded(
             '//*[@id="w6"]/div[2]/div[2]/div/div/section/div/div/div[1]/span[2]').text
         dev_id = browser.find_element_by_xpath(
@@ -119,8 +117,8 @@ class Register():
         browser.find_element_by_xpath('//*[@id="w4-w0-continue-to-get-token"]').click()
 
         # 填写用户账号
-        print('Insert user account ...')
-        self.element_loaded('//*[@id="userid"]').clear()
+        print('Insert user account ...')  # fixme 此处等待时间过长 可作优化
+        self.element_visible('//*[@id="userid"]').clear()
         browser.find_element_by_xpath('//*[@id="userid"]').send_keys('cnhdled - sale')
         browser.find_element_by_xpath('//*[@id="pass"]').clear()
         browser.find_element_by_xpath('//*[@id="pass"]').send_keys('Huo520Ding')
@@ -154,7 +152,7 @@ class Register():
         self.save_tokens(data)
 
         # 注销
-        print('Sign out ...') # todo 因未知原因定在此处
+        print('Sign out ...')  # todo 因未知原因定在此处
         self.element_visible('//*[@id="w0"]/div/span').click()
         browser.execute_script("document.querySelector('#edp-headername').click()")
         browser.execute_script("document.querySelector('#w2 > ul > li:nth-child(1) > div > a:nth-child(7)').click()")
@@ -173,8 +171,22 @@ class Register():
         print('Run Circle Done.')
 
 
+def run_func(start, end):
+    option = webdriver.ChromeOptions()
+    # option.add_argument('--user-data-dir=~/.config/google-chrome')
+    # option.add_extension('/host/DL/92jiasu.crx')
+    browser = webdriver.Chrome(chrome_options=option)
+    browser.get('http://www.baidu.com')
+    register = Register(browser)
+    register.run_circle(start, end)
+
+
 if __name__ == '__main__':
-    register = Register()
+    # register = Register()
     # register.run('wwercvxctnlin89')
-    register.run_circle(229, 500)
-    # register.close()
+    p = Pool()
+    p.apply_async(run_func, args=(251, 300,))
+    p.apply_async(run_func, args=(300, 350,))
+    p.apply_async(run_func, args=(350, 400,))
+    p.close()
+    p.join()
