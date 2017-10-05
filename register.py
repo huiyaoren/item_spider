@@ -176,7 +176,6 @@ def run_func(start, end):
     # option.add_argument('--user-data-dir=~/.config/google-chrome')
     # option.add_extension('/host/DL/92jiasu.crx')
     browser = webdriver.Chrome(chrome_options=option)
-    browser.get('http://www.baidu.com')
     register = Register(browser)
     register.run_circle(start, end)
 
