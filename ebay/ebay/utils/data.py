@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import logging
 from datetime import datetime
@@ -26,11 +25,11 @@ def db_mongodb_base(db_name, host, port):
     return db
 
 
-def db_mongodb():
+def db_mongodb(host='mongodb'):
     return db_mongodb_base(
-        config['mongodb']['database'],
-        config['mongodb']['host'],
-        config['mongodb']['port'])
+        config[host]['database'],
+        config[host]['host'],
+        config[host]['port'])
 
 
 def db_mysql_base(db_name, host, username, password):
@@ -47,10 +46,10 @@ def db_mysql():
     )
 
 
-def create_table_in_mysql(date):
+def create_table_in_mysql(date, sql=None):
     mysql = db_mysql()
     cursor = mysql.cursor()
-    sql = '''
+    sql = sql or '''
       CREATE TABLE IF NOT EXISTS `goods_{0}` (
           `id` VARCHAR(100) NOT NULL COMMENT '商品id',
           `platform` VARCHAR(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
@@ -196,19 +195,37 @@ def token_from_redis(redis):
     return bytes_to_str(token)
 
 
-def reset_token(redis=None):
-    ''' 将配置中的 token 导入 redis '''
-    r = redis or db_redis()
-    r.delete('ebay:tokens')
-    for config in ebay_config['product']:
-        r.zadd('ebay:tokens', config['token_old'], 0)
-    print('Reset Token Done.')
-
-
 def use_token(token, redis=None):
     ''' token 的已使用次数 +1 '''
     r = redis or db_redis()
     r.zincrby('ebay:tokens', token, 1)
+
+
+def reset_token(redis=None, _from='mongodb'):
+    ''' 将配置中的 token 导入 redis '''
+    r = redis or db_redis()
+    r.delete('ebay:tokens')
+    if _from == 'config':
+        for config in ebay_config['product']:
+            r.zadd('ebay:tokens', config['token_old'], 0)
+    elif _from == 'mongodb':
+        m = db_mongodb()
+        c = m['tokens']
+        for i in c.find():
+            r.zadd('ebay:tokens', i['token'], 0)
+        print('Reset Token Done.')
+
+
+def rewrite_token():
+    m = db_mongodb()
+    c = m['tokens']
+    m_remote = db_mongodb('mongodb_remote')
+    c_remote = m_remote['tokens']
+    c_remote.remove()
+    for i in c.find():
+        print(i)
+        i.pop('_id')
+        c_remote.insert_one(i)
 
 
 # item_id
@@ -325,7 +342,7 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.goods_{datetime} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate, day_sold)" \
+    sql = "INSERT INTO erp_spider.goods_{DATETIME} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate, day_sold)" \
           "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s)"
     sql = sql.format(datetime=datetime)
     try:
