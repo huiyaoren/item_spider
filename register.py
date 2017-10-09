@@ -44,9 +44,11 @@ class Register():
     def run(self, username='qwe', password='1234qwer$'):
         # 请求连接
         req_url = "https://developer.ebay.com/signin"
+
         # 打开浏览器
         print("Opening chrome ...")
         browser = self.browser
+
         # 打开注册页面
         print('Visit {0} ...'.format(req_url))
         browser.get(req_url)
@@ -66,8 +68,6 @@ class Register():
         browser.find_element_by_xpath('//*[@id="w4-w1-checkbox-user-agreement"]').click()
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').click()
-
-        # driver.execute_script("window.scrollTo(0, Y)")
 
         # 输入验证码
         # captcha = input('Insert Captcha :\n')
@@ -140,7 +140,7 @@ class Register():
         runame = self.element_visible('//*[@id="w6-w2-ruNames"]/ul/li/div/span[1]').text
         print('runame: {0}'.format(runame))
 
-        # todo-1 Insert token and app data to mysql or other database
+        # Insert token and app data to mysql or other database
         data = {}
         data['token'] = token
         data['app_id'] = app_id
@@ -153,7 +153,7 @@ class Register():
 
         # 注销
         print('Sign out ...')  # todo 因未知原因定在此处
-        self.element_visible('//*[@id="w0"]/div/span').click()
+        self.element_visible('//*[@id="w0"]/div/span')
         browser.execute_script("document.querySelector('#edp-headername').click()")
         browser.execute_script("document.querySelector('#w2 > ul > li:nth-child(1) > div > a:nth-child(7)').click()")
 
@@ -169,6 +169,7 @@ class Register():
         for i in range(start, end):
             self.run('srd_token_{0}'.format(i))
         print('Run Circle Done.')
+        self.close()
 
 
 def main(start, end):
@@ -182,9 +183,6 @@ def main(start, end):
 
 if __name__ == '__main__':
     p = Pool()
-    p.apply_async(main, args=(252, 300,))
-    p.apply_async(main, args=(300, 350,))
-    p.apply_async(main, args=(350, 400,))
-    p.apply_async(main, args=(400, 450,))
+    p.apply_async(main, args=(512, 600,))
     p.close()
     p.join()
