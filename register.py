@@ -171,7 +171,7 @@ class Register():
         print('Run Circle Done.')
 
 
-def run_func(start, end):
+def main(start, end):
     option = webdriver.ChromeOptions()
     # option.add_argument('--user-data-dir=~/.config/google-chrome')
     # option.add_extension('/host/DL/92jiasu.crx')
@@ -181,11 +181,10 @@ def run_func(start, end):
 
 
 if __name__ == '__main__':
-    # register = Register()
-    # register.run('wwercvxctnlin89')
     p = Pool()
-    p.apply_async(run_func, args=(251, 300,))
-    p.apply_async(run_func, args=(300, 350,))
-    p.apply_async(run_func, args=(350, 400,))
+    p.apply_async(main, args=(252, 300,))
+    p.apply_async(main, args=(300, 350,))
+    p.apply_async(main, args=(350, 400,))
+    p.apply_async(main, args=(400, 450,))
     p.close()
     p.join()
