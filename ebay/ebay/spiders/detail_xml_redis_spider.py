@@ -75,7 +75,7 @@ class DetailXmlRedisSpider(RedisSpider):
         item['quantitySold'] = int(i.get('SellingStatus').get('QuantitySold', 0))
         item['image'] = i.get('PictureDetails').get('GalleryURL')
         item['otherImages'] = i.get('PictureDetails').get('PictureURL')
-        item['hitCount'] = int(i.get('HitCount', 0))
+        item['hitCount'] = int(i.get('HitCount', 0)) if int(i.get('HitCount', 0)) > 0 else 0
         item['title'] = i.get('Title')
         item['shipToLocations'] = i.get('ShipToLocations')
         item['site'] = i.get('Site')
