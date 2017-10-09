@@ -301,7 +301,8 @@ def items_from_mongodb(collection, mongodb=None):
 
 
 def insert_items_into_mysql(day, process=16, from_day='20170907'):
-    ''' 将商品数据从 mongodb 转移至 mysql'''
+    ''' 将商品数据从 mongodb 转移至 mysql '''
+    # fixme-已弃用
     start = datetime.now()
     date = day or datetime.now().strftime("%Y%m%d")
     c = 'd_{0}'.format(date)

@@ -10,7 +10,7 @@ config = {
     },
     'mongodb_remote': {
         'host': '192.168.1.186',
-        'database': 'item_data',
+        'database': 'test_database',
         'port': 27017,
     },
     'mongodb': {
