@@ -9,6 +9,7 @@ from pymongo.errors import DuplicateKeyError
 from redis import Redis
 from pprint import pprint
 
+from ..tokens import Token
 from ..utils.common import bytes_to_str
 from ..configs.database_config import config
 from ..configs.ebay_config import config as ebay_config
@@ -187,6 +188,8 @@ def insert_category_ids_to_redis(redis=None):
 
 # token
 
+token = Token()
+
 
 def token_from_redis(redis):
     r = redis or db_redis()
@@ -346,38 +349,31 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     sql = "INSERT INTO erp_spider.goods_{datetime_} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate, day_sold)" \
           "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s)"
     sql = sql.format(datetime_=datetime)
-    try:
-        cursor.execute(sql, {
-            'id': data.get('id', 0),
-            'site': data.get('site', 0),
-            'title': data.get('title', 0),
-            'default_image': data.get('default_image', 0),
-            'price': data.get('price', 0),
-            'currency': data.get('currency', 0),
-            'total_sold': data.get('total_sold', 0),
-            'hit_count': data.get('hit_count', 0),
-            'goods_category': data.get('goods_category', 0),
-            'goods_url': data.get('goods_url', 0),
-            'shop_name': data.get('shop_name', 0),
-            'shop_feedback_score': data.get('shop_feedback_score', 0),
-            'shop_feedback_percentage': data.get('shop_feedback_percentage', 0),
-            'shop_open_time': data.get('shop_open_time'),
-            'publish_time': data.get('publish_time'),
-            'day_sold': data.get('day_sold', 0),
-            'weeks_sold': data.get('weeks_sold', 0),
-            'last_weeks_sold': data.get('last_weeks_sold', 0),
-            'is_hot': data.get('is_hot'),
-            'is_new': data.get('is_new'),
-            'other_images': data.get('other_images'),
-            'trade_increase_rate': data.get('trade_increase_rate'),
-        })
-    except IntegrityError:
-        print("Error: Duplicate")
-    except:
-        print("Error: ")
-        print(cursor._last_executed)
-    else:
-        mysql.commit()
+    cursor.execute(sql, {
+        'id': data.get('id', 0),
+        'site': data.get('site', 0),
+        'title': data.get('title', 0),
+        'default_image': data.get('default_image', 0),
+        'price': data.get('price', 0),
+        'currency': data.get('currency', 0),
+        'total_sold': data.get('total_sold', 0),
+        'hit_count': data.get('hit_count', 0),
+        'goods_category': data.get('goods_category', 0),
+        'goods_url': data.get('goods_url', 0),
+        'shop_name': data.get('shop_name', 0),
+        'shop_feedback_score': data.get('shop_feedback_score', 0),
+        'shop_feedback_percentage': data.get('shop_feedback_percentage', 0),
+        'shop_open_time': data.get('shop_open_time'),
+        'publish_time': data.get('publish_time'),
+        'day_sold': data.get('day_sold', 0),
+        'weeks_sold': data.get('weeks_sold', 0),
+        'last_weeks_sold': data.get('last_weeks_sold', 0),
+        'is_hot': data.get('is_hot'),
+        'is_new': data.get('is_new'),
+        'other_images': data.get('other_images'),
+        'trade_increase_rate': data.get('trade_increase_rate'),
+    })
+    mysql.commit()
 
 
 def item_cleaned(item):

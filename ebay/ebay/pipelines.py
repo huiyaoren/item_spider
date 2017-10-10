@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
+import traceback
+
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+from pymysql import IntegrityError
 
 from .statics import Cleaner
 from .utils.data import db_mysql, db_mongodb, insert_item_into_mysql, create_table_in_mysql
@@ -43,8 +46,13 @@ class EbayPipeline(object):
             # 写入 mongodb 与 mysql
             self.collection_detail.insert_one(item)
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
-        except:
-            logger.info("Database Error.")
+        except DuplicateKeyError:
+            logger.info("Mongodb Duplicate Item. item: \n{0}".format(item))
+        except IntegrityError:
+            logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown Database Error. Exception: \n{0}\n{1}".format(e, info))
         else:
             return item
 
@@ -61,10 +69,9 @@ class EbayPipeline(object):
         listing['itemWebUrl'] = item.get('itemWebUrl')
         listing['date'] = self.date
         logger.info(listing)
-        # return listing
         try:
             c.insert_one(listing)
         except DuplicateKeyError:
-            logger.info("Duplicate Item")
+            logger.warning("Duplicate Item. item: {0}".format(item))
         else:
             return
