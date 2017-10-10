@@ -1,3 +1,5 @@
+from multiprocessing.pool import Pool
+
 from lxml import etree
 
 import requests
@@ -40,9 +42,14 @@ class Token:
         print('Copy Token Done.')
 
     def check_all(self):
+        func = self.check
+        pool = Pool()
         for token in self.all():
-            self.check(token)
+            pool.apply_async(func, args=(token,))
+        pool.join()
+        pool.close()
 
+    @classmethod
     def check(self, token):
         print(token)
         url = 'https://api.ebay.com/ws/api.dll'
