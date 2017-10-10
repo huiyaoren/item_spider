@@ -3,6 +3,7 @@ from multiprocessing.pool import Pool
 
 from pymongo.errors import DuplicateKeyError
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -136,7 +137,10 @@ class Register():
 
         # 获取 runame
         browser.find_element_by_xpath('//*[@id="w6-getTokenApp"]').click()
-        browser.execute_script("document.querySelector('#w6-w2-add-redirect-url-callout').click()")
+        try:
+            browser.execute_script("document.querySelector('#w6-w2-add-redirect-url-callout').click()")
+        except WebDriverException:
+            pass
         runame = self.element_visible('//*[@id="w6-w2-ruNames"]/ul/li/div/span[1]').text
         print('runame: {0}'.format(runame))
 
