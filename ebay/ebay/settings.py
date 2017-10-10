@@ -29,7 +29,7 @@ RETRY_HTTP_CODECS = [500, 502, 503, 504, 400, 408, 429]
 ROBOTSTXT_OBEY = False
 
 LOG_FILE = None
-LOG_LEVEL = 'DEBUG' # fixme INFO
+LOG_LEVEL = 'WARNING' # fixme INFO
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 512

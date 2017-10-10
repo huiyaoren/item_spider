@@ -50,7 +50,7 @@ class Token:
         pool.close()
 
     @classmethod
-    def check(self, token):
+    def check(cls, token):
         print(token)
         url = 'https://api.ebay.com/ws/api.dll'
         headers = {
