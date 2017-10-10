@@ -16,11 +16,13 @@ class EbayPipeline(object):
         self.date = date()
         self.collection = self.mongodb['c_{0}'.format(self.date)]
         self.collection_detail = self.mongodb['d_{0}'.format(self.date)]
-        # self.collection_detail.ensure_index('itemId', unique=True)
-        # todo 索引构建应在 app.init() 中实现
         self.mysql = db_mysql()
         self.cursor = self.mysql.cursor()
         self.cleaner = Cleaner(self.date, self.mongodb)
+        try:
+            self.collection_detail.ensure_index('itemId', unique=True)
+        except:
+            logger.info('Create index fail.')
         create_table_in_mysql(self.date)
 
     def process_item(self, item, spider):
