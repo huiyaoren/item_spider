@@ -32,7 +32,7 @@ LOG_FILE = None
 LOG_LEVEL = 'DEBUG' # fixme INFO
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 256
+CONCURRENT_REQUESTS = 512
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
