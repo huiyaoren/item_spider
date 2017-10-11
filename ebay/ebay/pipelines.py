@@ -40,7 +40,6 @@ class EbayPipeline(object):
 
     @log_time_with_name('EbayPipeline.process_item_detail')
     def process_item_detail(self, item, spider):
-        # fixme 在本机上运行与在服务器上耗时差距巨大 原因可能在于 Mongodb 本机 0.003s 服务器 0.5-0.6s
         logger.info(item)
         item = dict(item)
         item['date'] = self.date
@@ -48,14 +47,15 @@ class EbayPipeline(object):
         try:
             # 数据统计
             t0 = datetime.now()
+            # fixme 在本机上运行与在服务器上耗时差距巨大 原因可能在于 Mongodb 本机 0.003s 服务器 0.5-0.6s
             data = self.cleaner.data_cleaned(item)
-            item = dict(data, **item)
-            # 写入 mongodb 与 mysql
             t1 = datetime.now()
-            print('t1-t0', t1-t0)
-            self.collection_detail.insert_one(item)
+            print('t1-t0', t1 - t0)
+            item = dict(data, **item)
             t2 = datetime.now()
-            print('t2-t1', t2-t1)
+            print('t2-t1', t2 - t1)
+            # 写入 mongodb 与 mysql
+            self.collection_detail.insert_one(item)
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
             t3 = datetime.now()
             print('t3-t2', t3-t2)
