@@ -127,18 +127,13 @@ class Cleaner():
 
     def sales_last_week(self, item):
         ''' 返回指定商品的上周统计数据 '''
-        t0 = datetime.now()
         id = item['itemId']
         date = last_week(self.date)
         item_y = self.item_someday(id, date)
-        t1 = datetime.now()
-        print('t1-t0', t1-t0)
         if item_y is None:
             return 0, 0
         sold_last_week = int(item['quantitySold']) - int(item_y['quantitySold'])
         sold_two_weeks_ago = item_y.get('quantitySoldLastWeek', 0)
-        t2 = datetime.now()
-        print('t2-t1', t2-t1)
         return sold_last_week, sold_two_weeks_ago
 
     def is_new(self, item):
