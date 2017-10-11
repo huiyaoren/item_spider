@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
 from .utils.data import db_mongodb, items_from_mongodb
 
@@ -164,9 +166,20 @@ class Cleaner():
     def data_cleaned(self, item):
         ''' 返回指定商品的统计数据 '''
         data = {}
+        t0 = datetime.now()
         data['isHot'] = self.is_hot(item)
+        t1 = datetime.now()
+        print('t1-t2', t1-t0)
         data['isNew'] = self.is_new(item)
+        t2 = datetime.now()
+        print('t1-t2', t2-t1)
         data['quantitySoldLastWeek'] = self.sales_last_week(item)[0]
+        t3 = datetime.now()
+        print('t1-t2', t3-t2)
         data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)[1]
+        t4 = datetime.now()
+        print('t1-t2', t4-t3)
         data['quantitySoldYesterday'] = self.sales_yesterday(item)
+        t5 = datetime.now()
+        print('t1-t2', t5-t4)
         return data
