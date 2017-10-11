@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 class DetailXmlRedisSpider(RedisSpider):
     name = "detail_xml_redis_spider"
     redis_key = "ebay:item_ids"
-    token = config['product'][2]['token_old']
     url = 'https://api.ebay.com/ws/api.dll'
     headers = {
         'X-EBAY-API-SITEID': '0',
@@ -38,14 +37,14 @@ class DetailXmlRedisSpider(RedisSpider):
             </GetItemRequest>
     '''
 
-    @log_time_with_name('DetailXmlRedisSpider.make_request_from_data')
+    # @log_time_with_name('DetailXmlRedisSpider.make_request_from_data')
     def make_request_from_data(self, data):
         item_id = bytes_to_str(data, self.redis_encoding)
         token = token_from_redis(self.server)
         body = self.data.format(token, item_id)
         return Request(self.url, dont_filter=True, headers=self.headers, method='POST', body=body)
 
-    @log_time_with_name('DetailXmlRedisSpider.parse')
+    # @log_time_with_name('DetailXmlRedisSpider.parse')
     def parse(self, response):
         start = datetime.now()
         item = {}
@@ -68,7 +67,7 @@ class DetailXmlRedisSpider(RedisSpider):
             print(mid - start)
             yield i
 
-    @log_time_with_name('DetailXmlRedisSpider.parse.clean_item')
+    # @log_time_with_name('DetailXmlRedisSpider.parse.clean_item')
     def clean_item(self, item, data):
         i = data
         item['price'] = float(i.get('SellingStatus').get('CurrentPrice').get('#text', 0.0))

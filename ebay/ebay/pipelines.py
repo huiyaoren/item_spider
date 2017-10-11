@@ -3,7 +3,7 @@ import logging
 import traceback
 from datetime import datetime
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 from pymysql import IntegrityError
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class EbayPipeline(object):
-    @log_time_with_name('EbayPipeline.__init__')
+    # @log_time_with_name('EbayPipeline.__init__')
     def __init__(self):
         self.mongodb = db_mongodb()
         self.date = date()
@@ -26,19 +26,20 @@ class EbayPipeline(object):
         self.cursor = self.mysql.cursor()
         self.cleaner = Cleaner(self.date, self.mongodb)
         try:
-            self.collection_detail.ensure_index('itemId', unique=True)
-        except:
-            logger.info('Create index fail.')
+            # self.collection_detail.ensure_index('itemId', unique=True)
+            self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
+        except Exception as e:
+            logger.warning('Create index fail. exception: \n{0}'.format(e))
         create_table_in_mysql(self.date)
 
-    @log_time_with_name('EbayPipeline.process_item')
+    # @log_time_with_name('EbayPipeline.process_item')
     def process_item(self, item, spider):
         if spider.name == 'listing_redis_spider':
             return self.process_item_listing(item, spider)
         elif spider.name == 'detail_xml_redis_spider':
             return self.process_item_detail(item, spider)
 
-    @log_time_with_name('EbayPipeline.process_item_detail')
+    # @log_time_with_name('EbayPipeline.process_item_detail')
     def process_item_detail(self, item, spider):
         logger.info(item)
         item = dict(item)
@@ -61,7 +62,7 @@ class EbayPipeline(object):
         else:
             return item
 
-    @log_time_with_name('EbayPipeline.process_item_listing')
+    # @log_time_with_name('EbayPipeline.process_item_listing')
     def process_item_listing(self, item, spider):
         c = self.collection
         listing = {}
