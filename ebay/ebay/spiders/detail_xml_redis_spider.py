@@ -46,12 +46,10 @@ class DetailXmlRedisSpider(RedisSpider):
 
     # @log_time_with_name('DetailXmlRedisSpider.parse')
     def parse(self, response):
-        start = datetime.now()
         item = {}
         # fixme 用 lxml 替换 xmltodict 获得性能提升 parse 耗时 0.0037s-0.005s
         data = dict(xmltodict.parse(response.text))
         data = data.get('GetItemResponse')
-        mid = datetime.now()
 
         if 'Ack' not in data.keys() or data.get('Ack') == 'Failure':
             logger.warning('Request Failre. \n\nurl: {0} data: {1}'.format(response.url, response.text))
@@ -62,9 +60,6 @@ class DetailXmlRedisSpider(RedisSpider):
             logger.warning('Get Item Error. \n\nurl: {0} data: {1}'.format(response.url, response.text))
         else:
             del data
-            end = datetime.now()
-            print(end - start)
-            print(mid - start)
             yield i
 
     # @log_time_with_name('DetailXmlRedisSpider.parse.clean_item')
