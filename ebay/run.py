@@ -12,15 +12,6 @@ def run(name='listing_redis_spider'):
     process.start()
 
 
-def test():
-    from ebay.utils import ebay as e
-    from ebay.utils import common as c
-    from ebay.utils import data as d
-    from ebay.tests import test as t
-
-    return t.test_insert_category_ids_to_redis()
-
-
 def init():
     is_testing = True
     delete_item_ids_filter()
