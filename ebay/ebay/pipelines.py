@@ -52,13 +52,13 @@ class EbayPipeline(object):
             item = dict(data, **item)
             # 写入 mongodb 与 mysql
             t1 = datetime.now()
-            print(t1-t0)
+            print('t1-t0', t1-t0)
             self.collection_detail.insert_one(item)
             t2 = datetime.now()
-            print(t2-t1)
+            print('t2-t1', t2-t1)
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
             t3 = datetime.now()
-            print(t3-t2)
+            print('t3-t2', t3-t2)
         except DuplicateKeyError:
             logger.info("Mongodb Duplicate Item. item: \n{0}".format(item))
         except IntegrityError:
