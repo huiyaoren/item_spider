@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from pymysql import IntegrityError
 
+from .tests.time_recoder import log_time_with_name
 from .statics import Cleaner
 from .utils.data import db_mysql, db_mongodb, insert_item_into_mysql, create_table_in_mysql
 from .utils.common import date, clean_item_id
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class EbayPipeline(object):
+    @log_time_with_name('EbayPipeline.__init__')
     def __init__(self):
         self.mongodb = db_mongodb()
         self.date = date()
@@ -28,12 +30,14 @@ class EbayPipeline(object):
             logger.info('Create index fail.')
         create_table_in_mysql(self.date)
 
+    @log_time_with_name('EbayPipeline.process_item')
     def process_item(self, item, spider):
         if spider.name == 'listing_redis_spider':
             return self.process_item_listing(item, spider)
         elif spider.name == 'detail_xml_redis_spider':
             return self.process_item_detail(item, spider)
 
+    @log_time_with_name('EbayPipeline.process_item_detail')
     def process_item_detail(self, item, spider):
         logger.info(item)
         item = dict(item)
@@ -56,6 +60,7 @@ class EbayPipeline(object):
         else:
             return item
 
+    @log_time_with_name('EbayPipeline.process_item_listing')
     def process_item_listing(self, item, spider):
         c = self.collection
         listing = {}

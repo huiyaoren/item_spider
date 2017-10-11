@@ -7,8 +7,8 @@ import xmltodict
 from scrapy import Request
 from scrapy_redis.spiders import RedisSpider
 
+from ..tests.time_recoder import log_time_with_name
 from ..configs.ebay_config import config
-from ..items import ListingItem
 from ..utils.common import bytes_to_str
 from ..utils.data import token_from_redis
 
@@ -38,16 +38,21 @@ class DetailXmlRedisSpider(RedisSpider):
             </GetItemRequest>
     '''
 
+    @log_time_with_name('DetailXmlRedisSpider.make_request_from_data')
     def make_request_from_data(self, data):
         item_id = bytes_to_str(data, self.redis_encoding)
         token = token_from_redis(self.server)
         body = self.data.format(token, item_id)
         return Request(self.url, dont_filter=True, headers=self.headers, method='POST', body=body)
 
+    @log_time_with_name('DetailXmlRedisSpider.parse')
     def parse(self, response):
+        start = datetime.now()
         item = {}
+        # fixme 用 lxml 替换 xmltodict 获得性能提升 parse 耗时 0.0037s-0.005s
         data = dict(xmltodict.parse(response.text))
         data = data.get('GetItemResponse')
+        mid = datetime.now()
 
         if 'Ack' not in data.keys() or data.get('Ack') == 'Failure':
             logger.warning('Request Failre. \n\nurl: {0} data: {1}'.format(response.url, response.text))
@@ -58,8 +63,12 @@ class DetailXmlRedisSpider(RedisSpider):
             logger.warning('Get Item Error. \n\nurl: {0} data: {1}'.format(response.url, response.text))
         else:
             del data
+            end = datetime.now()
+            print(end - start)
+            print(mid - start)
             yield i
 
+    @log_time_with_name('DetailXmlRedisSpider.parse.clean_item')
     def clean_item(self, item, data):
         i = data
         item['price'] = float(i.get('SellingStatus').get('CurrentPrice').get('#text', 0.0))
