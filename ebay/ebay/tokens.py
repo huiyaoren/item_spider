@@ -15,6 +15,7 @@ class Token:
     def one(self, redis=None):
         r = redis or self.redis
         token = r.zrange('ebay:tokens', 0, 0)[0]
+        self.use(token)
         return str(token, encoding='utf8')
 
     def all(self, collection=None):
@@ -22,9 +23,9 @@ class Token:
         for i in c.find():
             yield i
 
-    def use(self, redis=None):
+    def use(self, token, redis=None):
         r = redis or self.redis
-        r.zincrby('ebay:tokens', self.token, 1)
+        r.zincrby('ebay:tokens', token, 1)
 
     def reset_all(self, redis=None):
         r = redis or self.redis

@@ -188,47 +188,16 @@ def insert_category_ids_to_redis(redis=None):
 
 # token
 
-token = Token()
+token = Token(mongodb=db_mongodb(), redis=db_redis())
 
 
 def token_from_redis(redis):
-    r = redis or db_redis()
-    token = r.zrange('ebay:tokens', 0, 0)[0]
-    use_token(token, r)
-    return bytes_to_str(token)
-
-
-def use_token(token, redis=None):
-    ''' token 的已使用次数 +1 '''
-    r = redis or db_redis()
-    r.zincrby('ebay:tokens', token, 1)
+    return token.one()
 
 
 def reset_token(redis=None, _from='mongodb'):
     ''' 将配置中的 token 导入 redis '''
-    r = redis or db_redis()
-    r.delete('ebay:tokens')
-    if _from == 'config':
-        for config in ebay_config['product']:
-            r.zadd('ebay:tokens', config['token_old'], 0)
-    elif _from == 'mongodb':
-        m = db_mongodb()
-        c = m['tokens']
-        for i in c.find():
-            r.zadd('ebay:tokens', i['token'], 0)
-        print('Reset Token Done.')
-
-
-def rewrite_token():
-    m = db_mongodb()
-    c = m['tokens']
-    m_remote = db_mongodb('mongodb_remote')
-    c_remote = m_remote['tokens']
-    c_remote.remove()
-    for i in c.find():
-        print(i)
-        i.pop('_id')
-        c_remote.insert_one(i)
+    token.reset_all(redis)
 
 
 # item_id
@@ -405,7 +374,6 @@ def item_cleaned(item):
     other_images = other_images if type(other_images) is list else [other_images]
     other_images = json.dumps([{'url': img} for img in other_images]) if other_images != [" "] else '[]'
     o['other_images'] = other_images
-    print(o['other_images'])
     if o['last_weeks_sold'] > 0 and o['weeks_sold'] > 0:
         o['trade_increase_rate'] = (o['weeks_sold'] - o['last_weeks_sold']) / o['last_weeks_sold']
     else:
