@@ -104,7 +104,8 @@ class Register():
         print('Turn to app detail ...')
         self.element_visible('//*[@id="w0"]/div/span')
         browser.execute_script("document.querySelector('#w2 > ul > li:nth-child(1) > a').click()")
-        browser.find_element_by_xpath('//*[@id="w2"]/ul/li[1]/div/a[3]').click()
+        browser.execute_script("document.querySelector('#w2 > ul > li:nth-child(1) > div > a:nth-child(3)').click()")
+        # browser.find_element_by_xpath('//*[@id="w2"]/ul/li[1]/div/a[3]').click()
 
         # 补充应用信息
         print('Turn to production ...')
