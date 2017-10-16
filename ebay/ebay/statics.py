@@ -104,9 +104,9 @@ class Cleaner():
             r.zincrby('ebay:sold_info:total', 'count', 1)
             r.zincrby('ebay:sold_info:total', 'money', sold * i['price'])
             r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
-            r.zincrby('ebay:sold_info:shop', i['seller'], 1)
+            r.zincrby('ebay:sold_info:shop', i.get('seller', '_'), 1)
         else:
-            r.zincrby('ebay:sold_info:shop', i['seller'], 0)
+            r.zincrby('ebay:sold_info:shop', i.get('seller', '_'), 0)
 
         if sold > 100:
             r.zincrby('ebay:sold_info:goods', 'has_sold_100', 1)
