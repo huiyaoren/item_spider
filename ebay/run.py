@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 from ebay.utils.data import *
 
 
@@ -39,8 +40,10 @@ def run_multi(name, processes=8, prepared=0):
     if prepared:
         for i in range(prepared):
             p.apply_async(run, args=('listing_redis_spider',))
+            time.sleep(1)
     for i in range(processes - prepared):
         p.apply_async(run, args=(name,))
+        time.sleep(1)
     p.close()
     p.join()
 
