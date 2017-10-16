@@ -1,106 +1,7 @@
 from datetime import datetime
 
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
-from .utils.data import db_mongodb, items_from_mongodb
-
-
-def count_sales_yesterday(day=None, mongodb=None):
-    ''' 统计昨日销量 '''
-    m = mongodb or db_mongodb()
-    day = day or date()
-    c = 'd_{0}'.format(day)
-    c_y = 'd_{0}'.format(previous_date(day))
-    count_sales(c, c_y, m, 'quantitySoldYesterday')
-    print('Count Sales Yesterday Done.')
-
-
-def count_sales_last_week(day=None, mongodb=None):
-    ''' 统计上周销量 '''
-    m = mongodb or db_mongodb()
-    day = day or date()
-    c = 'd_{0}'.format(day)
-    c_y = 'd_{0}'.format(last_week(day))
-    count_sales(c, c_y, m, 'quantitySoldLastWeek')
-    print('Count Sales Last Week Done.')
-
-
-def count_sales(collection, collection_other_day, mongodb, filed):
-    ''' 计算某天到指定日期间的销量并记录到当天数据的某字段中 '''
-    m = mongodb
-    c = collection
-    c_y = collection_other_day
-    for item in items_from_mongodb(c):
-        id = item['itemId']
-        item_y = m[c_y].find_one({'itemId': id})
-        if item_y is not None:
-            sold = int(item['quantitySold']) - int(item_y['quantitySold'])
-            m[c].update_one({'itemId': id}, {'$set': {filed: sold}})
-        else:
-            m[c].update_one({'itemId': id}, {'$set': {filed: 0}})
-
-
-def copy_sales_two_weeks_ago(day=None, mongodb=None):
-    ''' 将上周数据中的上周销量复制到当天数据中 '''
-    m = mongodb or db_mongodb()
-    d = day or date()
-    c = 'd_{0}'.format(d)
-    c_y = 'd_{0}'.format(last_week(d))
-    for item in items_from_mongodb(c):
-        id = item['itemId']
-        item_y = m[c_y].find_one({'itemId': id})
-        if item_y is not None:
-            sold = item_y.get('quantitySoldLastWeek', 0)
-            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': sold}})
-        else:
-            m[c].update_one({'itemId': id}, {'$set': {'quantitySoldTwoWeeksAgo': 0}})
-    print('Copy Sales Two Weeks Ago Done.')
-
-
-def judge_is_new(day=None, mongodb=None):
-    ''' 八周内新上架 且出过单'''
-    m = mongodb or db_mongodb()
-    d = day or date()
-    c = 'd_{0}'.format(d)
-    for item in items_from_mongodb(c):
-        id = item['itemId']
-        if is_within_eight_weeks(item['startTime']) and int(item['quantitySold']) > 0:
-            m[c].update_one({'itemId': id}, {'$set': {'is_new': 1}})
-        else:
-            m[c].update_one({'itemId': id}, {'$set': {'is_new': 0}})
-    print('Judge Is New Done.')
-
-
-def judge_is_hot(day=None, mongodb=None):
-    ''' 六个月内上架 总售出大于50 前7天至少有三天出单 '''
-    m = mongodb or db_mongodb()
-    d = day or date()
-    c = 'd_{0}'.format(d)
-    for item in items_from_mongodb(c):
-        id = item['itemId']
-        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(d, id,
-                                                                                                                 3, m):
-            m[c].update_one({'itemId': id}, {'$set': {'is_hot': 1}})
-        else:
-            m[c].update_one({'itemId': id}, {'$set': {'is_hot': 0}})
-    print('Judge Is Hot Done.')
-
-# fixme 以上函数将已被 Cleaner 替代
-
-# fixme 此函数将成为 Cleaner 方法
-def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
-    ''' 商品一周内有销量的天数是否达到指定值 '''
-    m = mongodb or db_mongodb()
-    days = days_have_sales
-    sales = set([])
-    for i in range(7, -1, -1):
-        d = previous_days(date, i)
-        c = 'd_{0}'.format(d)
-        item = m[c].find_one()
-        if item is not None:
-            sales.add(item['quantitySold'])
-            if len(sales) > days:
-                return True
-    return False
+from .utils.data import db_mongodb, items_from_mongodb, db_redis
 
 
 class Cleaner():
@@ -108,6 +9,7 @@ class Cleaner():
         self.date = date
         self.mongodb = mongodb or db_mongodb()
         self.collection = self.mongodb['d_{0}'.format(date)]
+        self.redis = db_redis()
 
     def item_someday(self, item_id, date):
         ''' 返回指定日期的指定商品数据 '''
@@ -145,11 +47,28 @@ class Cleaner():
 
     def is_hot(self, item):
         ''' 指定商品是否为爆款 '''
-        if is_within_six_mouths(item['startTime']) and int(item['quantitySold']) > 50 and is_had_sales_in_a_week(
-                self.date, item['itemId'], 3, self.mongodb):
+        if is_within_six_mouths(item['startTime']) and int(
+                item['quantitySold']) > 50 and Cleaner.is_had_sales_in_a_week(
+            self.date, item['itemId'], 3, self.mongodb):
             return 1
         else:
             return 0
+
+    @staticmethod
+    def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
+        ''' 商品一周内有销量的天数是否达到指定值 '''
+        m = mongodb or db_mongodb()
+        days = days_have_sales
+        sales = set([])
+        for i in range(7, -1, -1):
+            d = previous_days(date, i)
+            c = 'd_{0}'.format(d)
+            item = m[c].find_one()
+            if item is not None:
+                sales.add(item['quantitySold'])
+                if len(sales) > days:
+                    return True
+        return False
 
     def clean(self, item_id):
         ''' 统计指定商品数据 '''
@@ -170,4 +89,38 @@ class Cleaner():
         data['isNew'] = self.is_new(item)
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['quantitySoldYesterday'] = self.sales_yesterday(item)
+        # todo-1 全站统计
         return data
+
+    def add_up(self, item_cleaned):
+        r = self.redis
+        # start = datetime.now()
+        i = item_cleaned
+        i = {'date': '20171016', 'site': 'US', 'shipToLocations': 'US', 'storeURL': None, 'registrationDate': '2012-10-04T03:52:32.000Z', 'quantitySold': 1, 'seller': 'yx-123', 'categoryID': '58730', 'startTime': '2017-10-08T23:54:35.000Z', 'quantitySoldYesterday': 0, 'feedbackScore': 126, 'itemId': '162705047456', 'positiveFeedbackPercent': 100.0, 'price': 45.0, 'isNew': 0, 'title': 'DREAM WITH ME (OSTRICH PILLOW)', 'viewItemURL': 'http://www.ebay.com/itm/DREAM-ME-OSTRICH-PILLOW-/162705047456', 'hitCount': 10, 'image': 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/cIEAAOSwygJXht7s/$_1.JPG?set_id=880000500F', 'otherImages': ['https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/cIEAAOSwygJXht7s/$_1.JPG?set_id=880000500F', 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/FRgAAOSwyKxXht7w/$_1.JPG?set_id=880000500F', 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/Av0AAOSw0kNXht7z/$_1.JPG?set_id=880000500F'], 'quantitySoldLastWeek': 0, 'quantitySoldTwoWeeksAgo': 0, 'currency': 'USD', 'isHot': 0}
+
+        sold = i.get('quantitySold', 0)
+        if sold > 0:
+            r.zincrby('ebay:sold_info:total', 'count', 1)
+            r.zincrby('ebay:sold_info:total', 'money', sold * i['price'])
+            r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
+            r.zincrby('ebay:sold_info:shop', i['seller'], 1)
+        else:
+            r.zincrby('ebay:sold_info:shop', i['seller'], 0)
+
+        if sold > 100:
+            r.zincrby('ebay:sold_info:goods', 'has_sold_100', 1)
+        elif sold > 60:
+            r.zincrby('ebay:sold_info:goods', 'has_sold_60_100', 1)
+        elif sold > 30:
+            r.zincrby('ebay:sold_info:goods', 'has_sold_31_60', 1)
+        elif sold > 10:
+            r.zincrby('ebay:sold_info:goods', 'has_sold_11_30', 1)
+        else:
+            r.zincrby('ebay:sold_info:goods', 'has_sold_1_10', 1)
+
+        # end = datetime.now()
+        # print(end - start)
+
+
+
+
