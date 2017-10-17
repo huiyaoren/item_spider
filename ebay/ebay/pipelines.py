@@ -49,7 +49,7 @@ class EbayPipeline(object):
             # 数据统计
             data = self.cleaner.data_cleaned(item)  # fixme 在本机上运行与在服务器上耗时差距巨大 原因可能在于此 Mongodb 本机 0.003s 服务器 0.5-0.6s
             item = dict(data, **item)
-            self.cleaner.add_up(item)
+            # self.cleaner.add_up(item)
             # 写入 mongodb 与 mysql
             self.collection_detail.insert_one(item)
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
