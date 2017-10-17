@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
 config = {
+    # 'mysql': {
+    #     'host': '192.168.1.248',
+    #     'database': 'erp_spider',
+    #     'username': 'root',
+    #     'password': 'root',
+    #     'port': 3306,
+    # },
     'mysql': {
-        'host': '192.168.1.248',
+        'host': '45.126.121.187',
         'database': 'erp_spider',
-        'username': 'root',
-        'password': 'root',
+        'username': 'erp_spider',
+        'password': 'fyEnzfwZjT',
         'port': 3306,
     },
     'mongodb_remote': {
