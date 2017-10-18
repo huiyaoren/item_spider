@@ -47,11 +47,11 @@ class EbayPipeline(object):
 
         try:
             # 数据统计
-            data = self.cleaner.data_cleaned(item)  # fixme 在本机上运行与在服务器上耗时差距巨大 原因可能在于此 Mongodb 本机 0.003s 服务器 0.5-0.6s
+            data = self.cleaner.data_cleaned(item)
             item = dict(data, **item)
-            # self.cleaner.add_up(item)
             # 写入 mongodb 与 mysql
             self.collection_detail.insert_one(item)
+            # fixme-1 将 mongodb 与 MySQL 分两次 try 避免补爬时 mongodb 中已有数据无法写入 MySQL
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
         except DuplicateKeyError:
             logger.info("Mongodb Duplicate Item. item: \n{0}".format(item))
