@@ -48,19 +48,20 @@ class ListingXmlRedisSpider(RedisSpider):
     @log_time_with_name('parse')
     def parse(self, response):
         t = etree.HTML(bytes(response.text, encoding='utf8'))
+        s = '/html/body/finditemsbycategoryresponse'
 
         # 商品分类
-        for page_current in t.xpath('/html/body/finditemsbycategoryresponse/paginationoutput/pagenumber/text()'):
+        for page_current in t.xpath(s + '/paginationoutput/pagenumber/text()'):
             if int(page_current) == 1:
-                category_ids = t.xpath('/html/body/finditemsbycategoryresponse/searchresult/item/primarycategory/categoryid/text()')
+                category_ids = t.xpath(s + '/searchresult/item/primarycategory/categoryid/text()')
                 category_id = max(category_ids, key=category_ids.count)
 
-                page_total = t.xpath('/html/body/finditemsbycategoryresponse/paginationoutput/totalpages/text()')[0]
+                page_total = t.xpath(s + '/paginationoutput/totalpages/text()')[0]
                 for page in range(int(page_total)):
                     print(page)
                     self.server.lpush('ebay:category_ids', '{0}:{1}'.format(category_id, page))
 
         # 商品 id
-        items = t.xpath('/html/body/finditemsbycategoryresponse/searchresult/item/itemid/text()')
+        items = t.xpath(s + '/searchresult/item/itemid/text()')
         for item_id in items:
             self.server.lpush('ebay:item_ids', item_id)
