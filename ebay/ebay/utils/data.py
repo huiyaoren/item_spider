@@ -26,11 +26,11 @@ def db_mongodb_base(db_name, host, port):
     return db
 
 
-def db_mongodb(host='mongodb'):
+def db_mongodb(host_name='mongodb'):
     return db_mongodb_base(
-        config[host]['database'],
-        config[host]['host'],
-        config[host]['port'])
+        config[host_name]['database'],
+        config[host_name]['host'],
+        config[host_name]['port'])
 
 
 def db_mysql_base(db_name, host, username, password):
@@ -38,12 +38,12 @@ def db_mysql_base(db_name, host, username, password):
     return db
 
 
-def db_mysql():
+def db_mysql(host_name='mysql'):
     return db_mysql_base(
-        config['mysql']['database'],
-        config['mysql']['host'],
-        config['mysql']['username'],
-        config['mysql']['password'],
+        config[host_name]['database'],
+        config[host_name]['host'],
+        config[host_name]['username'],
+        config[host_name]['password'],
     )
 
 
@@ -114,7 +114,6 @@ def db_redis():
 def category_ids():
     db = db_mongodb()
     c = db.category_ids
-    # todo-1 改为 pop 操作 | 取一条删一条
     for data in c.find():
         yield data['category_id']
 
@@ -140,10 +139,12 @@ def category_ids_from_mysql():
 def insert_category_id(category_ids, redis=None):
     r = redis or db_redis()
     r.delete('ebay:category_urls')
+    r.delete('ebay:category_ids')
     for i in category_ids:
         url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
         url = url.format(i)
         r.lpush('ebay:category_urls', url)
+        r.lpush('ebay:category_ids', '{0}:1'.format(i))
     print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
 
 
