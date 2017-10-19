@@ -27,11 +27,28 @@ class Token:
         r = redis or self.redis
         r.zincrby('ebay:tokens', token, 1)
 
+    def one_token(self, redis=None):
+        return self.one(redis)
+
+    def one_appid(self, redis=None):
+        # todo
+        r = redis or self.redis
+        appid = r.zrange('ebay:appid', 0, 0)[0]
+        self.use_appid(appid)
+        return str(appid, encoding='utf8')
+
+    def use_appid(self, appid, redis=None):
+        # todo
+        r = redis or self.redis
+        r.zincrby('ebay:appid', appid, 1)
+
     def reset_all(self, redis=None):
         r = redis or self.redis
         r.delete('ebay:tokens')
+        r.delete('ebay:appid')
         for token in self.all():
             r.zadd('ebay:tokens', token['token'], 0)
+            r.zadd('ebay:appid', token['app_id'], 0)  # todo
         print('Reset Token Done.')
 
     def copy_all(self, mongodb_remote=None):
