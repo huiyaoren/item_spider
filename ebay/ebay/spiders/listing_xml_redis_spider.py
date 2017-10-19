@@ -6,7 +6,7 @@ from scrapy_redis.spiders import RedisSpider
 
 from ..tests.time_recoder import log_time_with_name
 from ..utils.common import bytes_to_str
-from ..utils.data import token
+from ..utils.data import token, insert_item_id_to_redis
 from lxml import etree
 
 logger = logging.getLogger(__name__)
@@ -64,4 +64,4 @@ class ListingXmlRedisSpider(RedisSpider):
         # 商品 id
         items = t.xpath(s + '/searchresult/item/itemid/text()')
         for item_id in items:
-            self.server.lpush('ebay:item_ids', item_id)
+            insert_item_id_to_redis(item_id, self.server)
