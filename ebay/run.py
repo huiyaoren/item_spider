@@ -1,4 +1,7 @@
-from ebay.utils.data import *
+try:
+    from ebay.utils.data import *
+except ImportError:
+    from .ebay.utils.data import *
 
 
 def run(name='listing_redis_spider'):
@@ -21,7 +24,9 @@ def init():
         # read_item_ids_from_file()
         # copy_item_ids()
         insert_category_id([
-            179457, 37802, 15274, 172024, 45002, 165437, 122962, 20690, 44999, 46305, 181415, 33721, 58730, 181962])
+            179457, 37802, 15274, 172024, 45002, 165437, 122962, 20690, 44999, 46305, 181415, 33721, 58730, 181962,
+            # 181114, 183125, 182173, 182178, 3768,
+        ])
     else:
         # 生产
         insert_category_ids('redis')
@@ -37,7 +42,8 @@ def run_multi(name, processes=8, prepared=0):
     p = Pool(processes)
     if prepared:
         for i in range(prepared):
-            p.apply_async(run, args=('listing_redis_spider',))
+            p.apply_async(run, args=('listing_xml_redis_spider',))
+            # p.apply_async(run, args=('listing_redis_spider',))
     for i in range(processes - prepared):
         p.apply_async(run, args=(name,))
     p.close()
