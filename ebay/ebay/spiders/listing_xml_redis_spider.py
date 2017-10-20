@@ -60,6 +60,7 @@ class ListingXmlRedisSpider(RedisSpider):
                 for page in range(int(page_total)):
                     print(page)
                     self.server.lpush('ebay:category_ids', '{0}:{1}'.format(category_id, page))
+            break
 
         # 商品 id
         items = t.xpath(s + '/searchresult/item/itemid/text()')
