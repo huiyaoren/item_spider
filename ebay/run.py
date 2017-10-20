@@ -52,4 +52,4 @@ def run_multi(name, processes=8, prepared=0):
 
 if __name__ == '__main__':
     init()
-    run_multi('detail_xml_redis_spider', 32, 6)
+    run_multi('detail_xml_redis_spider', 32, 8)
