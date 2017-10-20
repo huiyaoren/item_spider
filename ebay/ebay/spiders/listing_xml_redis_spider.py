@@ -45,7 +45,7 @@ class ListingXmlRedisSpider(RedisSpider):
             body=body
         )
 
-    @log_time_with_name('parse')
+    # @log_time_with_name('parse')
     def parse(self, response):
         t = etree.HTML(bytes(response.text, encoding='utf8'))
         s = '/html/body/finditemsbycategoryresponse'
@@ -57,8 +57,7 @@ class ListingXmlRedisSpider(RedisSpider):
                 category_id = max(category_ids, key=category_ids.count)
 
                 page_total = t.xpath(s + '/paginationoutput/totalpages/text()')[0]
-                for page in range(int(page_total)):
-                    print(page)
+                for page in range(2, int(page_total) + 1):
                     self.server.lpush('ebay:category_ids', '{0}:{1}'.format(category_id, page))
             break
 
