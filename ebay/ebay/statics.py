@@ -1,5 +1,7 @@
+import json
 from datetime import datetime
 
+from ebay.ebay.tests.time_recoder import log_time_with_name
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
 from .utils.data import db_mongodb, items_from_mongodb, db_redis
 
@@ -103,7 +105,7 @@ class Cleaner():
         shop['shop_open_time'] = i['registrationDate']
         shop['shop_feedback_score'] = i['feedbackScore']
         shop['shop_feedback_percent'] = i['positiveFeedbackPercent']
-        r.hsetnx('ebay:shop:basic', seller, shop)
+        r.hsetnx('ebay:shop:basic', seller, json.dumps(shop))
         # 店铺商品总数
         r.hincrby('ebay:shop:count', seller, 1)
         # 店铺日销量
