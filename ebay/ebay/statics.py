@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from ebay.ebay.tests.time_recoder import log_time_with_name
+from .tests.time_recoder import log_time_with_name
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
 from .utils.data import db_mongodb, items_from_mongodb, db_redis
 
