@@ -53,6 +53,8 @@ class EbayPipeline(object):
             self.collection_detail.insert_one(item)
             # fixme-1 将 mongodb 与 MySQL 分两次 try 避免补爬时 mongodb 中已有数据无法写入 MySQL
             insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
+            # 商店数据预统计
+            self.cleaner.add_up_shop(item)
         except DuplicateKeyError:
             logger.info("Mongodb Duplicate Item. item: \n{0}".format(item))
         except IntegrityError:
@@ -83,3 +85,19 @@ class EbayPipeline(object):
             logger.warning("Duplicate Item. item: {0}".format(item))
         else:
             return
+
+
+class CleanPipeline():
+    pass
+
+
+class MongodbPipeline():
+    pass
+
+
+class MysqlPipeline():
+    pass
+
+
+class ShopStatisticsPipeline():
+    pass
