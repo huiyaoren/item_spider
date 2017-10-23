@@ -180,7 +180,7 @@ class Monitor():
     def hot_goods_ids_info(self, collection):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
-        return [int(i['itemId']) for i in
+        return [i['itemId'] for i in
                 collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek').limit(20)]
 
     # @log_time_with_name('save_data')
