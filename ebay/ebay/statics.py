@@ -91,21 +91,58 @@ class Cleaner():
         data['quantitySoldYesterday'] = self.sales_yesterday(item)
         return data
 
+    def add_up_shop(self, item_cleaned):
+        r = self.redis
+        i = item_cleaned
+        seller = i.get('seller')
+        if seller is None:
+            return
+        # 基本信息
+        shop = {}
+        shop['shop_name'] = i['seller']
+        shop['shop_open_time'] = i['registrationDate']
+        shop['shop_feedback_score'] = i['feedbackScore']
+        shop['shop_feedback_percent'] = i['positiveFeedbackPercent']
+        r.hsetnx('ebay:shop:basic', seller, shop)
+        # 店铺商品总数
+        r.hincrby('ebay:shop:count', seller, 1)
+        # 店铺日销量
+        if i['quantitySoldYesterday'] > 0:
+            # 店铺单日有销量商品总数
+            r.hincrby('ebay:shop:has_sold_count', seller, 1)
+            # 店铺日销量
+            r.hincrby('ebay:shop:total_sold', seller, i['quantitySoldYesterday'])
+            # 店铺日销售额
+            r.hincrbyfloat('ebay:shop:amount', seller, i['quantitySoldYesterday'] * i['price'])
+        # 店铺周销量
+        if i['quantitySoldLastWeek'] > 0:
+            r.hincrby('ebay:shop:week_sold', seller, i['quantitySoldLastWeek'])
+        # 店铺上周销量
+        if i['quantitySoldTwoWeeksAgo'] > 0:
+            r.hincrby('ebay:shop:last_week_sold', seller, i['quantitySoldTwoWeeksAgo'])
+
     def add_up(self, item_cleaned):
+        # todo 弃用
         r = self.redis
         # start = datetime.now()
         i = item_cleaned
         # i = {'date': '20171016', 'site': 'US', 'shipToLocations': 'US', 'storeURL': None, 'registrationDate': '2012-10-04T03:52:32.000Z', 'quantitySold': 1, 'seller': 'yx-123', 'categoryID': '58730', 'startTime': '2017-10-08T23:54:35.000Z', 'quantitySoldYesterday': 0, 'feedbackScore': 126, 'itemId': '162705047456', 'positiveFeedbackPercent': 100.0, 'price': 45.0, 'isNew': 0, 'title': 'DREAM WITH ME (OSTRICH PILLOW)', 'viewItemURL': 'http://www.ebay.com/itm/DREAM-ME-OSTRICH-PILLOW-/162705047456', 'hitCount': 10, 'image': 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/cIEAAOSwygJXht7s/$_1.JPG?set_id=880000500F', 'otherImages': ['https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/cIEAAOSwygJXht7s/$_1.JPG?set_id=880000500F', 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/FRgAAOSwyKxXht7w/$_1.JPG?set_id=880000500F', 'https://i.ebayimg.com/00/s/MTYwMFg5MDA=/z/Av0AAOSw0kNXht7z/$_1.JPG?set_id=880000500F'], 'quantitySoldLastWeek': 0, 'quantitySoldTwoWeeksAgo': 0, 'currency': 'USD', 'isHot': 0}
         print(i)
         sold = i.get('quantitySold', 0)
+        # 全站销售
         if sold > 0:
-            r.zincrby('ebay:sold_info:total', 'count', 1)
             r.zincrby('ebay:sold_info:total', 'money', sold * i['price'])
-            r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
+        # 店铺销售信息
+        if sold > 0:
             r.zincrby('ebay:sold_info:shop', i.get('seller', '_'), 1)
         else:
             r.zincrby('ebay:sold_info:shop', i.get('seller', '_'), 0)
-
+        # 热门商品分类ids信息
+        if sold > 0:
+            r.zincrby('ebay:sold_info:category', i.get('categoryID', '_'), 1)
+        else:
+            r.zincrby('ebay:sold_info:category', i.get('categoryID', '_'), 0)
+        # 商品销售信息
         if sold > 100:
             r.zincrby('ebay:sold_info:goods', 'has_sold_100', 1)
         elif sold > 60:
@@ -116,10 +153,4 @@ class Cleaner():
             r.zincrby('ebay:sold_info:goods', 'has_sold_11_30', 1)
         elif sold > 0:
             r.zincrby('ebay:sold_info:goods', 'has_sold_1_10', 1)
-
-        # end = datetime.now()
-        # print(end - start)
-
-
-
-
+            r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
