@@ -41,13 +41,12 @@ class Monitor():
             pass
         else:
             print(data)
-        finally:
-            sleep(60)
 
     def run(self):
         while True:
             self.insert_data_to_mongodb()
             self.add_up_statics_data()
+            sleep(60)
 
     @log_time_with_name('add_up_statics_data')
     def add_up_statics_data(self):
@@ -82,10 +81,12 @@ class Monitor():
 
     # @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
+        ''' 商品总数 '''
         return collection.count()
 
     # @log_time_with_name('sales_goods_num')
     def sales_goods_num(self, collection):
+        ''' 有销量商品总数 '''
         return collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
 
     # @log_time_with_name('total_sold_info')
@@ -107,6 +108,7 @@ class Monitor():
 
     # @log_time_with_name('shop_sold_info')
     def shop_sold_info(self, collection):
+        ''' 店铺相关 '''
         c = collection
         data = {}
         result = c.aggregate([
@@ -135,6 +137,7 @@ class Monitor():
 
     # @log_time_with_name('goods_sold_info')
     def goods_sold_info(self, collection, total_goods_num):
+        ''' 商品相关 '''
         c = collection
         data = {}
         data['goods_num'] = total_goods_num
@@ -168,28 +171,35 @@ class Monitor():
 
     # @log_time_with_name('hot_category_ids_info')
     def hot_category_ids_info(self, collection, total_goods_num):
+        ''' 商品分类 '''
         # fixme 12w => 0.3s 有待性能优化
         result = collection.aggregate([{'$group': {'_id': '$categoryID', 'quantity': {'$sum': 1}}}])
         return {str(i['_id']): i['quantity'] for i in result if i['quantity'] > total_goods_num * 0.0001}
 
     # @log_time_with_name('hot_goods_ids_info')
     def hot_goods_ids_info(self, collection):
+        ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
         return [int(i['itemId']) for i in
                 collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek').limit(20)]
 
     # @log_time_with_name('save_data')
     def save_statics(self, statics_data):
+        print(statics_data['hot_category_ids_info'])
         # fixme 12w => 0.4s 有待性能优化
         cursor = self.mysql_cursor
+        print(statics_data)
+        # 获取分类名
         sql = "SELECT english_name, platform_category_id FROM erp_spider.erp_saas_goods_category WHERE platform_category_id IN ({0}) AND site=2;"
         cursor.execute(sql.format(','.join(statics_data['hot_category_ids_info'])))
         result = cursor.fetchall()
-
-        hot_category_ids_info = {i[1]: statics_data['hot_category_ids_info'][i[0]] for i in
-                                 {i[1]: i[0] for i in result}.items()}
+        # 组合分类名
+        hot_category_ids_info = {
+            i[1]: statics_data['hot_category_ids_info'][i[0]]
+            for i in {r[1]: r[0] for r in result}.items()
+        }
         statics_data['hot_category_ids_info'] = json.dumps(hot_category_ids_info)
-
+        # 写入所有统计数据
         sql = "DELETE FROM erp_spider.goods_statistics WHERE `date`={0};".format(self.date)
         sql += """INSERT INTO erp_spider.goods_statistics (platform, `date`, total_goods_num, sales_goods_num, total_sold_info, shop_sold_info, goods_sold_info, hot_goods_ids_info, hot_category_ids_info)
               VALUES (%(platform)s, %(date_)s, %(total_goods_num)s, %(sales_goods_num)s, %(total_sold_info)s, %(shop_sold_info)s, %(goods_sold_info)s, %(hot_goods_ids_info)s, %(hot_category_ids_info)s) """
