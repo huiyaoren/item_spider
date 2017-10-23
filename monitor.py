@@ -103,7 +103,7 @@ class Monitor():
                 "quantitySold": 1, },
             },
         ])
-        data['money'] = int(sum([i['total_sold_info_money'] for i in result]))
+        data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
         return data
 
     # @log_time_with_name('shop_sold_info')
