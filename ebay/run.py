@@ -18,7 +18,15 @@ def init():
     is_testing = True
     delete_item_ids_filter()
     delete_item_ids()
-    delete_redis_key(['ebay:shop'])
+    delete_redis_key([
+        'ebay:shop:basic',
+        'ebay:shop:count',
+        'ebay:shop:has_sold_count',
+        'ebay:shop:total_sold',
+        'ebay:shop:amount',
+        'ebay:shop:week_sold',
+        'ebay:shop:last_week_sold',
+    ])
     if is_testing:
         # 测试
         # read_item_ids_from_file()
