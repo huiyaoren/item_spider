@@ -18,9 +18,9 @@ def init():
     is_testing = True
     delete_item_ids_filter()
     delete_item_ids()
+    delete_redis_key(['ebay:shop'])
     if is_testing:
         # 测试
-        # delete_item_ids()
         # read_item_ids_from_file()
         # copy_item_ids()
         insert_category_id([
