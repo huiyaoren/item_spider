@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class Statistician():
-    def __init__(self, redis, mongodb, mysql):
+    def __init__(self, redis=None, mongodb=None, mysql=None):
         self.redis = redis or db_redis()
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.mysql = mysql or db_mysql()
@@ -216,6 +216,7 @@ class ShopStatistician(Statistician):
         pool = Pool(process)
         for shop_list in self.chunks(result, 100):
             pool.apply_async(func, args=(shop_list,))
+            # self.insert_to_mysql(shop_list)
         pool.close()
         pool.join()
 
@@ -230,22 +231,22 @@ class ShopStatistician(Statistician):
             values = "(\'{shop_name}\', {shop_feedback_score}, {shop_feedback_percent}, {has_sold_count}, {count}, {total_sold}, {week_sold}, {last_week_sold}, {amount}, \'{shop_open_time}\')"
             for i in shop_list:
                 shop = json.loads(str(i, encoding='utf8'))
-                shop['count'] = r.hget('ebay:shop:count', i) or 0
-                shop['week_sold'] = r.hget('ebay:shop:week_sold', i) or 0
-                shop['last_week_sold'] = r.hget('ebay:shop:last_week_sold', i) or 0
-                shop['has_sold_count'] = r.hget('ebay:shop:has_sold_count', i) or 0
-                shop['total_sold'] = r.hget('ebay:shop:total_sold', i) or 0
-                shop['amount'] = r.hget('ebay:shop:amount', i) or 0
+                shop['count'] = r.hget('ebay:shop:count', shop['shop_name']) or 0
+                shop['week_sold'] = r.hget('ebay:shop:week_sold', shop['shop_name']) or 0
+                shop['last_week_sold'] = r.hget('ebay:shop:last_week_sold', shop['shop_name']) or 0
+                shop['has_sold_count'] = r.hget('ebay:shop:has_sold_count', shop['shop_name']) or 0
+                shop['total_sold'] = r.hget('ebay:shop:total_sold', shop['shop_name']) or 0
+                shop['amount'] = r.hget('ebay:shop:amount', shop['shop_name']) or 0
                 yield values.format(
                     shop_name=shop['shop_name'],
                     shop_feedback_score=shop['shop_feedback_score'],
                     shop_feedback_percent=shop['shop_feedback_percent'],
-                    has_sold_count=shop['has_sold_count'],
-                    count=shop['count'],
-                    total_sold=shop['total_sold'],
-                    week_sold=shop['week_sold'],
-                    last_week_sold=shop['last_week_sold'],
-                    amount=round(shop['amount'], 2),
+                    has_sold_count=int(shop['has_sold_count']),
+                    count=int(shop['count']),
+                    total_sold=int(shop['total_sold']),
+                    week_sold=int(shop['week_sold']),
+                    last_week_sold=int(shop['last_week_sold']),
+                    amount=round(float(shop['amount']), 2),
                     shop_open_time=shop['shop_open_time'],
                 )
 
