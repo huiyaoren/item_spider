@@ -9,8 +9,8 @@ import psutil
 from redis import Redis
 from pymongo import MongoClient
 
-r = Redis(host='192.168.1.186')
-m = MongoClient('192.168.1.186')['test_database']
+r = Redis(host='localhost')
+m = MongoClient('localhost')['test_database']
 cpu_count_logical = psutil.cpu_count()
 cpu_count = psutil.cpu_count(logical=False)
 
@@ -42,7 +42,7 @@ def index():
     data['boot_time'] = psutil.boot_time()
     data['users'] = psutil.users()
     data['pids'] = psutil.pids()
-    data['Process'] = psutil.Process(data['pids'][0])
+    data['process'] = psutil.Process(data['pids'][0])
     data['cpu_percent'] = psutil.cpu_percent(interval=1)
     return render_template('index.html', data=data)
     # return 'hello world'
