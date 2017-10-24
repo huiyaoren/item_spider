@@ -102,7 +102,7 @@ class Cleaner():
         # 基本信息
         shop = {}
         shop['shop_name'] = i['seller']
-        shop['shop_open_time'] = i['registrationDate']
+        shop['shop_open_time'] = ' '.join([i['registrationDate'][0:10], i['registrationDate'][11:19]])
         shop['shop_feedback_score'] = i['feedbackScore']
         shop['shop_feedback_percent'] = i['positiveFeedbackPercent']
         r.hsetnx('ebay:shop:basic', seller, json.dumps(shop))
