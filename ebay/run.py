@@ -39,9 +39,6 @@ def init():
         # 生产
         insert_category_ids('redis')
     reset_token()
-    # todo 重启 mongod
-    # todo mongodb create collection
-    # todo mongodb create unique key
     print('Init Done.')
 
 
