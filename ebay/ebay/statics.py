@@ -115,7 +115,7 @@ class Cleaner():
             # 店铺日销量
             r.hincrby('ebay:shop:total_sold', seller, i['quantitySoldYesterday'])
             # 店铺日销售额
-            r.hincrbyfloat('ebay:shop:amount', seller, round(i['quantitySoldYesterday'] * i['price'], 2))
+            r.hincrbyfloat('ebay:shop:amount', seller, i['quantitySoldYesterday'] * i['price'])
         # 店铺周销量
         if i['quantitySoldLastWeek'] > 0:
             r.hincrby('ebay:shop:week_sold', seller, i['quantitySoldLastWeek'])
