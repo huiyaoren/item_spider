@@ -16,9 +16,10 @@ def run(name='listing_redis_spider'):
 
 def init():
     is_testing = True
-    delete_item_ids_filter()
-    delete_item_ids()
     delete_redis_key([
+        'ebay:item_ids_filter',
+        'ebay:item_ids',
+
         'ebay:shop:basic',
         'ebay:shop:count',
         'ebay:shop:has_sold_count',
