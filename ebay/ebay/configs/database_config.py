@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 config = {
-    'mysql': {
+    'mysql_local': {
         'host': '192.168.1.248',
         'database': 'erp_spider',
         'username': 'root',
         'password': 'root',
         'port': 3306,
     },
-    'mysql_remote': {
+    'mysql': {
         'host': '45.126.121.187',
         'database': 'erp_spider',
         'username': 'erp_spider',
