@@ -239,29 +239,30 @@ class ShopStatistician(Statistician):
 
         def shop_values(shop_list, redis=None):
             r = redis or db_redis()
-            values = "(\'{shop_name}\', {shop_feedback_score}, {shop_feedback_percent}, {has_sold_count}, {count}, {total_sold}, {week_sold}, {last_week_sold}, {amount}, \'{shop_open_time}\')"
+            values = "(\'{shop_name}\', {shop_feedback_score}, {shop_feedback_percent}, {has_sold_count}, {count}, {total_sold}, {week_sold}, {last_week_sold}, {amount}, \'{shop_open_time}\', {weeks_inc_ratio})"
             for i in shop_list:
                 shop = json.loads(str(i, encoding='utf8'))
-                shop['count'] = r.hget('ebay:shop:count', shop['shop_name']) or 0
-                shop['week_sold'] = r.hget('ebay:shop:week_sold', shop['shop_name']) or 0
-                shop['last_week_sold'] = r.hget('ebay:shop:last_week_sold', shop['shop_name']) or 0
-                shop['has_sold_count'] = r.hget('ebay:shop:has_sold_count', shop['shop_name']) or 0
-                shop['total_sold'] = r.hget('ebay:shop:total_sold', shop['shop_name']) or 0
-                shop['amount'] = r.hget('ebay:shop:amount', shop['shop_name']) or 0
+                shop['count'] = int(r.hget('ebay:shop:count', shop['shop_name']) or 0)
+                shop['week_sold'] = int(r.hget('ebay:shop:week_sold', shop['shop_name']) or 0)
+                shop['last_week_sold'] = int(r.hget('ebay:shop:last_week_sold', shop['shop_name']) or 0)
+                shop['has_sold_count'] = int(r.hget('ebay:shop:has_sold_count', shop['shop_name']) or 0)
+                shop['total_sold'] = int(r.hget('ebay:shop:total_sold', shop['shop_name']) or 0)
+                shop['amount'] = round(float(r.hget('ebay:shop:amount', shop['shop_name']) or 0),2)
                 yield values.format(
                     shop_name=shop['shop_name'],
                     shop_feedback_score=shop['shop_feedback_score'],
                     shop_feedback_percent=shop['shop_feedback_percent'],
-                    has_sold_count=int(shop['has_sold_count']),
-                    count=int(shop['count']),
-                    total_sold=int(shop['total_sold']),
-                    week_sold=int(shop['week_sold']),
-                    last_week_sold=int(shop['last_week_sold']),
-                    amount=round(float(shop['amount']), 2),
+                    has_sold_count=shop['has_sold_count'],
+                    count=shop['count'],
+                    total_sold=shop['total_sold'],
+                    week_sold=shop['week_sold'],
+                    last_week_sold=shop['last_week_sold'],
+                    amount=shop['amount'],
                     shop_open_time=shop['shop_open_time'],
+                    weeks_inc_ratio=(shop['week_sold'] - shop['last_week_sold']) / (shop['last_week_sold'] + 1)
                 )
 
-        sql = "INSERT INTO erp_spider.shop_statistics (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time) VALUES"
+        sql = "INSERT INTO erp_spider.shop_statistics (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio) VALUES"
         sql += ','.join([i for i in shop_values(shop_list, redis)])
 
         try:
