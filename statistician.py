@@ -92,7 +92,7 @@ class GoodsStatistician(Statistician):
         data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
         return data
 
-    # @log_time_with_name('shop_sold_info')
+    @log_time_with_name('shop_sold_info')
     def shop_sold_info(self, collection):
         ''' 店铺相关 '''
         c = collection
@@ -102,7 +102,8 @@ class GoodsStatistician(Statistician):
             {'$group': {'_id': '$seller', 'quantitySoldYesterday': {'$sum': '$quantitySoldYesterday'}}},
         ])
         # todo-1
-        data['shop_num'] = 0
+        shop_num = self.redis.hlen('ebay:shop:count')
+        data['shop_num'] = shop_num if shop_num > 0 else len(c.distinct('seller'))
         data['has_sold_count'] = 0
         data['has_sold_101'] = 0
         data['has_sold_61_100'] = 0
@@ -225,11 +226,10 @@ class ShopStatistician(Statistician):
         pool.join()
         t2 = datetime.now()
         try:
-            assert t2 - t1 > timedelta(0, 2, 0) # 耗时太短, 大概率多线程执行异常
+            assert t2 - t1 > timedelta(0, 2, 0)  # 耗时太短, 大概率多线程执行异常
         except AssertionError:
             for shop_list in self.chunks(result, 100):
                 self.insert_to_mysql(shop_list)
-
 
     @staticmethod
     def insert_to_mysql(shop_list, mysql=None, redis=None):
