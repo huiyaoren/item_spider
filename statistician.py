@@ -100,6 +100,7 @@ class GoodsStatistician(Statistician):
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
             {'$group': {'_id': '$seller', 'quantitySoldYesterday': {'$sum': '$quantitySoldYesterday'}}},
         ])
+        data['shop_num'] = 0
         data['has_sold_count'] = 0
         data['has_sold_101'] = 0
         data['has_sold_61_100'] = 0
