@@ -215,9 +215,9 @@ class ShopStatistician(Statistician):
         r = self.redis
         result = r.hvals('ebay:shop:basic')
 
+        t1 = datetime.now()
         func = self.insert_to_mysql
         pool = Pool(process)
-        t1 = datetime.now()
         for shop_list in self.chunks(result, 100):
             pool.apply_async(func, args=(shop_list,))
             # self.insert_to_mysql(shop_list)
@@ -225,7 +225,7 @@ class ShopStatistician(Statistician):
         pool.join()
         t2 = datetime.now()
         try:
-            assert t2 - t1 > timedelta(0, 2, 0)
+            assert t2 - t1 > timedelta(0, 2, 0) # 耗时太短, 大概率多线程执行异常
         except AssertionError:
             for shop_list in self.chunks(result, 100):
                 self.insert_to_mysql(shop_list)
