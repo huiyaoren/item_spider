@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime, timedelta
 from multiprocessing.pool import Pool
 
 import pymysql
@@ -100,6 +101,7 @@ class GoodsStatistician(Statistician):
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
             {'$group': {'_id': '$seller', 'quantitySoldYesterday': {'$sum': '$quantitySoldYesterday'}}},
         ])
+        # todo-1
         data['shop_num'] = 0
         data['has_sold_count'] = 0
         data['has_sold_101'] = 0
@@ -215,11 +217,19 @@ class ShopStatistician(Statistician):
 
         func = self.insert_to_mysql
         pool = Pool(process)
+        t1 = datetime.now()
         for shop_list in self.chunks(result, 100):
             pool.apply_async(func, args=(shop_list,))
             # self.insert_to_mysql(shop_list)
         pool.close()
         pool.join()
+        t2 = datetime.now()
+        try:
+            assert t2 - t1 > timedelta(0, 2, 0)
+        except AssertionError:
+            for shop_list in self.chunks(result, 100):
+                self.insert_to_mysql(shop_list)
+
 
     @staticmethod
     def insert_to_mysql(shop_list, mysql=None, redis=None):
