@@ -50,6 +50,12 @@ class ListingXmlRedisSpider(RedisSpider):
         t = etree.HTML(bytes(response.text, encoding='utf8'))
         s = '/html/body/finditemsbycategoryresponse'
 
+        ack = t.xpath(s + '/ack/text()')
+        for ack_str in ack:
+            if ack_str != 'Success':
+                print(response.text)
+
+
         # 商品分类
         for page_current in t.xpath(s + '/paginationoutput/pagenumber/text()'):
             if int(page_current) == 1:
