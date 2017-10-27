@@ -179,9 +179,10 @@ def insert_category_ids_to_redis(redis=None):
     r.delete('ebay:category_urls')
     for listing in category_ids_from_mysql():
         try:
-            url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
-            url = url.format(listing.get('category_id'))
-            r.lpush('ebay:category_urls', url)
+            # url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
+            # url = url.format(listing.get('category_id'))
+            # r.lpush('ebay:category_urls', url)
+            r.lpush('ebay:category_ids', listing.get('category_id'))
         except:
             print("Redis Error")
     print('count: {0}'.format(r.llen('ebay:category_urls')))
