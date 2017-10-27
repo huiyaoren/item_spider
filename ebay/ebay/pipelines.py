@@ -3,7 +3,7 @@ import logging
 import traceback
 from datetime import datetime
 
-from pymongo import MongoClient, ASCENDING
+from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 from pymysql import IntegrityError
 
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class EbayPipeline(object):
+    # todo 即将弃用
     # @log_time_with_name('EbayPipeline.__init__')
     def __init__(self):
         self.mongodb = db_mongodb()
@@ -87,21 +88,92 @@ class EbayPipeline(object):
             return
 
 
-class CleanPipeline():
+class BasicPipeline(object):
+    date = date()
+    spider = 'detail_xml_redis_spider'
+
     def process_item(self, item, spider):
+        if spider.name == self.spider:
+            return self.process_item_spider(item, spider)
+
+    def process_item_spider(self, item, spider):
         pass
 
 
-class MongodbPipeline():
-    def process_item(self, item, spider):
-        pass
+class CleanPipeline(BasicPipeline):
+    def __init__(self):
+        self.mongodb = db_mongodb()
+        self.cleaner = Cleaner(self.date, self.mongodb)
+
+    @log_time_with_name('CleanPipeline')
+    def process_item_spider(self, item, spider):
+        logger.info(item)
+        item = dict(item)
+        item['date'] = self.date
+        try:
+            data = self.cleaner.data_cleaned(item)
+            item = dict(data, **item)
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Clean Item Error. Exception: \n{0}\n{1}".format(e, info))
+        else:
+            return item
 
 
-class MysqlPipeline():
-    def process_item(self, item, spider):
-        pass
+class MongodbPipeline(BasicPipeline):
+    def __init__(self):
+        self.mongodb = db_mongodb()
+        self.collection_detail = self.mongodb['d_{0}'.format(self.date)]
+        try:
+            self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
+        except Exception as e:
+            logger.warning('Create index fail. exception: \n{0}'.format(e))
+
+    @log_time_with_name('MongodbPipeline')
+    def process_item_spider(self, item, spider):
+        try:
+            self.collection_detail.insert_one(item)
+        except DuplicateKeyError:
+            logger.info("Mongodb Duplicate Item. item: \n{0}".format(item))
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown Mongodb Error. Exception: \n{0}\n{1}".format(e, info))
+        finally:
+            return item
 
 
-class ShopStatisticsPipeline():
-    def process_item(self, item, spider):
-        pass
+class MysqlPipeline(BasicPipeline):
+    def __init__(self):
+        self.mysql = db_mysql()
+        self.cursor = self.mysql.cursor()
+        create_table_in_mysql(self.date)
+
+    @log_time_with_name('MysqlPipeline')
+    def process_item_spider(self, item, spider):
+        try:
+            insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
+        except IntegrityError:
+            logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown Mysql Error. Exception: \n{0}\n{1}".format(e, info))
+        finally:
+            return item
+
+
+class ShopStatisticsPipeline(BasicPipeline):
+    def __init__(self):
+        self.mysql = db_mysql()
+        self.cursor = self.mysql.cursor()
+        self.mongodb = db_mongodb()
+        self.cleaner = Cleaner(self.date, self.mongodb)
+
+    @log_time_with_name('ShopStatisticsPipeline')
+    def process_item_spider(self, item, spider):
+        try:
+            self.cleaner.add_up_shop(item)
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown ShopStatistics Error. Exception: \n{0}\n{1}".format(e, info))
+        finally:
+            return item

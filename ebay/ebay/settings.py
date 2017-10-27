@@ -33,7 +33,7 @@ LOG_LEVEL = 'DEBUG' # INFO | WARNING
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 256
-CONCURRENT_ITEMS = 1024
+CONCURRENT_ITEMS = 2048
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
@@ -77,7 +77,11 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'ebay.pipelines.EbayPipeline': 300,
+   # 'ebay.pipelines.EbayPipeline': 300,
+   'ebay.pipelines.CleanPipeline': 200,
+   'ebay.pipelines.MongodbPipeline': 300,
+   'ebay.pipelines.MysqlPipeline': 400,
+   'ebay.pipelines.ShopStatisticsPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
