@@ -91,6 +91,11 @@ class EbayPipeline(object):
 class BasicPipeline(object):
     date = date()
     spider = 'detail_xml_redis_spider'
+    mongodb = db_mongodb()
+    collection_detail = mongodb['d_{0}'.format(date)]
+    mysql = db_mysql()
+    cursor = mysql.cursor()
+    cleaner = Cleaner(date, mongodb)
 
     def process_item(self, item, spider):
         if spider.name == self.spider:
@@ -101,10 +106,6 @@ class BasicPipeline(object):
 
 
 class CleanPipeline(BasicPipeline):
-    def __init__(self):
-        self.mongodb = db_mongodb()
-        self.cleaner = Cleaner(self.date, self.mongodb)
-
     @log_time_with_name('CleanPipeline')
     def process_item_spider(self, item, spider):
         logger.info(item)
@@ -122,8 +123,6 @@ class CleanPipeline(BasicPipeline):
 
 class MongodbPipeline(BasicPipeline):
     def __init__(self):
-        self.mongodb = db_mongodb()
-        self.collection_detail = self.mongodb['d_{0}'.format(self.date)]
         try:
             self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
         except Exception as e:
@@ -144,8 +143,6 @@ class MongodbPipeline(BasicPipeline):
 
 class MysqlPipeline(BasicPipeline):
     def __init__(self):
-        self.mysql = db_mysql()
-        self.cursor = self.mysql.cursor()
         create_table_in_mysql(self.date)
 
     @log_time_with_name('MysqlPipeline')
@@ -162,12 +159,6 @@ class MysqlPipeline(BasicPipeline):
 
 
 class ShopStatisticsPipeline(BasicPipeline):
-    def __init__(self):
-        self.mysql = db_mysql()
-        self.cursor = self.mysql.cursor()
-        self.mongodb = db_mongodb()
-        self.cleaner = Cleaner(self.date, self.mongodb)
-
     @log_time_with_name('ShopStatisticsPipeline')
     def process_item_spider(self, item, spider):
         try:
