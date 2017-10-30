@@ -138,3 +138,5 @@ DATABASE_CONFIG = {
         'port': 6379,
     }
 }
+
+CRAWL_PAGES = 100

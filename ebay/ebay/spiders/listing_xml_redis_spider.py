@@ -3,6 +3,7 @@ import logging
 
 from scrapy import Request
 from scrapy_redis.spiders import RedisSpider
+from scrapy.utils.project import get_project_settings
 
 from ..tests.time_recoder import log_time_with_name
 from ..utils.common import bytes_to_str
@@ -31,6 +32,7 @@ class ListingXmlRedisSpider(RedisSpider):
         </findItemsByCategoryRequest>
     '''
     url = 'https://svcs.ebay.com/services/search/FindingService/v1'
+    settings = get_project_settings()
 
     def make_request_from_data(self, data):
         category_id, page = bytes_to_str(data, self.redis_encoding).split(':')
@@ -65,7 +67,7 @@ class ListingXmlRedisSpider(RedisSpider):
 
                 page_total = t.xpath(s + '/paginationoutput/totalpages/text()')[0]
                 for page in range(2, int(page_total) + 1):
-                    if page > 100:
+                    if page > self.settings['CRAWL_PAGES']:
                         break
                     self.server.lpush('ebay:category_ids', '{0}:{1}'.format(category_id, page))
             break
