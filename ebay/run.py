@@ -53,7 +53,6 @@ def run_multi(name, processes=8, prepared=0):
     if prepared:
         for i in range(prepared):
             p.apply_async(run, args=('listing_xml_redis_spider',))
-            # p.apply_async(run, args=('listing_redis_spider',))
     for i in range(processes - prepared):
         p.apply_async(run, args=(name,))
     p.close()
