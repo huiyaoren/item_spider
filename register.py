@@ -1,6 +1,8 @@
+import random
 import time
 from multiprocessing.pool import Pool
 
+from PIL import Image
 from pymongo.errors import DuplicateKeyError
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -42,6 +44,30 @@ class Register():
         except DuplicateKeyError:
             print('DuplicateKeyError: {0}'.format(data))
 
+    def captcha_code(self, pattern='//*[@id="w4-w1-w3-captcha-image"]', img_name=None):
+        browser = self.browser
+
+        # 获取截图
+        screenshot_name = 'img/screenshot/{0}.png'.format(random.randint(0, 100))
+        browser.get_screenshot_as_file(screenshot_name)
+
+        # 获取指定元素位置
+        element = browser.find_element_by_xpath(pattern)
+
+        print(element.location)
+        print(element.location_once_scrolled_into_view)
+
+        left = int(element.location_once_scrolled_into_view['x'])
+        top = int(element.location_once_scrolled_into_view['y'])
+        right = int(element.location_once_scrolled_into_view['x'] + element.size['width'])
+        bottom = int(element.location_once_scrolled_into_view['y'] + element.size['height'])
+        print(left, top, right, bottom)
+
+        # 通过Image处理图像
+        im = Image.open(screenshot_name)
+        im = im.crop((left, top, right, bottom))
+        im.save('img/captcha/code.png')
+
     def run(self, username='qwe', password='1234qwer$'):
         # 请求连接
         req_url = "https://developer.ebay.com/signin"
@@ -69,6 +95,11 @@ class Register():
         browser.find_element_by_xpath('//*[@id="w4-w1-checkbox-user-agreement"]').click()
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').click()
+
+        captcha = self.captcha_code()
+
+        while 1:
+            pass
 
         # 输入验证码
         # captcha = input('Insert Captcha :\n')
