@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from multiprocessing.pool import Pool
 
+import pymongo
 import pymysql
 
 from ebay.ebay.tests.time_recoder import log_time_with_name
@@ -170,7 +171,7 @@ class GoodsStatistician(Statistician):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
         return [i['itemId'] for i in
-                collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek').limit(20)]
+                collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek', pymongo.DESCENDING).limit(20)]
 
     # @log_time_with_name('save_goods_statics')
     def insert_to_mysql(self, statics_data):
