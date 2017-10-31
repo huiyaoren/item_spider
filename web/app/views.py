@@ -67,11 +67,17 @@ def data():
     # REDIS
     data['redis'] = {}
     data['redis']['category_ids'] = r.llen('ebay:category_ids')
-    data['redis']['category_urls'] = r.llen('ebay:category_urls')
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
-    data['redis']['item_ids_unclean'] = r.zcard('ebay:item_ids_unclean')
     data['redis']['tokens'] = r.zcard('ebay:tokens')
+    data['redis']['appid'] = r.zcard('ebay:appid')
+    data['redis']['shop:amount'] = r.zcard('ebay:shop:amount')
+    data['redis']['shop:basic'] = r.zcard('ebay:shop:basic')
+    data['redis']['shop:count'] = r.zcard('ebay:shop:count')
+    data['redis']['shop:has_sold_count'] = r.zcard('ebay:shop:has_sold_count')
+    data['redis']['shop:last_week_sold'] = r.zcard('ebay:shop:last_week_sold')
+    data['redis']['shop:total_sold'] = r.zcard('ebay:shop:total_sold')
+    data['redis']['shop:week_sold'] = r.zcard('ebay:shop:week_sold')
     # MONGODB
     collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
     data['mongodb'] = {}
