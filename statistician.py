@@ -93,7 +93,7 @@ class GoodsStatistician(Statistician):
         data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
         return data
 
-    @log_time_with_name('shop_sold_info')
+    # @log_time_with_name('shop_sold_info')
     def shop_sold_info(self, collection):
         ''' 店铺相关 '''
         c = collection
@@ -171,7 +171,8 @@ class GoodsStatistician(Statistician):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
         return [i['itemId'] for i in
-                collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek', pymongo.DESCENDING).limit(20)]
+                collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek',
+                                                                           pymongo.DESCENDING).limit(20)]
 
     # @log_time_with_name('save_goods_statics')
     def insert_to_mysql(self, statics_data):
@@ -248,7 +249,7 @@ class ShopStatistician(Statistician):
                 shop['last_week_sold'] = int(r.hget('ebay:shop:last_week_sold', shop['shop_name']) or 0)
                 shop['has_sold_count'] = int(r.hget('ebay:shop:has_sold_count', shop['shop_name']) or 0)
                 shop['total_sold'] = int(r.hget('ebay:shop:total_sold', shop['shop_name']) or 0)
-                shop['amount'] = round(float(r.hget('ebay:shop:amount', shop['shop_name']) or 0),2)
+                shop['amount'] = round(float(r.hget('ebay:shop:amount', shop['shop_name']) or 0), 2)
                 yield values.format(
                     shop_name=shop['shop_name'],
                     shop_feedback_score=shop['shop_feedback_score'],
