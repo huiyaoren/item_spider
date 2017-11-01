@@ -69,6 +69,7 @@ def data():
     data['redis']['category_ids'] = r.llen('ebay:category_ids')
     data['redis']['item_ids'] = r.llen('ebay:item_ids')
     data['redis']['item_ids_filter'] = r.scard('ebay:item_ids_filter')
+    data['redis']['item_ids_filter_hyper'] = r.pfcount('ebay:item_ids_filter_hyper')
     data['redis']['tokens'] = r.zcard('ebay:tokens')
     data['redis']['appid'] = r.zcard('ebay:appid')
     data['redis']['shop:amount'] = r.zcard('ebay:shop:amount')
