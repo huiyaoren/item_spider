@@ -8,7 +8,7 @@ class TimeRecorder:
         self.startTime = time.time()
 
     def __del__(self):
-        print(u"%s end, time used: %.1f s", self.name, time.time() - self.startTime)
+        print("{0} end, time used: {1} s".format(self.name, time.time() - self.startTime))
 
 
 def log_time_with_name(name=None):
@@ -22,7 +22,7 @@ def log_time_with_name(name=None):
             # print(_name + u" start")
             startTime = time.time()
             res = func(*args, **kwargs)
-            print(u"%s end, time used: %.1f s", _name, time.time() - startTime)
+            print("{0} end, time used: {1} s".format(_name, time.time() - startTime))
             return res
 
         return wrapper2
@@ -35,7 +35,7 @@ def log_time(func):
         # print(func.func_name + u" start")
         startTime = time.time()
         ret = func(*args, **kwargs)
-        print(u"%s end, time used: %.1f s", func.func_name, time.time() - startTime)
+        print("{0} end, time used: {1} s".format(func.func_name, time.time() - startTime))
         return ret
 
     return wrapper
