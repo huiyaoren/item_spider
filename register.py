@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from multiprocessing.pool import Pool
@@ -11,6 +12,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from ebay.ebay.utils.data import db_mongodb
+from recognizer import recognizer
 
 
 class Register():
@@ -20,17 +22,20 @@ class Register():
         self.collection = self.mongodb['tokens']
         self.collection.ensure_index('username', unique=True)
 
-    def element_loaded(self, pattern, time=1800):
+    def element_loaded(self, pattern, time=1800.0):
+        ''' 等待元素载入 '''
         element = WebDriverWait(self.browser, time).until(
             expected_conditions.presence_of_element_located((By.XPATH, pattern)))
         return element
 
-    def element_visible(self, pattern, time=1800):
+    def element_visible(self, pattern, time=1800.0):
+        ''' 等待元素可见 '''
         element = WebDriverWait(self.browser, time).until(
             expected_conditions.visibility_of_element_located((By.XPATH, pattern)))
         return element
 
     def switch_window(self, now):
+        ''' 切换窗口 '''
         all_handles = self.browser.window_handles  # 得到当前开启的所有窗口的句柄
         for handle in all_handles:
             if handle != now:  # 获取到与当前窗口不一样的窗口
@@ -38,35 +43,41 @@ class Register():
                 self.browser.switch_to.window(handle)
 
     def save_tokens(self, data):
+        ''' 储存 token '''
         c = self.collection
         try:
             c.insert_one(data)
         except DuplicateKeyError:
             print('DuplicateKeyError: {0}'.format(data))
 
-    def captcha_code(self, pattern='//*[@id="w4-w1-w3-captcha-image"]', img_name=None):
-        browser = self.browser
+    def captcha_code(self):
+        ''' 获取图片验证码 '''
+        captcha_file = self.get_captcha()
+        cid, result = recognizer.decode(captcha_file)
+        print(result)
+        os.rename(captcha_file, 'img/captcha/{0}.png'.format(result))
+        return result
 
+    def get_captcha(self, pattern='//*[@id="w4-w1-w3-captcha-image"]', img_name=None):
+        ''' 保存验证码文件 '''
+        browser = self.browser
         # 获取截图
         screenshot_name = 'img/screenshot/{0}.png'.format(random.randint(0, 100))
         browser.get_screenshot_as_file(screenshot_name)
-
         # 获取指定元素位置
         element = browser.find_element_by_xpath(pattern)
-
-        print(element.location)
-        print(element.location_once_scrolled_into_view)
-
         left = int(element.location_once_scrolled_into_view['x'])
         top = int(element.location_once_scrolled_into_view['y'])
         right = int(element.location_once_scrolled_into_view['x'] + element.size['width'])
         bottom = int(element.location_once_scrolled_into_view['y'] + element.size['height'])
         print(left, top, right, bottom)
-
-        # 通过Image处理图像
+        # 通过 Image 处理图像
+        captcha_name = 'img/captcha/{0}.png'.format(random.getrandbits(64))
         im = Image.open(screenshot_name)
         im = im.crop((left, top, right, bottom))
-        im.save('img/captcha/code.png')
+        im.save(captcha_name)
+
+        return captcha_name
 
     def run(self, username='qwe', password='1234qwer$'):
         # 请求连接
@@ -96,18 +107,26 @@ class Register():
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').click()
 
-        captcha = self.captcha_code()
-
-        while 1:
-            pass
-
         # 输入验证码
-        # captcha = input('Insert Captcha :\n')
-        # browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').send_keys(captcha)
+        print('Get captcha code ...')
+        # self.insert_captcha_code()
+        captcha = self.captcha_code()
+        browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').send_keys(str(captcha))
+        # browser.find_element_by_xpath('//*[@id="w4-w1-w3-captcha-response-field"]').send_keys(123)
+        # captcha_ = input('Insert Captcha :\n')
 
         # 提交注册信息
         print('Sent register data ...')
-        # browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
+        browser.find_element_by_xpath('//*[@id="w4-w1-join-button"]').click()
+
+        # self.deal_with_1(username, password)
+        self.element_loaded('//body')
+        try:
+            self.element_visible('//*[@id="w4-w0-subject"]', 0.1).send_keys(username)
+            browser.find_element_by_xpath('//*[@id="w4-w0-password"]').send_keys(password)
+            browser.find_element_by_xpath('//*[@id="w4-w0-signin-button"]').click()
+        except:
+            pass
 
         # 新建应用
         print('Write app name ...')  # todo 因未知原因返回登录页面
@@ -210,8 +229,8 @@ class Register():
 
 def main(start, end):
     option = webdriver.ChromeOptions()
-    # option.add_argument('--user-data-dir=~/.config/google-chrome')
-    # option.add_extension('/host/DL/92jiasu.crx')
+    option.add_argument('--user-data-dir=~/.config/google-chrome')
+    option.add_extension('/host/DL/92jiasu.crx')
     browser = webdriver.Chrome(chrome_options=option)
     register = Register(browser)
     register.run_circle(start, end)
@@ -219,6 +238,6 @@ def main(start, end):
 
 if __name__ == '__main__':
     p = Pool()
-    p.apply_async(main, args=(512, 600,))
+    p.apply_async(main, args=(1128, 1200,))
     p.close()
     p.join()
