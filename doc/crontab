@@ -18,5 +18,6 @@ MAILTO=root
 10 00 * * * root source /root/py34/bin/activate && cd /root/item_spider/ebay && python run.py
 00 08 * * * root pkill -9 python
 00 08 * * * root pkill -9 scrapy
-05 08 * * * root docker start portainer
+01 08 * * * root source /root/py34/bin/activate && cd /root/item_spider && python statistician.py
 05 08 * * * root source /root/py34/bin/activate && cd /root/item_spider/web && python run.py
+05 08 * * * root docker start portainer
