@@ -1,6 +1,7 @@
 from datetime import datetime
 from multiprocessing.pool import Pool
 
+from ebay.ebay.tests.time_recoder import log_time
 from ebay.ebay.utils.data import db_mongodb, db_mysql
 
 
@@ -68,6 +69,7 @@ class MysqlDumper(Dumper):
             result = self.execute_sql(sql, mysql)
             yield result
 
+    @log_time
     def dump(self, field_list):
 
         # 获取源数据库数据总行数
