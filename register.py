@@ -217,14 +217,13 @@ class Register():
         while 1:
             time.sleep(10)
 
-    def close(self):
-        self.browser.close()
-
     def run_circle(self, start, end):
         for i in range(start, end):
             self.run('srd_token_{0}'.format(i))
         print('Run Circle Done.')
-        self.close()
+
+    def __del__(self):
+        self.browser.close()
 
 
 def main(start, end):

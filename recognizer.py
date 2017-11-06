@@ -99,7 +99,7 @@ recognizer = captcha_recognizer()
 
 if __name__ == '__main__':
     username = 'wslshanlin'
-    password = '1994180438'
+    password = input('Please input your password... > ')
     appid = 4149
     appkey = '8576e00849d04f656c2bec09d0f01018'
     filename = 'getimage.jpg'
