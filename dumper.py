@@ -144,7 +144,7 @@ class MongodbDumper(Dumper):
 
 def main():
     dumper = MysqlDumper(table='goods_{0}'.format(datetime.now().strftime("%Y%m%d")))
-    dumper.import_()
+    dumper.run()
 
 
 if __name__ == '__main__':
