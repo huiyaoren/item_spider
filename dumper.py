@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from multiprocessing.pool import Pool
 
@@ -14,8 +15,9 @@ class Dumper():
             yield list[i:i + length]
 
 
-class MysqlDumper(Dumper):
-    def __init__(self, table=None, *args, **kwargs):
+class OldMysqlDumper(Dumper):
+    ''' 已弃用 '''
+    def __init__(self, table=None, start=0, range=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.table = table
         self.mysql_from = db_mysql('mysql_local')
@@ -30,9 +32,9 @@ class MysqlDumper(Dumper):
             sql = f.read().format(date or self.date)
             print(sql)
         mysql = mysql or self.mysql_to
-        self.execute_sql(sql, mysql)
+        self.execute(sql, mysql)
 
-    def execute_sql(self, sql, mysql, cursor=None, data=None):
+    def execute(self, sql, mysql, cursor=None, data=None):
         # cursor = cursor or mysql.cursor()
         cursor = mysql.cursor()
         try:
@@ -54,56 +56,96 @@ class MysqlDumper(Dumper):
 
         def data_sql():
             for line in insert_data:
-                yield '({0})'.format(','.join([r"'{0}'".format(str(i).replace(r"'", r"\'")) for i in line]))
+                yield '({0})'.format(
+                    ','.join([r"'{0}'".format(str(i).replace(r"'", r"\'").replace(r'"', r'\"')) for i in line]))
 
         data_sql = ','.join(i for i in data_sql())
         sql = ' '.join([sql, data_sql])
         return sql
 
-    def read_data(self, field_list, lines, mysql):
+    def data_source(self, field_list, lines, mysql):
         fields = ','.join(field_list)
         for l in range(0, lines, 1000):
             print(l)
             sql = "SELECT {fields} FROM {table} limit {start}, {end} ".format(
                 start=l, end=l + 1000, fields=fields, table=self.table)
-            result = self.execute_sql(sql, mysql)
+            result = self.execute(sql, mysql)
             yield result
 
     @log_time
     def dump(self, field_list):
-
         # 获取源数据库数据总行数
-        sql = "SELECT count(id) AS rowcount FROM {table_}".format(table_=self.table)
-        result = self.execute_sql(sql, self.mysql_from)
-        lines = result[0][0]
-
+        lines = self.total_rows()
         # 多线程循环每次读取 1000 行数据
-        for data in self.read_data(field_list, lines, self.mysql_from):
+        for data in self.data_source(field_list, lines, self.mysql_from):
             # 构造 SQL 语句写入目标数据库
             insert_sql = self.insert_sql(data, field_list)
-            self.execute_sql(insert_sql, self.mysql_to)
+            self.execute(insert_sql, self.mysql_to)
             del insert_sql
+
+    def total_rows(self):
+        sql = "SELECT count(*) AS rowcount FROM {table_}".format(table_=self.table)
+        result = self.execute(sql, self.mysql_from)
+        lines = result[0][0]
+        return lines
 
     def __del__(self):
         self.mysql_to.close()
         self.mysql_from.close()
 
 
+class MysqlDumper(Dumper):
+    def __init__(self, table=None, config_source=None, config_target=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.config_source = config_source or {'host': '192.168.1.248',
+                                               'database': 'erp_spider',
+                                               'username': 'root',
+                                               'password': 'root',
+                                               'port': 3306, }
+        self.config_target = config_target or {'host': '45.126.121.187',
+                                               'database': 'erp_spider',
+                                               'username': 'erp_spider',
+                                               'password': 'fyEnzfwZjT',
+                                               'port': 3306, }
+        self.table = table
+
+    def dump(self, table=None):
+        config = self.config_source
+        command_dump = 'mysqldump -q -h{host} -u{username} -p{password} {database} {table} > {table}.sql'.format(
+            host=config['host'],
+            username=config['username'],
+            password=config['password'],
+            database=config['database'],
+            table=table or self.table
+        )
+        print(command_dump)
+        os.system(command_dump)
+
+    def import_(self, table=None):
+        config = self.config_target
+        command_dump = 'mysql -h{host} -u{username} -p{password} {database} < {table}.sql'.format(
+            host=config['host'],
+            username=config['username'],
+            password=config['password'],
+            database=config['database'],
+            table=table or self.table
+        )
+        print(command_dump)
+        os.system(command_dump)
+
+    def run(self, table=None):
+        self.dump(table)
+        self.import_(table)
+
+
 class MongodbDumper(Dumper):
     mongodb = db_mongodb('mongodb_remote')
 
 
-def run():
-    pass
-    # todo 总行数
-    # todo 划分任务
+def main():
+    dumper = MysqlDumper(table='goods_{0}'.format(datetime.now().strftime("%Y%m%d")))
+    dumper.import_()
 
 
 if __name__ == '__main__':
-    dumper = MysqlDumper('goods')
-    dumper.dump([
-        'id', 'platform', 'site', 'title', 'default_image', 'other_images', 'price', 'currency', 'total_sold',
-        'hit_count', 'goods_category', 'goods_url', 'shop_name', 'shop_feedback_score', 'shop_feedback_percentage',
-        'shop_open_time', 'publish_time', 'weeks_sold', 'weeks_sold_money', 'day_sold', 'last_weeks_sold',
-        'trade_increase_rate', 'is_hot', 'is_new',
-    ])
+    main()
