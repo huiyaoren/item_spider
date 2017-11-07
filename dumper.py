@@ -121,6 +121,7 @@ class MysqlDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
+    @log_time
     def import_(self, table=None):
         config = self.config_target
         command_dump = 'mysql -h{host} -u{username} -p{password} {database} < {table}.sql'.format(
@@ -133,6 +134,7 @@ class MysqlDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
+    @log_time
     def run(self, table=None):
         self.dump(table)
         self.import_(table)
