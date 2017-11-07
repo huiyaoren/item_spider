@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class Statistician():
-    def __init__(self, redis=None, mongodb=None, mysql=None):
+    def __init__(self, redis=None, mongodb=None, mysql=None, datetime=None):
         self.redis = redis or db_redis()
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.mysql = mysql or db_mysql()
         self.mysql_cursor = self.mysql.cursor()
-        self.date = date()
+        self.date = datetime or date()
 
     def execute_sql(self, sql, data=None, mysql=None, cursor=None):
         mysql = mysql or db_mysql()
@@ -36,12 +36,13 @@ class Statistician():
 
 
 class GoodsStatistician(Statistician):
+
     @log_time_with_name('GoodsStatistician.save')
     def save(self):
         m = self.mongodb
 
         c = m['d_{0}'.format(self.date)]
-        # from pymongo import ASCENDING
+        from pymongo import ASCENDING
         # c.create_index([('quantitySoldYesterday', ASCENDING)])
         # c.create_index([('quantitySoldLastWeek', ASCENDING)])
         # c.create_index([('categoryID', ASCENDING)])
@@ -66,17 +67,17 @@ class GoodsStatistician(Statistician):
         #
         self.insert_to_mysql(data)
 
-    # @log_time_with_name('total_goods_num')
+    @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
         ''' 商品总数 '''
         return collection.count()
 
-    # @log_time_with_name('sales_goods_num')
+    @log_time_with_name('sales_goods_num')
     def sales_goods_num(self, collection):
         ''' 有销量商品总数 '''
         return collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
 
-    # @log_time_with_name('total_sold_info')
+    @log_time_with_name('total_sold_info')
     def total_sold_info(self, collection, sales_goods_num):
         c = collection
         data = {}
@@ -93,7 +94,7 @@ class GoodsStatistician(Statistician):
         data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
         return data
 
-    # @log_time_with_name('shop_sold_info')
+    @log_time_with_name('shop_sold_info')
     def shop_sold_info(self, collection):
         ''' 店铺相关 '''
         c = collection
@@ -125,7 +126,7 @@ class GoodsStatistician(Statistician):
                 data['has_sold_101'] += 1
         return data
 
-    # @log_time_with_name('goods_sold_info')
+    @log_time_with_name('goods_sold_info')
     def goods_sold_info(self, collection, total_goods_num):
         ''' 商品相关 '''
         c = collection
@@ -159,22 +160,22 @@ class GoodsStatistician(Statistician):
         #         data['has_sold_101'] += 1
         return data
 
-    # @log_time_with_name('hot_category_ids_info')
+    @log_time_with_name('hot_category_ids_info')
     def hot_category_ids_info(self, collection, total_goods_num):
         ''' 商品分类 '''
         # fixme 12w => 0.3s 有待性能优化
         result = collection.aggregate([{'$group': {'_id': '$categoryID', 'quantity': {'$sum': 1}}}])
         return {str(i['_id']): i['quantity'] for i in result if i['quantity'] > total_goods_num * 0.0001}
 
-    # @log_time_with_name('hot_goods_ids_info')
+    @log_time_with_name('hot_goods_ids_info')
     def hot_goods_ids_info(self, collection):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
         return [i['itemId'] for i in
-                collection.find({"quantitySoldLastWeek": {'$gt': 0}}).sort('quantitySoldLastWeek',
+                collection.find({"quantitySoldLastWeek": {'$gt': 100}}).sort('quantitySoldLastWeek',
                                                                            pymongo.DESCENDING).limit(20)]
 
-    # @log_time_with_name('save_goods_statics')
+    @log_time_with_name('save_goods_statics')
     def insert_to_mysql(self, statics_data):
         print(statics_data['hot_category_ids_info'])
         # fixme 12w => 0.4s 有待性能优化
@@ -271,18 +272,19 @@ class ShopStatistician(Statistician):
             cursor.execute(sql)
             mysql.commit()
         except pymysql.err.IntegrityError:
-            logger.warning('Duplicate. sql:\n{0}'.format(sql))
+            logger.warning('Duplicate. sqls:\n{0}'.format(sql))
 
 
 def main():
     redis = db_redis()
     mongodb = db_mongodb('mongodb_remote')
     mysql = db_mysql()
+    datetime = date()
 
-    g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql)
+    g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
 
-    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql)
+    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     s.save(process=64)
 
 
