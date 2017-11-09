@@ -102,11 +102,18 @@ class MongodbDumper(Dumper):
 
 def main():
     table = 'goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
-    dumper = MysqlDumper(table)
-    dumper.run()
-    # collection = 'tokens'
-    # dumper = MongodbDumper(collection=collection)
-    # dumper.dump()
+    dumper = MysqlDumper(
+        source={'host': '192.168.1.248', 'database': 'erp_spider', 'username': 'root', 'password': 'root',
+                'port': 3306, },
+        target={'host': '45.126.121.187', 'database': 'erp_spider', 'username': 'erp_spider', 'password': 'fyEnzfwZjT',
+                'port': 3306, }
+    )
+    dumper.run(table)
+    # dumper = MongodbDumper(
+    #     source={'host': '192.168.1.192', 'database': 'test_database', 'port': 27017, },
+    #     target={'host': '192.168.1.253', 'database': 'test_database', 'port': 27017, },
+    # )
+    # dumper.run('tokens')
 
 
 if __name__ == '__main__':
