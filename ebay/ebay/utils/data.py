@@ -47,8 +47,8 @@ def db_mysql(host_name='mysql'):
     )
 
 
-def create_table_in_mysql(date, sql=None):
-    mysql = db_mysql()
+def create_table_in_mysql(date, sql=None, mysql=None):
+    mysql = mysql or db_mysql()
     cursor = mysql.cursor()
     sql = sql or '''
       CREATE TABLE IF NOT EXISTS `goods_{0}` (
