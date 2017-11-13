@@ -58,9 +58,8 @@ class Cleaner():
 
     def category_id_top(self, item):
         id = item['categoryID']
-        top = self.redis.hget('ebay:top_category_id', int(id))
-        print(top)
-        return top
+        top = self.redis.hget('ebay:top_category_id', id)
+        return int(top)
 
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
