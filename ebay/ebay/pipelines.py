@@ -130,7 +130,7 @@ class MongodbPipeline(BasicPipeline):
         except Exception as e:
             logger.warning('Create index fail. exception: \n{0}'.format(e))
 
-    @log_time_with_name('MongodbPipeline')
+    # @log_time_with_name('MongodbPipeline')
     def process_item_spider(self, item, spider):
         try:
             self.collection_detail.insert_one(item)
@@ -147,7 +147,7 @@ class MysqlPipeline(BasicPipeline):
     def __init__(self):
         create_table_in_mysql(self.date)
 
-    @log_time_with_name('MysqlPipeline')
+    # @log_time_with_name('MysqlPipeline')
     def process_item_spider(self, item, spider):
         if item['quantitySold'] > 0:
             try:
@@ -164,7 +164,7 @@ class MysqlPipeline(BasicPipeline):
 
 class NewItemPipeline(BasicPipeline):
     def __init__(self):
-        create_table_in_mysql(self.date, SQL['new_goods'], self.mysql)
+        create_table_in_mysql(self.date, SQL['new_goods'])
 
     def process_item_spider(self, item, spider):
         if item['isNew'] == 1:
@@ -182,7 +182,7 @@ class NewItemPipeline(BasicPipeline):
 
 class HotItemPipeline(BasicPipeline):
     def __init__(self):
-        create_table_in_mysql(self.date, SQL['hot_goods'], self.mysql)
+        create_table_in_mysql(self.date, SQL['hot_goods'])
 
     def process_item_spider(self, item, spider):
         if item['isHot'] == 1:
