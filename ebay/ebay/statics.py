@@ -56,6 +56,12 @@ class Cleaner():
         else:
             return 0
 
+    def category_id_top(self, item):
+        id = item['itemId']
+        top = self.redis.hget('ebay:top_category_id', id)
+        print(top)
+        return top
+
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
         ''' 商品一周内有销量的天数是否达到指定值 '''
@@ -91,6 +97,7 @@ class Cleaner():
         data['isNew'] = self.is_new(item)
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['quantitySoldYesterday'] = self.sales_yesterday(item)
+        data['topCategoryID'] = self.category_id_top(item)
         return data
 
     def add_up_shop(self, item_cleaned):
