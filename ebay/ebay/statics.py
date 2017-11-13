@@ -57,8 +57,8 @@ class Cleaner():
             return 0
 
     def category_id_top(self, item):
-        id = item['itemId']
-        top = self.redis.hget('ebay:top_category_id', id)
+        id = item['categoryID']
+        top = self.redis.hget('ebay:top_category_id', int(id))
         print(top)
         return top
 
