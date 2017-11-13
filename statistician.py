@@ -164,8 +164,8 @@ class GoodsStatistician(Statistician):
     def hot_category_ids_info(self, collection, total_goods_num):
         ''' 商品分类 '''
         # fixme 12w => 0.3s 有待性能优化
-        result = collection.aggregate([{'$group': {'_id': '$categoryID', 'quantity': {'$sum': 1}}}])
-        return {str(i['_id']): i['quantity'] for i in result if i['quantity'] > total_goods_num * 0.0001}
+        result = collection.aggregate([{'$group': {'_id': '$topCategoryID', 'quantity': {'$sum': 1}}}])
+        return {str(int(i['_id'] or 0)): i['quantity'] for i in result if i['quantity'] > total_goods_num * 0.0001}
 
     @log_time_with_name('hot_goods_ids_info')
     def hot_goods_ids_info(self, collection):
