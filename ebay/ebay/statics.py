@@ -98,6 +98,7 @@ class Cleaner():
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['quantitySoldYesterday'] = self.sales_yesterday(item)
         data['topCategoryID'] = self.category_id_top(item)
+        self.redis.hset('ebay:log', item['itemId'], data)
         return data
 
     def add_up_shop(self, item_cleaned):
