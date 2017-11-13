@@ -167,7 +167,7 @@ class NewItemPipeline(BasicPipeline):
         create_table_in_mysql(self.date, SQL['new_goods'], self.mysql)
 
     def process_item_spider(self, item, spider):
-        if item['is_new'] == 1:
+        if item['isNew'] == 1:
             try:
                 insert_new_item_into_mysql(item, self.date, self.mysql, self.cursor)
             except IntegrityError:
@@ -185,7 +185,7 @@ class HotItemPipeline(BasicPipeline):
         create_table_in_mysql(self.date, SQL['hot_goods'], self.mysql)
 
     def process_item_spider(self, item, spider):
-        if item['is_hot'] == 1:
+        if item['isHot'] == 1:
             try:
                 insert_hot_item_into_mysql(item, self.date, self.mysql, self.cursor)
             except IntegrityError:
