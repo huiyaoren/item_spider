@@ -9,8 +9,10 @@ from pymysql import IntegrityError
 
 from .tests.time_recoder import log_time_with_name
 from .statics import Cleaner
-from .utils.data import db_mysql, db_mongodb, insert_item_into_mysql, create_table_in_mysql
+from .utils.data import db_mysql, db_mongodb, insert_item_into_mysql, create_table_in_mysql, insert_new_item_into_mysql, \
+    insert_hot_item_into_mysql
 from .utils.common import date, clean_item_id
+from .sqls.sqls import SQL
 
 logger = logging.getLogger(__name__)
 
@@ -147,15 +149,53 @@ class MysqlPipeline(BasicPipeline):
 
     @log_time_with_name('MysqlPipeline')
     def process_item_spider(self, item, spider):
-        try:
-            insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
-        except IntegrityError:
-            logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
-        except Exception as e:
-            info = traceback.format_exc()
-            logger.warning("Unknown Mysql Error. Exception: \n{0}\n{1}".format(e, info))
-        finally:
-            return item
+        if item['quantitySold'] > 0:
+            try:
+                insert_item_into_mysql(item, self.date, self.mysql, self.cursor)
+            except IntegrityError:
+                logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
+            except Exception as e:
+                info = traceback.format_exc()
+                logger.warning("Unknown Mysql Error. Exception: \n{0}\n{1}".format(e, info))
+            finally:
+                return item
+        return item
+
+
+class NewItemPipeline(BasicPipeline):
+    def __init__(self):
+        create_table_in_mysql(self.date, SQL['new_goods'], self.mysql)
+
+    def process_item_spider(self, item, spider):
+        if item['is_new'] == 1:
+            try:
+                insert_new_item_into_mysql(item, self.date, self.mysql, self.cursor)
+            except IntegrityError:
+                logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
+            except Exception as e:
+                info = traceback.format_exc()
+                logger.warning("Unknown Mysql Error. Exception: \n{0}\n{1}".format(e, info))
+            finally:
+                return item
+        return item
+
+
+class HotItemPipeline(BasicPipeline):
+    def __init__(self):
+        create_table_in_mysql(self.date, SQL['hot_goods'], self.mysql)
+
+    def process_item_spider(self, item, spider):
+        if item['is_hot'] == 1:
+            try:
+                insert_hot_item_into_mysql(item, self.date, self.mysql, self.cursor)
+            except IntegrityError:
+                logger.info("Mysql Duplicate Item. item: \n{0}".format(item))
+            except Exception as e:
+                info = traceback.format_exc()
+                logger.warning("Unknown Mysql Error. Exception: \n{0}\n{1}".format(e, info))
+            finally:
+                return item
+        return item
 
 
 class ShopStatisticsPipeline(BasicPipeline):

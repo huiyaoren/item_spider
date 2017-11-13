@@ -81,6 +81,8 @@ ITEM_PIPELINES = {
    'ebay.pipelines.CleanPipeline': 200,
    'ebay.pipelines.MongodbPipeline': 300,
    'ebay.pipelines.MysqlPipeline': 400,
+   'ebay.pipelines.NewItemPipeline': 401,
+   'ebay.pipelines.HotItemPipeline': 402,
    'ebay.pipelines.ShopStatisticsPipeline': 500,
 }
 
