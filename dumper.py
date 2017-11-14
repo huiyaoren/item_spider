@@ -29,7 +29,7 @@ class MysqlDumper(Dumper):
                                         'port': 3306, }
         self.table = table
 
-    @log_time_with_name('dump')
+    @log_time_with_name('MysqlDumper.dump')
     def dump(self, table=None):
         config = self.config_source
         command_dump = 'mysqldump -q -h{host} -u{username} -p{password} {database} {table} > {table}.sql'.format(
@@ -42,7 +42,7 @@ class MysqlDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
-    @log_time_with_name('import')
+    @log_time_with_name('MysqlDumper.import')
     def import_(self, table=None):
         config = self.config_target
         command_dump = 'mysql -h{host} -u{username} -p{password} {database} < {table}.sql'.format(
@@ -55,7 +55,7 @@ class MysqlDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
-    @log_time_with_name('run')
+    @log_time_with_name('MysqlDumper.run')
     def run(self, table=None):
         self.dump(table)
         self.import_(table)
@@ -72,7 +72,7 @@ class MongodbDumper(Dumper):
                                         'port': 27017, }
         self.collection = collection
 
-    @log_time_with_name('dump')
+    @log_time_with_name('MongodbDumper.dump')
     def dump(self, collection=None):
         config = self.config_source
         command_dump = 'mongodump -h {host} -d {database} -c {collection} -o dump'.format(
@@ -83,7 +83,7 @@ class MongodbDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
-    @log_time_with_name('import')
+    @log_time_with_name('MongodbDumper.import')
     def import_(self, collection=None):
         config = self.config_target
         command_dump = r'mongorestore -h {host} -d {database} -c {collection}  --dir dump\{database}\{collection}.bson'.format(
@@ -94,7 +94,7 @@ class MongodbDumper(Dumper):
         print(command_dump)
         os.system(command_dump)
 
-    @log_time_with_name('run')
+    @log_time_with_name('MongodbDumper.run')
     def run(self, collection=None):
         self.dump(collection)
         self.import_(collection)
