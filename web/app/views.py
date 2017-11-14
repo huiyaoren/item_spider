@@ -81,6 +81,7 @@ def data():
     data['redis']['shop:last_week_sold'] = r.hlen('ebay:shop:last_week_sold')
     data['redis']['shop:total_sold'] = r.hlen('ebay:shop:total_sold')
     data['redis']['shop:week_sold'] = r.hlen('ebay:shop:week_sold')
+    data['redis_data'] = {}
     data['redis_data']['used_memory'] = r.info()['used_memory']
 
     # MONGODB
