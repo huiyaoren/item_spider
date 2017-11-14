@@ -101,7 +101,7 @@ def data():
             data['mongodb']['create_time'] = proc.info['create_time']
             data['mongodb']['memory_percent'] = proc.info['memory_percent']
             data['mongodb']['memory'] = proc.info['memory_info'].vms
-        if proc.info['name'] == 'redis-server':
+        if proc.info['name'] == 'redis-server' or proc.info['name'] == 'redis':
             data['redis_data'] = {}
             data['redis_data']['cpu_percent'] = proc.info['cpu_percent']
             data['redis_data']['pid'] = proc.info['pid']
