@@ -26,7 +26,7 @@ def db_mongodb_base(db_name, host, port):
     return db
 
 
-def db_mongodb(host_name='mongodb'):
+def db_mongodb(host_name='mongodb_remote'):
     return db_mongodb_base(
         config[host_name]['database'],
         config[host_name]['host'],
@@ -185,7 +185,7 @@ def insert_category_ids_to_redis(redis=None):
 
 # token
 
-token = Token(mongodb=db_mongodb(), redis=db_redis())
+token = Token(mongodb=db_mongodb('mongodb_local'), redis=db_redis())
 
 
 def token_from_redis(redis):

@@ -18,7 +18,7 @@ from recognizer import recognizer
 class Register():
     def __init__(self, browser):
         self.browser = browser
-        self.mongodb = db_mongodb()
+        self.mongodb = db_mongodb('mongodb_local')
         self.collection = self.mongodb['tokens']
         self.collection.ensure_index('username', unique=True)
 
@@ -237,6 +237,6 @@ def main(start, end):
 
 if __name__ == '__main__':
     p = Pool()
-    p.apply_async(main, args=(1128, 1200,))
+    p.apply_async(main, args=(1789, 1900,))
     p.close()
     p.join()
