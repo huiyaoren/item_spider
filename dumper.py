@@ -101,19 +101,23 @@ class MongodbDumper(Dumper):
 
 
 def main():
-    table = 'goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
+    goods = 'goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
+    new = 'new_goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
+    hot = 'hot_goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
     dumper = MysqlDumper(
-        source={'host': '192.168.1.248', 'database': 'erp_spider', 'username': 'root', 'password': 'root',
+        target={'host': '192.168.1.248', 'database': 'erp_spider', 'username': 'root', 'password': 'root',
                 'port': 3306, },
-        target={'host': '45.126.121.187', 'database': 'erp_spider', 'username': 'erp_spider', 'password': 'fyEnzfwZjT',
+        source={'host': '45.126.121.187', 'database': 'erp_spider', 'username': 'erp_spider', 'password': 'fyEnzfwZjT',
                 'port': 3306, }
     )
-    dumper.run(table)
+    dumper.run(goods)
+    dumper.run(hot)
+    dumper.run(new)
     # dumper = MongodbDumper(
     #     source={'host': '192.168.1.192', 'database': 'test_database', 'port': 27017, },
     #     target={'host': '192.168.1.253', 'database': 'test_database', 'port': 27017, },
     # )
-    # dumper.run('tokens')
+    # dumper.dump('d_{0}'.format(datetime.now().strftime("%Y%m%d")))
 
 
 if __name__ == '__main__':
