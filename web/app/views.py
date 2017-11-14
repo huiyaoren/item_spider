@@ -14,6 +14,7 @@ m = MongoClient('192.168.1.192')['test_database']
 cpu_count_logical = psutil.cpu_count()
 cpu_count = psutil.cpu_count(logical=False)
 
+
 # import multiprocessing
 # logger = multiprocessing.log_to_stderr()
 # logger.setLevel(multiprocessing.SUBDEBUG)
@@ -29,6 +30,7 @@ def response(request, queue):
     # print(result[:200])
     # return result
     print(123)
+
 
 @app.route('/')
 def index():
@@ -79,6 +81,8 @@ def data():
     data['redis']['shop:last_week_sold'] = r.hlen('ebay:shop:last_week_sold')
     data['redis']['shop:total_sold'] = r.hlen('ebay:shop:total_sold')
     data['redis']['shop:week_sold'] = r.hlen('ebay:shop:week_sold')
+    data['redis_data']['used_memory'] = r.info()['used_memory']
+
     # MONGODB
     collection_name = 'd_{0}'.format(datetime.now().strftime("%Y%m%d"))
     data['mongodb'] = {}
@@ -159,6 +163,3 @@ def curl():
     print(str(datetime.now() - start))
     return str(datetime.now() - start)
     return json.jsonify(response(url, headers, data, method))
-
-
-
