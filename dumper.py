@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from multiprocessing.pool import Pool
 
 from ebay.ebay.tests.time_recoder import log_time_with_name
 
@@ -61,7 +62,6 @@ class MysqlDumper(Dumper):
 
 
 class MongodbDumper(Dumper):
-
     def __init__(self, source=None, target=None, collection=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config_source = source or {'host': '192.168.1.192',
@@ -100,24 +100,40 @@ class MongodbDumper(Dumper):
         self.import_(collection)
 
 
-def main():
-    goods = 'goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
-    new = 'new_goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
-    hot = 'hot_goods_{0}'.format(datetime.now().strftime("%Y%m%d"))
-    dumper = MysqlDumper(
+def dump_mysql(table):
+    mysql_dumper = MysqlDumper(
         target={'host': '192.168.1.248', 'database': 'erp_spider', 'username': 'root', 'password': 'root',
                 'port': 3306, },
         source={'host': '45.126.121.187', 'database': 'erp_spider', 'username': 'erp_spider', 'password': 'fyEnzfwZjT',
                 'port': 3306, }
     )
-    dumper.run(goods)
-    dumper.run(hot)
-    dumper.run(new)
-    # dumper = MongodbDumper(
-    #     source={'host': '192.168.1.192', 'database': 'test_database', 'port': 27017, },
-    #     target={'host': '192.168.1.253', 'database': 'test_database', 'port': 27017, },
-    # )
-    # dumper.dump('d_{0}'.format(datetime.now().strftime("%Y%m%d")))
+    mysql_dumper.run(table)
+
+
+def dump_mongodb(collection):
+    mongodb_dumper = MongodbDumper(
+        source={'host': '192.168.1.192', 'database': 'test_database', 'port': 27017, },
+        target={'host': '192.168.1.253', 'database': 'test_database', 'port': 27017, },
+    )
+    mongodb_dumper.dump(collection)
+
+
+def main():
+    day = datetime.now().strftime("%Y%m%d")
+    goods = 'goods_{0}'.format(day)
+    new = 'new_goods_{0}'.format(day)
+    hot = 'hot_goods_{0}'.format(day)
+    detail = 'd_{0}'.format(day)
+    monitor = 'm_{0}'.format(day)
+
+    pool = Pool()
+    pool.apply_async(func=dump_mongodb, args=(detail,))
+    pool.apply_async(func=dump_mongodb, args=(monitor,))
+    pool.apply_async(func=dump_mysql, args=(goods,))
+    pool.apply_async(func=dump_mysql, args=(new,))
+    pool.apply_async(func=dump_mysql, args=(hot,))
+    pool.close()
+    pool.join()
 
 
 if __name__ == '__main__':
