@@ -1,3 +1,5 @@
+import sys
+
 try:
     from ebay.utils.data import *
 except ImportError:
@@ -118,6 +120,21 @@ def run_multi(name, processes=8, prepared=0):
     p.join()
 
 
+def main():
+    args = dict(enumerate(sys.argv))
+    print(args)
+
+    type = args.get(1, 'master')
+    processes = int(args.get(2, 128))
+    prepared = int(args.get(3, 8))
+    print(type, processes, prepared)
+
+    if type == 'master':
+        init()
+    run_multi('detail_xml_redis_spider', processes, prepared)
+
+
 if __name__ == '__main__':
-    init()
-    run_multi('detail_xml_redis_spider', 128, 8)
+    main()
+    # init()
+    # run_multi('detail_xml_redis_spider', 128, 8)
