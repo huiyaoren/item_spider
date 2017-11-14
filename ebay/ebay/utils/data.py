@@ -173,16 +173,9 @@ def insert_category_ids_to_mongodb(mongodb=None):
 
 def insert_category_ids_to_redis(redis=None):
     ''' category_ids 从 mysql 转移至 redis '''
-    r = redis
-    if r is None:
-        r = db_redis()
-    r.delete('ebay:category_urls')
-    r.delete('ebay:category_ids')
+    r = redis or db_redis()
     for listing in category_ids_from_mysql():
         try:
-            # url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
-            # url = url.format(listing.get('category_id'))
-            # r.lpush('ebay:category_urls', url)
             r.lpush('ebay:category_ids', '{0}:1'.format(listing.get('category_id')))
         except:
             print("Redis Error")
