@@ -108,7 +108,7 @@ class BasicPipeline(object):
 
 
 class CleanPipeline(BasicPipeline):
-    @log_time_with_name('CleanPipeline')
+    # @log_time_with_name('CleanPipeline')
     def process_item_spider(self, item, spider):
         logger.info(item)
         item = dict(item)
