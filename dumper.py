@@ -17,16 +17,8 @@ class Dumper():
 class MysqlDumper(Dumper):
     def __init__(self, table=None, source=None, target=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config_source = source or {'host': '192.168.1.248',
-                                        'database': 'erp_spider',
-                                        'username': 'root',
-                                        'password': 'root',
-                                        'port': 3306, }
-        self.config_target = target or {'host': '45.126.121.187',
-                                        'database': 'erp_spider',
-                                        'username': 'erp_spider',
-                                        'password': 'fyEnzfwZjT',
-                                        'port': 3306, }
+        self.config_source = source
+        self.config_target = target
         self.table = table
 
     @log_time_with_name('MysqlDumper.dump')
@@ -64,12 +56,8 @@ class MysqlDumper(Dumper):
 class MongodbDumper(Dumper):
     def __init__(self, source=None, target=None, collection=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config_source = source or {'host': '192.168.1.192',
-                                        'database': 'test_database',
-                                        'port': 27017, }
-        self.config_target = target or {'host': '192.168.1.140',
-                                        'database': 'test_database',
-                                        'port': 27017, }
+        self.config_source = source
+        self.config_target = target
         self.collection = collection
 
     @log_time_with_name('MongodbDumper.dump')
@@ -101,23 +89,40 @@ class MongodbDumper(Dumper):
 
 
 def dump_mysql(table):
-    mysql_dumper = MysqlDumper(
-        target={'host': '192.168.1.248', 'database': 'erp_spider', 'username': 'root', 'password': 'root',
-                'port': 3306, },
-        source={'host': '45.126.121.187', 'database': 'erp_spider', 'username': 'erp_spider', 'password': 'fyEnzfwZjT',
-                'port': 3306, }
-    )
+    source = {
+        'host': '125.77.23.94',
+        'database': 'erp_spider',
+        'username': 'erp_spider',
+        'password': 'jb6KPZmd6d',
+        'port': 3306,
+    }
+    target = {
+        'host': '192.168.1.248',
+        'database': 'erp_spider',
+        'username': 'root',
+        'password': 'root',
+        'port': 3306,
+    }
+    mysql_dumper = MysqlDumper(target=target, source=source)
     mysql_dumper.run(table)
 
 
 def dump_mongodb(collection):
-    mongodb_dumper = MongodbDumper(
-        source={'host': '192.168.1.192', 'database': 'test_database', 'port': 27017, },
-        target={'host': '192.168.1.253', 'database': 'test_database', 'port': 27017, },
-    )
+    source = {
+        'host': '192.168.1.192',
+        'database': 'test_database',
+        'port': 27017,
+    }
+    target = {
+        'host': '192.168.1.253',
+        'database': 'test_database',
+        'port': 27017,
+    }
+    mongodb_dumper = MongodbDumper(source=source, target=target, )
     mongodb_dumper.dump(collection)
 
 
+@log_time_with_name('MongodbDumper.import')
 def main():
     day = datetime.now().strftime("%Y%m%d")
     goods = 'goods_{0}'.format(day)
@@ -125,6 +130,9 @@ def main():
     hot = 'hot_goods_{0}'.format(day)
     detail = 'd_{0}'.format(day)
     monitor = 'm_{0}'.format(day)
+
+    # todo 保存目录为可选项
+    # todo 保存目录为 linux windows 兼容
 
     pool = Pool()
     pool.apply_async(func=dump_mongodb, args=(detail,))
