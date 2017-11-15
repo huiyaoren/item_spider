@@ -9,10 +9,10 @@ config = {
         'port': 3306,
     },
     'mysql_remote': {
-        'host': '45.126.121.187',
+        'host': '125.77.23.94',
         'database': 'erp_spider',
         'username': 'erp_spider',
-        'password': 'fyEnzfwZjT',
+        'password': 'jb6KPZmd6d',
         'port': 3306,
     },
     'mongodb_remote': {
