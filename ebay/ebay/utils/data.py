@@ -185,7 +185,7 @@ def insert_category_ids_to_redis(redis=None):
 
 # token
 
-token = Token(mongodb=db_mongodb('mongodb_local'), redis=db_redis())
+token = Token(mongodb=db_mongodb('mongodb'), redis=db_redis())
 
 
 def token_from_redis(redis):
@@ -195,6 +195,11 @@ def token_from_redis(redis):
 def reset_token(redis=None, _from='mongodb'):
     ''' 将配置中的 token 导入 redis '''
     token.reset_all(redis)
+
+
+def copy_token():
+    t = Token(mongodb=db_mongodb('mongodb_local'), redis=db_redis())
+    t.copy_all(db_mongodb('mongodb_remote'))
 
 
 # item_id
