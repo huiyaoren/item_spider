@@ -210,6 +210,8 @@ def insert_item_id_to_redis(item_id, redis=None):
     r = redis or db_redis()
     if not is_item_id_duplicated(item_id, r):
         r.lpush('ebay:item_ids', item_id)
+    if 1 == r.pfadd('ebay:item_ids_filter_hyper', item_id):
+        r.lpush('ebay:item_ids_filter_hyper_ids', item_id)
 
 
 def delete_redis_key(keys, redis=None):
@@ -245,7 +247,6 @@ def read_item_ids_from_file(file='item_ids.txt', redis=None):
 def is_item_id_duplicated(item_id, redis=None):
     ''' 商品分类是否重复 '''
     r = redis or db_redis()
-    r.pfadd('ebay:item_ids_filter_hyper', item_id)
     return 0 == r.sadd('ebay:item_ids_filter', item_id)
 
 
