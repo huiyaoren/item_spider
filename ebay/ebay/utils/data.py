@@ -215,8 +215,6 @@ def insert_item_id_to_redis(item_id, redis=None):
     r = redis or db_redis()
     if not is_item_id_duplicated(item_id, r):
         r.lpush('ebay:item_ids', item_id)
-    if 1 == r.pfadd('ebay:item_ids_filter_hyper', item_id):
-        r.lpush('ebay:item_ids_filter_hyper_ids', item_id)
 
 
 def delete_redis_key(keys, redis=None):
