@@ -236,7 +236,8 @@ def main(start, end):
 
 
 if __name__ == '__main__':
+    start = int(input('input start number: '))
     p = Pool()
-    p.apply_async(main, args=(1789, 1900,))
+    p.apply_async(main, args=(start, 10000,))
     p.close()
     p.join()
