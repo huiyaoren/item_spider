@@ -113,6 +113,7 @@ def db_redis():
 
 
 def category_ids():
+    ''' 弃用 '''
     db = db_mongodb()
     c = db.category_ids
     for data in c.find():
@@ -137,49 +138,35 @@ def category_ids_from_mysql():
         mysql.close()
 
 
-def insert_category_id(category_ids, redis=None):
+def category_ids_from_redis(num=1000, redis=None):
     r = redis or db_redis()
-    r.delete('ebay:category_urls')
-    r.delete('ebay:category_ids')
-    for i in category_ids:
-        url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?limit=200&category_ids={0}&fieldgroups=FULL'
-        url = url.format(i)
-        r.lpush('ebay:category_urls', url)
+    ids = r.smembers('ebay:leaf_category_ids')
+    for k, id in enumerate(ids):
+        if k >= num:
+            break
+        yield int(id)
+
+
+def insert_category_id(specified_category_ids, leaf_category_count=0, redis=None):
+    r = redis or db_redis()
+    count = leaf_category_count
+    leaf_category_ids = set(category_ids_from_redis(count, redis)) if count > 0 else set()
+    leaf_category_ids.update(specified_category_ids)
+    for i in leaf_category_ids:
         r.lpush('ebay:category_ids', '{0}:1'.format(i))
     print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
 
 
-def insert_category_ids(to='mongodb', db=None):
-    if to == 'mongodb':
-        insert_category_ids_to_mongodb(db)
-    elif to == 'redis':
-        insert_category_ids_to_redis(db)
-
-
-def insert_category_ids_to_mongodb(mongodb=None):
-    ''' category_ids 从 mysql 转移至 mongodb '''
-    m = mongodb
-    if m is None:
-        m = db_mongodb()
-    c = m['category_ids']
-    c.ensure_index('category_id', unique=True)
-    for listing in category_ids_from_mysql():
-        try:
-            c.insert_one(listing)
-        except DuplicateKeyError:
-            print("Duplicate ")
-    print('count: ', c.count())
-
-
-def insert_category_ids_to_redis(redis=None):
+def insert_category_ids(to='redis', redis=None):
     ''' category_ids 从 mysql 转移至 redis '''
     r = redis or db_redis()
     for listing in category_ids_from_mysql():
         try:
+            # insert_category_id(listing.get('category_id'))
             r.lpush('ebay:category_ids', '{0}:1'.format(listing.get('category_id')))
         except:
             print("Redis Error")
-    print('count: {0}'.format(r.llen('ebay:category_ids')))
+    print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
     print('Insert Category Ids to Redis Done.')
 
 
