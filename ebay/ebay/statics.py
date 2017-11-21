@@ -9,7 +9,7 @@ from .utils.data import db_mongodb, items_from_mongodb, db_redis
 class Cleaner():
     def __init__(self, date, mongodb):
         self.date = date
-        self.mongodb = mongodb or db_mongodb()
+        self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.collection = self.mongodb['d_{0}'.format(date)]
         self.redis = db_redis()
 
@@ -49,9 +49,9 @@ class Cleaner():
 
     def is_hot(self, item):
         ''' 指定商品是否为爆款 '''
-        if is_within_six_mouths(item['startTime']) and int(
-                item['quantitySold']) > 50 and Cleaner.is_had_sales_in_a_week(
-            self.date, item['itemId'], 3, self.mongodb):
+        if is_within_six_mouths(item['startTime']) \
+                and int(item['quantitySold']) > 50 \
+                and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
             return 1
         else:
             return 0
@@ -70,7 +70,7 @@ class Cleaner():
         for i in range(7, -1, -1):
             d = previous_days(date, i)
             c = 'd_{0}'.format(d)
-            item = m[c].find_one()
+            item = m[c].find_one({'itemId': item_id})
             if item is not None:
                 sales.add(item['quantitySold'])
                 if len(sales) > days:
