@@ -302,8 +302,8 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.goods_{datetime_} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
-          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
+    sql = "INSERT INTO erp_spider.goods_{datetime_} (record, id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, is_hot, is_new, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
+          "VALUES (%(record)s, %(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(is_hot)s, %(is_new)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
     sql = sql.format(datetime_=datetime)
     cursor.execute(sql, {
         'id': data.get('id', 0),
@@ -328,6 +328,7 @@ def insert_item_into_mysql(item, datetime, mysql=None, cursor=None):
         'is_new': data.get('is_new'),
         'other_images': data.get('other_images'),
         'trade_increase_rate': data.get('trade_increase_rate'),
+        'record': data.get('record'),
         'weeks_sold_money': float(data.get('price', 0)) * int(data.get('weeks_sold', 0)),
     })
     mysql.commit()
@@ -338,8 +339,8 @@ def insert_new_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.new_goods_{datetime_} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
-          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
+    sql = "INSERT INTO erp_spider.new_goods_{datetime_} (record, id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
+          "VALUES (%(record)s, %(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
     sql = sql.format(datetime_=datetime)
     cursor.execute(sql, {
         'id': data.get('id', 0),
@@ -362,6 +363,7 @@ def insert_new_item_into_mysql(item, datetime, mysql=None, cursor=None):
         'last_weeks_sold': data.get('last_weeks_sold', 0),
         'other_images': data.get('other_images'),
         'trade_increase_rate': data.get('trade_increase_rate'),
+        'record': data.get('record'),
         'weeks_sold_money': float(data.get('price', 0)) * int(data.get('weeks_sold', 0)),
     })
     mysql.commit()
@@ -372,8 +374,8 @@ def insert_hot_item_into_mysql(item, datetime, mysql=None, cursor=None):
     mysql = mysql or db_mysql()
     cursor = cursor or mysql.cursor()
     data = item_cleaned(item)
-    sql = "INSERT INTO erp_spider.hot_goods_{datetime_} (id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
-          "VALUES (%(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
+    sql = "INSERT INTO erp_spider.hot_goods_{datetime_} (record, id, site, title, price, currency, total_sold, hit_count, goods_category, goods_url, shop_name, shop_feedback_score, shop_feedback_percentage, shop_open_time, publish_time, weeks_sold, last_weeks_sold, default_image, other_images, trade_increase_rate, day_sold, weeks_sold_money)" \
+          "VALUES (%(record)s, %(id)s, %(site)s, %(title)s, %(price)s, %(currency)s, %(total_sold)s, %(hit_count)s, %(goods_category)s, %(goods_url)s, %(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(shop_open_time)s, %(publish_time)s, %(weeks_sold)s, %(last_weeks_sold)s, %(default_image)s, %(other_images)s, %(trade_increase_rate)s, %(day_sold)s, %(weeks_sold_money)s)"
     sql = sql.format(datetime_=datetime)
     cursor.execute(sql, {
         'id': data.get('id', 0),
@@ -396,6 +398,7 @@ def insert_hot_item_into_mysql(item, datetime, mysql=None, cursor=None):
         'last_weeks_sold': data.get('last_weeks_sold', 0),
         'other_images': data.get('other_images'),
         'trade_increase_rate': data.get('trade_increase_rate'),
+        'record': data.get('record'),
         'weeks_sold_money': float(data.get('price', 0)) * int(data.get('weeks_sold', 0)),
     })
     mysql.commit()
@@ -423,6 +426,7 @@ def item_cleaned(item):
     o['day_sold'] = int(item.get('quantitySoldYesterday', 0))
     o['weeks_sold'] = int(item.get('quantitySoldLastWeek', 0))
     o['last_weeks_sold'] = int(item.get('quantitySoldTwoWeeksAgo', 0))
+    o['record'] = str(item.get('record', 0))
     o['is_hot'] = str(item.get('isHot', 0))
     o['is_new'] = str(item.get('isNew', 0))
     o['default_image'] = item.get('image')

@@ -47,11 +47,13 @@ class Cleaner():
         else:
             return 0
 
-    def is_hot(self, item):
+    def is_hot(self, item, record):
         ''' 指定商品是否为爆款 '''
+        date_list = sorted(record['sold'].keys(), reverse=True)[:7]
         if is_within_six_mouths(item['startTime']) \
                 and int(item['quantitySold']) > 50 \
-                and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
+                and len(set(record['sold'][d] for d in date_list if record['sold'][d] > 0)) > 3:
+                # and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
             return 1
         else:
             return 0
@@ -61,9 +63,52 @@ class Cleaner():
         top = self.redis.hget('ebay:top_category_id', id)
         return int(top)
 
+    def record_14_days(self, item):
+        record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
+        # 1. get record of item yesterday
+        id = item['itemId']
+        date = self.date
+        item_y = self.item_someday(id, previous_date(date))
+        if item_y is not None:
+            record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
+        r = item_y.get('record')
+        record = json.loads(r) if r is not None else record
+        # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
+        if record['price'] == {}:
+            for i in range(14):
+                date = previous_date(date)
+                item_y = self.item_someday(id, date) or {}
+                if item_y.get('record') is not None:
+                    r = item_y.get('record')
+                    r = json.loads(r) if r is not None else record
+                    record['sold'].update(r.get('recordSold', {}))
+                    record['price'].update(r.get('recordPrice', {}))
+                    record['hit'].update(r.get('recordHit', {}))
+                    break
+                else:
+                    record['sold'].update({date: item_y.get('quantitySoldYesterday', 0)})
+                    record['price'].update({date: item_y.get('price', 0)})
+                    record['hit'].update({date: item_y.get('hitCount', 0)})
+        # 2. old record add record_of_today(sold, hit , price)
+        record['sold'].update({self.date: record['sold_yesterday']})
+        record['price'].update({self.date: item.get('price', 0.00)})
+        record['hit'].update({self.date: item.get('hitCount', 0)})
+        # 3. old record delete record_14_days_ago if(len > 14)
+        if len(record['sold']) > 14:
+            keys = sorted(record['sold'].keys(), reverse=True)[14:]
+            for key in keys:
+                record['sold'].pop(key)
+                record['price'].pop(key)
+                record['hit'].pop(key)
+        # 4. old record become new record and return
+        sold_yesterday = record['sold_yesterday']
+        record.pop('sold_yesterday')
+        return record, sold_yesterday
+
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
         ''' 商品一周内有销量的天数是否达到指定值 '''
+        # fixme-已弃用
         m = mongodb or db_mongodb()
         days = days_have_sales
         sales = set([])
@@ -89,14 +134,18 @@ class Cleaner():
             return
         self.collection.update_one({'itemId': item_id}, {'$set': data})
 
+    @log_time_with_name('data_cleaned')
     def data_cleaned(self, item):
         ''' 返回指定商品的统计数据 '''
         data = {}
-        data['isHot'] = self.is_hot(item)
-        data['isNew'] = self.is_new(item)
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
-        data['quantitySoldYesterday'] = self.sales_yesterday(item)
         data['topCategoryID'] = self.category_id_top(item)
+        record, sold_yesterday = self.record_14_days(item)
+        # data['quantitySoldYesterday'] = self.sales_yesterday(item)
+        data['quantitySoldYesterday'] = sold_yesterday
+        data['record'] = json.dumps(record)
+        data['isHot'] = self.is_hot(item, record)
+        data['isNew'] = self.is_new(item)
         return data
 
     def add_up_shop(self, item_cleaned):
