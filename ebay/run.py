@@ -74,7 +74,7 @@ def main():
 
     type = args.get(1, 'master')
     processes = int(args.get(2, 128))
-    prepared = int(args.get(3, 8))
+    prepared = int(args.get(3, 16))
     print(type, processes, prepared)
 
     if type == 'master':
