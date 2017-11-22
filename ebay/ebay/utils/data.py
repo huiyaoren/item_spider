@@ -76,6 +76,7 @@ def create_table_in_mysql(date, sql=None, mysql=None):
           `trade_increase_rate` DOUBLE(10,4) DEFAULT NULL COMMENT '交易增幅比率，比如：0.1256 表示12.56%',
           `is_hot` ENUM('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
           `is_new` ENUM('0','1') DEFAULT '0' COMMENT '是否新品，0-否，1-是',
+          `record` TEXT COMMENT '商品 14 天相关统计数据记录',
           `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
           PRIMARY KEY (`id`),
           KEY `idx_title` (`title`(250)) COMMENT '商品标题',
@@ -153,7 +154,8 @@ def insert_category_id(specified_category_ids, leaf_category_count=0, redis=None
     leaf_category_ids = set(category_ids_from_redis(count, redis)) if count > 0 else set()
     leaf_category_ids.update(specified_category_ids)
     for i in leaf_category_ids:
-        r.lpush('ebay:category_ids', '{0}:1'.format(i))
+        print(i)
+        # r.lpush('ebay:category_ids', '{0}:1'.format(i))
     print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
 
 
