@@ -127,6 +127,7 @@ class MongodbPipeline(BasicPipeline):
     def __init__(self):
         try:
             self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
+            self.collection_detail.create_index([('quantitySoldYesterday', ASCENDING)], unique=False)
         except Exception as e:
             logger.warning('Create index fail. exception: \n{0}'.format(e))
 
