@@ -154,8 +154,7 @@ def insert_category_id(specified_category_ids, leaf_category_count=0, redis=None
     leaf_category_ids = set(category_ids_from_redis(count, redis)) if count > 0 else set()
     leaf_category_ids.update(specified_category_ids)
     for i in leaf_category_ids:
-        print(i)
-        # r.lpush('ebay:category_ids', '{0}:1'.format(i))
+        r.lpush('ebay:category_ids', '{0}:1'.format(i))
     print('Insert Category Id Done. Count: {0}'.format(r.llen('ebay:category_ids')))
 
 
