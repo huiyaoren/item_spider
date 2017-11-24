@@ -70,9 +70,9 @@ class Cleaner():
         date = self.date
         item_y = self.item_someday(id, previous_date(date))
         if item_y is not None:
-            record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
             r = item_y.get('record')
             record = json.loads(r) if r is not None else record
+            record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
 
         # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
         if record['price'] == {}:
