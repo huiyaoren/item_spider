@@ -106,7 +106,7 @@ def create_table_in_mysql(date, sql=None, mysql=None):
 
 
 def db_redis():
-    redis = Redis(host=config['redis']['host'])
+    redis = Redis(host=config['redis']['host'], password=config['redis']['password'])
     return redis
 
 
