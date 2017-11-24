@@ -16,7 +16,7 @@ config = {
         'port': 3306,
     },
     'mongodb_remote': {
-        'host': '192.168.1.192',
+        'host': '192.168.1.253',
         'database': 'test_database',
         'port': 27017,
     },
@@ -26,7 +26,7 @@ config = {
         'port': 27017,
     },
     'redis': {
-        'host': '192.168.1.192',
+        'host': '192.168.1.253',
         'password': 'root',
         'port': 6379,
     }
