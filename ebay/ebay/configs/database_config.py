@@ -27,7 +27,7 @@ config = {
     },
     'redis': {
         'host': '192.168.1.253',
-        'password': 'root',
+        'password': 'redis',
         'port': 6379,
     }
 }
