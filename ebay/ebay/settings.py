@@ -107,7 +107,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-REDIS_URL = 'redis://192.168.1.192:6379'
+REDIS_URL = 'redis://redis:redis@192.168.1.253:6379'
 
 DATABASE_CONFIG = {
     'mysql_local': {
