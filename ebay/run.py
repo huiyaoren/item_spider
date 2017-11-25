@@ -74,11 +74,17 @@ def main():
 
     type = args.get(1, 'master')
     processes = int(args.get(2, 128))
-    prepared = int(args.get(3, 16))
-    print(type, processes, prepared)
+    prepared = 0
 
     if type == 'master':
         init()
+        prepared = int(args.get(3, 16))
+    if type == 'slave':
+        prepared = int(args.get(3, 0))
+
+    print(type, processes, prepared)
+
+
     run_multi('detail_xml_redis_spider', processes, prepared)
 
 
