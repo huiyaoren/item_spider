@@ -3,6 +3,8 @@ import logging
 
 from requests import Session, Request
 
+from ebay.ebay.tests.time_recoder import log_time, log_time_with_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,6 +52,18 @@ def test_get_detail_xml():
           <ItemID>112548339313</ItemID>
         </GetItemRequest>
     '''
+    data = '''
+    <?xml version="1.0" encoding="utf-8"?>
+        <GetItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+          <RequesterCredentials>
+            <eBayAuthToken>AgAAAA**AQAAAA**aAAAAA**TFk/WQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ACkoWoD5CHoQydj6x9nY+seQ**kMADAA**AAMAAA**7VtL67+uDGoPGwpzzegnSCLgL9ZwsNRQHBaZ8T6zTQuqDg8NXWGU37zosAe7c/KcRGEzb60QX3nV1ujxFDsMwI9Kw4CAPTqVOBXz72l6mhT9m2oiVX0dCAsYd0GKMTgIrO1+uhizmiIXej3Uh7NIF8L/76k/tiS/E304JsrTmKrk2r2Rr+dST1ONfj8fb5TFzeDen0hmBzgRctchyjPesIFTRd7WupOtbi6ciScQ/yYCqfH7GRGQADCIaiMnIpdQUfnwigoNoi4OyP/mH7tr03WfCDlHTAi1Ret2LsfXh0UAYi8rwuMtVSAvP52fRtwe4lom3DzBt2jB7U7rj8KZ89ea30SAIXVsag/vo3B0jkl64pSB5/zKbBPRrG5qZ+28aDKuUSuAfn9lPNCF//esp4QIF7HIPUeioLgQK5WoPT9/BCPmn0Y+tNMAPSEcUWTY42WwahoN1eYpBgqX/hZolTvupd5907NkDTxYHfij6WtcGQdHfHBWCPGHrgWcdLefochtz7pDpVzdHYCUQbv4bVzHQNbVfhNHCMp4LZ63qrkJVpWsmSeSgZi5dVECI7gp0t/Rq1y5uBsRJK6OViZS02jYw0MR7kjAyrIsK43bP4Pz8wwvpfyuaoxkgvziCaM35taQuB3qlUPeawULUSFX6olCC0kMZqdUT5HPqYD2+YTj2n0wBXvP7Lbkj3gejSbelCwS6XHdKqAXP2gY93eBtbogLic7//FGdnQvbbISceo/9hgdXKbNBcMh0zoQ0KRm</eBayAuthToken>
+          </RequesterCredentials>
+            <ErrorLanguage>en_US</ErrorLanguage>
+            <WarningLevel>High</WarningLevel>
+              <!--Enter an ItemID-->
+          <ItemID>162687226001</ItemID>
+        </GetItemRequest>
+    '''
     headers = {
         'X-EBAY-API-SITEID': '0',
         'X-EBAY-API-COMPATIBILITY-LEVEL': '967',
@@ -61,7 +75,7 @@ def test_get_detail_xml():
     prepped = req.prepare()
     resp = s.send(prepped)
     print(resp.content)
-    return resp.content
+    return resp.text
 
 
 def test_ebay_api():
@@ -673,5 +687,22 @@ def test_insert_category_ids_to_redis():
         redis.lpush('ebay:category_urls', url)
 
 
+@log_time_with_name('run')
+def run(result):
+    result = xmltodict.parse(result)
+    variation = result.get('GetItemResponse').get('Item').get('Variations')
+
+    # variation = json.dumps(variation)
+    # print(variation)
+
+    l = [i for i in variation['Picture']]
+    print(l)
+    # pprint(variation)
+
 if __name__ == '__main__':
-    test_get_detail_xml()
+    import xmltodict
+    import json
+    from pprint import pprint
+    result = test_get_detail_xml()
+    print(result)
+    run(result)
