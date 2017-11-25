@@ -87,7 +87,7 @@ class MongodbDumper(Dumper):
         self.dump(collection)
         self.import_(collection)
 
-
+# todo 修改数据库配置
 def dump_mysql(table):
     source = {
         'host': '125.77.23.94',
@@ -109,7 +109,7 @@ def dump_mysql(table):
 
 def dump_mongodb(collection):
     source = {
-        'host': '192.168.1.192',
+        'host': '192.168.1.253',
         'database': 'test_database',
         'port': 27017,
     }
