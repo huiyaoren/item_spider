@@ -42,7 +42,7 @@ def test_get_detail_xml():
     <?xml version="1.0" encoding="utf-8"?>
         <GetItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
           <RequesterCredentials>
-            <eBayAuthToken>AgAAAA**AQAAAA**aAAAAA**TFk/WQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ACkoWoD5CHoQydj6x9nY+seQ**kMADAA**AAMAAA**7VtL67+uDGoPGwpzzegnSCLgL9ZwsNRQHBaZ8T6zTQuqDg8NXWGU37zosAe7c/KcRGEzb60QX3nV1ujxFDsMwI9Kw4CAPTqVOBXz72l6mhT9m2oiVX0dCAsYd0GKMTgIrO1+uhizmiIXej3Uh7NIF8L/76k/tiS/E304JsrTmKrk2r2Rr+dST1ONfj8fb5TFzeDen0hmBzgRctchyjPesIFTRd7WupOtbi6ciScQ/yYCqfH7GRGQADCIaiMnIpdQUfnwigoNoi4OyP/mH7tr03WfCDlHTAi1Ret2LsfXh0UAYi8rwuMtVSAvP52fRtwe4lom3DzBt2jB7U7rj8KZ89ea30SAIXVsag/vo3B0jkl64pSB5/zKbBPRrG5qZ+28aDKuUSuAfn9lPNCF//esp4QIF7HIPUeioLgQK5WoPT9/BCPmn0Y+tNMAPSEcUWTY42WwahoN1eYpBgqX/hZolTvupd5907NkDTxYHfij6WtcGQdHfHBWCPGHrgWcdLefochtz7pDpVzdHYCUQbv4bVzHQNbVfhNHCMp4LZ63qrkJVpWsmSeSgZi5dVECI7gp0t/Rq1y5uBsRJK6OViZS02jYw0MR7kjAyrIsK43bP4Pz8wwvpfyuaoxkgvziCaM35taQuB3qlUPeawULUSFX6olCC0kMZqdUT5HPqYD2+YTj2n0wBXvP7Lbkj3gejSbelCwS6XHdKqAXP2gY93eBtbogLic7//FGdnQvbbISceo/9hgdXKbNBcMh0zoQ0KRm</eBayAuthToken>
+            <eBayAuthToken>AgAAAA**AQAAAA**aAAAAA**niPPWQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ABlYekDJGLqAydj6x9nY+seQ**1uoDAA**AAMAAA**RgArXBvO3BV9qOLILHOSREB17cIdsgY6V6ayoLADxlQ36EXeH/A3/ONQhRoj25Hwio2wGAt6VxYahg9okM/yLg89CXGSEkTGE0xzYv4mwdgDEW4ex7Jp1yAs01nc/BfxT/dHmNJYguHotC9Z3jZp1WQb+7Y5uw9Sevg63wzUbT2KrYa4EFXyAQytfkQHI34goNIaASps2NQqf7BSetiS7Stgbth7V/4VvQQyan0oq9ddgqgQoyqruvBrAe4yRH9NjMIQvRln5fQF01yzjtGNAnBGogDEhEmqiKL27VUb6IfMuPp8EVjwJws/G2bEWECe6yS1sbefp6Jo2G52Y/mFE3LZw58wD2xZkBLNUd63TBB3LVnxSkRvIAdiGgkuZzin3i7z2KPwuexhPL09nUZlNZ/IZky7ZAg78PUVaq8gEzKmXPynnWgexiBdioAUoVsBTkpk6ZxMeAd6LOKj9Vmknnds9Ah7oagrt4tRSlNdl8Lxlw6uij6ynNC5p7mQNx16GR1EfuT5U3pWmaQOr5kHM4O28qiYDyOMx+OV/Cp1j85quy9DvBXbclZA5Gbke0BB6WFh6MJhLk7OwoRXWr2F94I8dVFeN04toI6XBBX2hg7/k7P3v/yy9ZyjE4QJq6p/5jhxxM/Io98FS/PA3x4pWD+iRENwvK2FWoOeFGaNi/oZO9EseW0u2gaX28o4Uku2TZ8jMj5zuEh6ZURxW0iXAYN/PO5ufhFiBHAG026hZShLCv4eF+vc6Sn3Mqfr0YJ8</eBayAuthToken>
           </RequesterCredentials>
             <ErrorLanguage>en_US</ErrorLanguage>
             <WarningLevel>High</WarningLevel>
@@ -60,6 +60,7 @@ def test_get_detail_xml():
     req = Request(headers=headers, url=url, method=method, data=data)
     prepped = req.prepare()
     resp = s.send(prepped)
+    print(resp.content)
     return resp.content
 
 
@@ -673,4 +674,4 @@ def test_insert_category_ids_to_redis():
 
 
 if __name__ == '__main__':
-    test_get_detail()
+    test_get_detail_xml()
