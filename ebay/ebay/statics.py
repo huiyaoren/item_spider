@@ -1,9 +1,13 @@
 import json
+import traceback
 from datetime import datetime
+import logging
 
 from .tests.time_recoder import log_time_with_name
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
 from .utils.data import db_mongodb, items_from_mongodb, db_redis
+
+logger = logging.getLogger(__name__)
 
 
 class Cleaner():
@@ -53,10 +57,38 @@ class Cleaner():
         if is_within_six_mouths(item['startTime']) \
                 and int(item['quantitySold']) > 50 \
                 and len(set(record['sold'][d] for d in date_list if record['sold'][d] > 0)) > 3:
-                # and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
+            # and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
             return 1
         else:
             return 0
+
+    def variations(self, item):
+        variations = item['variations']
+        if variations is None:
+            return 0
+
+        try:
+            # 图片列表转换为图片字符串
+            for key, set in enumerate(variations['Pictures']['VariationSpecificPictureSet']):
+                if isinstance(set['PictureURL'], list):
+                    variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'] = \
+                        variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'][0]
+            # 筛选键值
+            for key, var in enumerate(variations['Variation']):
+                variations['Variation'][key] = {
+                    'SKU': var['SKU'],
+                    'StartPrice': var['StartPrice'],
+                    'Quantity': var['Quantity'],
+                    'VariationSpecifics': var['VariationSpecifics'],
+                    'SellingStatus': var['SellingStatus'],
+                }
+            variations = json.dumps(variations)
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown Error While Get Variations Data. Exception: \n{0}\n{1}".format(e, info))
+            variations = 0
+
+        return variations
 
     def category_id_top(self, item):
         id = item['categoryID']
@@ -147,6 +179,7 @@ class Cleaner():
         data['record'] = json.dumps(record)
         data['isHot'] = self.is_hot(item, record)
         data['isNew'] = self.is_new(item)
+        data['variations'] = self.variations(item)
         return data
 
     def add_up_shop(self, item_cleaned):
