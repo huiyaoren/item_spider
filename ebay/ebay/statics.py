@@ -79,9 +79,16 @@ class Cleaner():
                     'SKU': var['SKU'],
                     'StartPrice': var['StartPrice'],
                     'Quantity': var['Quantity'],
-                    'VariationSpecifics': var['VariationSpecifics'],
+                    'VariationSpecifics': var['VariationSpecifics']['NameValueList'] if isinstance(
+                        var['VariationSpecifics']['NameValueList'], list) else [
+                        var['VariationSpecifics']['NameValueList']],
                     'SellingStatus': var['SellingStatus'],
                 }
+
+            variations['VariationSpecificsSet'] = variations['VariationSpecificsSet']['NameValueList'] if isinstance(
+                variations['VariationSpecificsSet']['NameValueList'], list) else [
+                variations['VariationSpecificsSet']['NameValueList']]
+
             variations = json.dumps(variations)
         except Exception as e:
             info = traceback.format_exc()
