@@ -146,7 +146,7 @@ class MongodbPipeline(BasicPipeline):
 
 class MysqlPipeline(BasicPipeline):
     def __init__(self):
-        create_table_in_mysql(self.date)
+        create_table_in_mysql(self.date, SQL['goods'])
 
     # @log_time_with_name('MysqlPipeline')
     def process_item_spider(self, item, spider):

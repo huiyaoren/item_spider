@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `goods_{0}` (
     `is_hot` ENUM('0','1') DEFAULT '0' COMMENT '是否爆款，0-否，1-是',
     `is_new` ENUM('0','1') DEFAULT '0' COMMENT '是否新品，0-否，1-是',
     `record` TEXT COMMENT '商品 14 天相关统计数据记录',
+    `variations` TEXT COMMENT '商品多属性数据',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
     PRIMARY KEY (`id`),
     KEY `idx_title` (`title`(250)) COMMENT '商品标题',
