@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import traceback
 from datetime import datetime
 
 import xmltodict
@@ -57,7 +58,8 @@ class DetailXmlRedisSpider(RedisSpider):
         try:
             i = self.clean_item(item, data.get('Item'))
         except AttributeError:
-            logger.warning('Get Item Error. \n\nurl: {0} data: {1}'.format(response.url, response.text))
+            info = traceback.format_exc()
+            logger.warning('Get Item Error. \n\nurl: {0} data: {1}\n{2}'.format(response.url, response.text, info))
         else:
             del data
             yield i
@@ -83,5 +85,5 @@ class DetailXmlRedisSpider(RedisSpider):
         item['shipToLocations'] = i.get('ShipToLocations')
         item['site'] = i.get('Site')
         item['seller'] = i.get('Seller').get('UserID')
-        item['variations'] = i.get('GetItemResponse').get('Item').get('Variations')
+        item['variations'] = i.get('Variations')
         return item
