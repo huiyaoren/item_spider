@@ -115,7 +115,8 @@ class CleanPipeline(BasicPipeline):
         item['date'] = self.date
         try:
             data = self.cleaner.data_cleaned(item)
-            item = dict(data, **item)
+            # item = dict(data, **item)
+            item = dict(item, **data)
         except Exception as e:
             info = traceback.format_exc()
             logger.warning("Clean Item Error. Exception: \n{0}\n{1}".format(e, info))

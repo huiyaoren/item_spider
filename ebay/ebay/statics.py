@@ -65,14 +65,20 @@ class Cleaner():
     def variations(self, item):
         variations = item['variations']
         if variations is None:
-            return 0
+            return json.dumps(0)
 
         try:
             # 图片列表转换为图片字符串
-            for key, set in enumerate(variations['Pictures']['VariationSpecificPictureSet']):
-                if isinstance(set['PictureURL'], list):
-                    variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'] = \
-                        variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'][0]
+            if (isinstance(variations['Pictures']['VariationSpecificPictureSet'], list)):
+                for key, set in enumerate(variations['Pictures']['VariationSpecificPictureSet']):
+                    if isinstance(set['PictureURL'], list):
+                        variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'] = \
+                            variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'][0]
+            else:
+                if isinstance(variations['Pictures']['VariationSpecificPictureSet']['PictureURL'], list):
+                    variations['Pictures']['VariationSpecificPictureSet']['PictureURL'] = \
+                        variations['Pictures']['VariationSpecificPictureSet']['PictureURL'][0]
+
             # 筛选键值
             for key, var in enumerate(variations['Variation']):
                 variations['Variation'][key] = {
@@ -89,13 +95,12 @@ class Cleaner():
                 variations['VariationSpecificsSet']['NameValueList'], list) else [
                 variations['VariationSpecificsSet']['NameValueList']]
 
-            variations = json.dumps(variations)
         except Exception as e:
             info = traceback.format_exc()
             logger.warning("Unknown Error While Get Variations Data. Exception: \n{0}\n{1}".format(e, info))
             variations = 0
 
-        return variations
+        return json.dumps(variations)
 
     def category_id_top(self, item):
         id = item['categoryID']
