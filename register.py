@@ -22,13 +22,13 @@ class Register():
         self.collection = self.mongodb['tokens']
         self.collection.ensure_index('username', unique=True)
 
-    def element_loaded(self, pattern, time=1800.0):
+    def element_loaded(self, pattern, time=3600.0):
         ''' 等待元素载入 '''
         element = WebDriverWait(self.browser, time).until(
             expected_conditions.presence_of_element_located((By.XPATH, pattern)))
         return element
 
-    def element_visible(self, pattern, time=1800.0):
+    def element_visible(self, pattern, time=3600.0):
         ''' 等待元素可见 '''
         element = WebDriverWait(self.browser, time).until(
             expected_conditions.visibility_of_element_located((By.XPATH, pattern)))
