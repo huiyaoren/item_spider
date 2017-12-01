@@ -1,6 +1,7 @@
 import os
 import random
 import time
+from datetime import datetime
 from multiprocessing.pool import Pool
 
 from PIL import Image
@@ -204,6 +205,7 @@ class Register():
         data['runame'] = runame
         data['username'] = username
         data['password'] = password
+        data['update_time'] = datetime.now().strftime("%Y%m%d")
         self.save_tokens(data)
 
         # 注销
