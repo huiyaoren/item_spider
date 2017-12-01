@@ -72,14 +72,13 @@ class Cleaner():
             if variations.get('Pictures') is not None:
                 if (isinstance(variations['Pictures']['VariationSpecificPictureSet'], list)):
                     for key, set in enumerate(variations['Pictures']['VariationSpecificPictureSet']):
-                        if isinstance(set['PictureURL'], list):
+                        if set.get('PictureURL') is not None and isinstance(set['PictureURL'], list):
                             variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'] = \
                                 variations['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'][0]
                 else:
                     if isinstance(variations['Pictures']['VariationSpecificPictureSet']['PictureURL'], list):
                         variations['Pictures']['VariationSpecificPictureSet']['PictureURL'] = \
                             variations['Pictures']['VariationSpecificPictureSet']['PictureURL'][0]
-
             # 筛选键值
             for key, var in enumerate(variations['Variation']):
                 variations['Variation'][key] = {
