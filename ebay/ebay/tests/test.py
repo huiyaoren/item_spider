@@ -49,7 +49,7 @@ def test_get_detail_xml():
             <ErrorLanguage>en_US</ErrorLanguage>
             <WarningLevel>High</WarningLevel>
               <!--Enter an ItemID-->
-          <ItemID>112548339313</ItemID>
+          <ItemID>162687226001</ItemID>
         </GetItemRequest>
     '''
     data = '''
@@ -61,8 +61,14 @@ def test_get_detail_xml():
             <ErrorLanguage>en_US</ErrorLanguage>
             <WarningLevel>High</WarningLevel>
               <!--Enter an ItemID-->
-          <ItemID>162687226001</ItemID>
+          <ItemID>351755095213</ItemID>
         </GetItemRequest>
+    '''
+    '''
+    192083199768
+    162687226001
+    351755095213
+    311959506045
     '''
     headers = {
         'X-EBAY-API-SITEID': '0',
@@ -163,7 +169,7 @@ def test_mysql():
     import pymysql
     db = pymysql.connect('192.168.1.248', 'root', 'root', 'erp')
     cursor = db.cursor()
-    sql = 'select * from erp_saas_goods_category where platform_category_id = 179697;'
+    sql = 'SELECT * FROM erp_saas_goods_category WHERE platform_category_id = 179697;'
     try:
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -689,20 +695,44 @@ def test_insert_category_ids_to_redis():
 
 @log_time_with_name('run')
 def run(result):
+    print()
+    import xmltodict
+    import json
+    from pprint import pprint
     result = xmltodict.parse(result)
+
     variation = result.get('GetItemResponse').get('Item').get('Variations')
+    if variation is None:
+        print('variation is none')
+        return
+    print(variation.keys())
 
-    # variation = json.dumps(variation)
-    # print(variation)
+    for key, set in enumerate(variation['Pictures']['VariationSpecificPictureSet']):
+        if isinstance(set['PictureURL'], list):
+            variation['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'] = \
+            variation['Pictures']['VariationSpecificPictureSet'][key]['PictureURL'][0]
 
-    l = [i for i in variation['Picture']]
-    print(l)
-    # pprint(variation)
+    for key, var in enumerate(variation['Variation']):
+        variation['Variation'][key] = {
+            'SKU': var['SKU'],
+            'StartPrice': var['StartPrice'],
+            'Quantity': var['Quantity'],
+            'VariationSpecifics': var['VariationSpecifics']['NameValueList'] if isinstance(var['VariationSpecifics']['NameValueList'], list) else [var['VariationSpecifics']['NameValueList']],
+            'SellingStatus': var['SellingStatus'],
+        }
+        print()
+
+    variation['VariationSpecificsSet'] = variation['VariationSpecificsSet']['NameValueList'] if isinstance(variation['VariationSpecificsSet']['NameValueList'], list) else [variation['VariationSpecificsSet']['NameValueList']]
+
+    print(json.dumps(variation))
+
 
 if __name__ == '__main__':
     import xmltodict
     import json
     from pprint import pprint
+
     result = test_get_detail_xml()
-    print(result)
+
+
     run(result)
