@@ -56,14 +56,14 @@ class Cleaner():
         date_list = sorted(record['sold'].keys(), reverse=True)[:7]
         if is_within_six_mouths(item['startTime']) \
                 and int(item['quantitySold']) > 50 \
-                and len(set(record['sold'][d] for d in date_list if record['sold'][d] > 0)) > 3:
+                and len(list(record['sold'][d] for d in date_list if record['sold'][d] > 0)) > 3:
             # and Cleaner.is_had_sales_in_a_week(self.date, item['itemId'], 3, self.mongodb):
             return 1
         else:
             return 0
 
     def variations(self, item):
-        variations = item['variations']
+        variations = item.get('variations')
         if variations is None:
             return json.dumps(0)
 
@@ -117,9 +117,8 @@ class Cleaner():
             r = item_y.get('record')
             record = json.loads(r) if r is not None else record
             record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
-
         # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
-        if record['price'] == {}:
+        if record['price'] == {} or record['price'] is None:
             for i in range(14):
                 date = previous_date(date)
                 item_y = self.item_someday(id, date) or {}
