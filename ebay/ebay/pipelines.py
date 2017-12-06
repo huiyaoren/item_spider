@@ -56,6 +56,7 @@ class MongodbPipeline(BasicPipeline):
         try:
             self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
             self.collection_detail.create_index([('quantitySoldYesterday', ASCENDING)], unique=False)
+            self.collection_detail.create_index([('topCategoryID', ASCENDING)], unique=False)
         except Exception as e:
             logger.warning('Create index fail. exception: \n{0}'.format(e))
 
