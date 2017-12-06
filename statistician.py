@@ -38,13 +38,13 @@ class Statistician():
 
 
 class GoodsStatistician(Statistician):
-
     @log_time_with_name('GoodsStatistician.save')
     def save(self):
         m = self.mongodb
 
         c = m['d_{0}'.format(self.date)]
         # from pymongo import ASCENDING
+        # c.create_index([('topCategoryID', ASCENDING)])
         # c.create_index([('quantitySoldYesterday', ASCENDING)])
         # c.create_index([('quantitySoldLastWeek', ASCENDING)])
         # c.create_index([('categoryID', ASCENDING)])
@@ -167,9 +167,14 @@ class GoodsStatistician(Statistician):
     @log_time_with_name('hot_category_ids_info')
     def hot_category_ids_info(self, collection, total_goods_num):
         ''' 商品分类 '''
-        # fixme 12w => 0.3s 有待性能优化
-        result = collection.aggregate([{'$group': {'_id': '$topCategoryID', 'quantity': {'$sum': 1}}}])
-        return {str(int(i['_id'] or 0)): i['quantity'] for i in result}
+        top_category_list = [1, 10542, 11116, 11232, 11233, 11450, 11700, 11730, 1249, 12576, 1281, 1293, 1305, 131090,
+                             142313, 14308, 14339, 14675, 15032, 159912, 170638, 170769, 172008, 172009, 172176, 20081,
+                             20710, 220, 22128, 237, 260, 26395, 267, 281, 293, 2984, 316, 3187, 3252, 353, 40005,
+                             45099, 45100, 550, 58058, 6000, 619, 625, 62682, 63, 64482, 870, 888, 9800, 9815, 99, ]
+        return {
+            str(category): collection.find({"topCategoryID": {'$eq': category}}).count()
+            for category in top_category_list
+        }
 
     @log_time_with_name('hot_goods_ids_info')
     def hot_goods_ids_info(self, collection):
@@ -177,7 +182,7 @@ class GoodsStatistician(Statistician):
         # fixme 12w => 0.4s 有待性能优化
         return [i['itemId'] for i in
                 collection.find({"quantitySoldLastWeek": {'$gt': 100}}).sort('quantitySoldLastWeek',
-                                                                           pymongo.DESCENDING).limit(20)]
+                                                                             pymongo.DESCENDING).limit(20)]
 
     @log_time_with_name('save_goods_statics')
     def insert_to_mysql(self, statics_data, cursor=None):
@@ -288,8 +293,8 @@ def main():
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
 
-    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
-    s.save(process=64)
+    # s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
+    # s.save(process=64)
 
 
 if __name__ == '__main__':
