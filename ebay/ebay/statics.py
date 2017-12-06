@@ -25,6 +25,7 @@ class Cleaner():
 
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
+        # 已弃用 被 records 代替
         id = item['itemId']
         date = previous_date(self.date)
         item_y = self.item_someday(id, date)
@@ -107,7 +108,7 @@ class Cleaner():
         top = self.redis.hget('ebay:top_category_id', id)
         return int(top)
 
-    def record_14_days(self, item):
+    def records(self, item):
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
         # 1. get record of item yesterday
         id = item['itemId']
@@ -118,11 +119,12 @@ class Cleaner():
             record = json.loads(r) if r is not None else record
             record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
         # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
-        if record['price'] == {} or record['price'] is None:
+        if  record['price'] is None or record['price'] == {} or len(record['price']) < 14:
             for i in range(14):
                 date = previous_date(date)
                 item_y = self.item_someday(id, date) or {}
-                if item_y.get('record') is not None:
+                record_y = json.loads(item_y.get('record')) if item_y.get('record') is not None else {}
+                if len(record_y.get('price', {})) >= 14 - i:
                     r = item_y.get('record')
                     r = json.loads(r) if r is not None else record
                     record['sold'].update(r.get('recordSold', {}))
@@ -137,7 +139,7 @@ class Cleaner():
         record['sold'].update({self.date: record['sold_yesterday']})
         record['price'].update({self.date: item.get('price', 0.00)})
         record['hit'].update({self.date: item.get('hitCount', 0)})
-        # 3. old record delete record_14_days_ago if(len > 14)
+        # 3. old record delete records_ago if(len > 14)
         if len(record['sold']) > 14:
             keys = sorted(record['sold'].keys(), reverse=True)[14:]
             for key in keys:
@@ -184,7 +186,7 @@ class Cleaner():
         data = {}
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['topCategoryID'] = self.category_id_top(item)
-        record, sold_yesterday = self.record_14_days(item)
+        record, sold_yesterday = self.records(item)
         # data['quantitySoldYesterday'] = self.sales_yesterday(item)
         data['quantitySoldYesterday'] = sold_yesterday
         data['record'] = json.dumps(record)
