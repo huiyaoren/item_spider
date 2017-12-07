@@ -193,6 +193,7 @@ class Cleaner():
         data['isHot'] = self.is_hot(item, record)
         data['isNew'] = self.is_new(item)
         data['variations'] = self.variations(item)
+        # todo 商品运费
         return data
 
     def add_up_shop(self, item_cleaned):
@@ -216,11 +217,11 @@ class Cleaner():
             r.hincrby('ebay:shop:has_sold_count', seller, 1)
             # 店铺日销量
             r.hincrby('ebay:shop:total_sold', seller, i['quantitySoldYesterday'])
-            # 店铺日销售额
-            r.hincrbyfloat('ebay:shop:amount', seller, i['quantitySoldYesterday'] * i['price'])
         # 店铺周销量
         if i['quantitySoldLastWeek'] > 0:
             r.hincrby('ebay:shop:week_sold', seller, i['quantitySoldLastWeek'])
+            # 店铺周销售额
+            r.hincrbyfloat('ebay:shop:amount', seller, i['quantitySoldLastWeek'] * i['price'])
         # 店铺上周销量
         if i['quantitySoldTwoWeeksAgo'] > 0:
             r.hincrby('ebay:shop:last_week_sold', seller, i['quantitySoldTwoWeeksAgo'])
