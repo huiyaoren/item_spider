@@ -69,7 +69,7 @@ class DetailXmlRedisSpider(RedisSpider):
         i = data
         item['price'] = float(i.get('SellingStatus').get('CurrentPrice').get('#text', 0.0))
         item['currency'] = i.get('Currency')
-        item['itemId'] = i.get('ItemID')
+        item['itemId'] = int(i.get('ItemID'))
         item['startTime'] = i.get('ListingDetails').get('StartTime')
         item['viewItemURL'] = i.get('ListingDetails').get('ViewItemURL')
         item['categoryID'] = i.get('PrimaryCategory').get('CategoryID')
