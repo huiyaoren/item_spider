@@ -180,9 +180,13 @@ class GoodsStatistician(Statistician):
     def hot_goods_ids_info(self, collection):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
-        return [i['itemId'] for i in
-                collection.find({"quantitySoldLastWeek": {'$gt': 100}}).sort('quantitySoldLastWeek',
-                                                                             pymongo.DESCENDING).limit(20)]
+        return [
+            i['itemId'] for i in collection.find(
+                {"quantitySoldLastWeek": {'$gt': 100}}
+            ).sort(
+                'quantitySoldLastWeek', pymongo.DESCENDING
+            ).limit(20)
+        ]
 
     @log_time_with_name('save_goods_statics')
     def insert_to_mysql(self, statics_data, cursor=None):
@@ -293,8 +297,8 @@ def main():
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
 
-    # s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
-    # s.save(process=64)
+    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
+    s.save(process=64)
 
 
 if __name__ == '__main__':
