@@ -56,7 +56,7 @@ class MongodbPipeline(BasicPipeline):
         try:
             self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
             self.collection_detail.create_index([('quantitySoldYesterday', ASCENDING)], unique=False)
-            self.collection_detail.create_index([('topCategoryID', ASCENDING)], unique=False)
+            # self.collection_detail.create_index([('topCategoryID', ASCENDING)], unique=False)
         except Exception as e:
             logger.warning('Create index fail. exception: \n{0}'.format(e))
 
@@ -96,6 +96,7 @@ class NewItemPipeline(BasicPipeline):
     def __init__(self):
         create_table_in_mysql(self.date, SQL['new_goods'])
 
+    # @log_time_with_name('NewItemPipeline')
     def process_item_spider(self, item, spider):
         if item['isNew'] == 1:
             try:
@@ -114,6 +115,7 @@ class HotItemPipeline(BasicPipeline):
     def __init__(self):
         create_table_in_mysql(self.date, SQL['hot_goods'])
 
+    # @log_time_with_name('HotItemPipeline')
     def process_item_spider(self, item, spider):
         if item['isHot'] == 1:
             try:
@@ -129,7 +131,7 @@ class HotItemPipeline(BasicPipeline):
 
 
 class ShopStatisticsPipeline(BasicPipeline):
-    @log_time_with_name('ShopStatisticsPipeline')
+    # @log_time_with_name('ShopStatisticsPipeline')
     def process_item_spider(self, item, spider):
         try:
             self.cleaner.add_up_shop(item)
