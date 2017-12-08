@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 def db_mongodb_base(db_name, host, port):
-    Client = MongoClient(host, port)
+    Client = MongoClient(host, port, maxPoolSize=1024)
     db = Client[db_name]
     return db
 
