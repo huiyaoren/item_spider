@@ -118,7 +118,7 @@ class Cleaner():
         top = self.redis.hget('ebay:top_category_id', id)
         return int(top)
 
-    # @log_time_with_name('Cleaner.records')
+    @log_time_with_name('Cleaner.records')
     def records(self, item):
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
         # 1. get record of item yesterday
@@ -135,7 +135,7 @@ class Cleaner():
                 date = previous_date(date)
                 item_y = self.item_someday(item_id, date) or {}
                 record_y = json.loads(item_y.get('record')) if item_y.get('record') is not None else {}
-                if len(record_y.get('price', {})) >= 14 - i:
+                if len(record_y.get('price', {})) >= 7:
                     r = item_y.get('record')
                     r = json.loads(r) if r is not None else record
                     record['sold'].update(r.get('recordSold', {}))
