@@ -17,8 +17,14 @@ class Cleaner():
         self.collection = self.mongodb['d_{0}'.format(date)]
         self.redis = db_redis()
 
+    @log_time_with_name('Cleaner.item_someday')
     def item_someday(self, item_id, date):
         ''' 返回指定日期的指定商品数据 '''
+        # fixme-两周后删除该判断
+        if int(date) >= 20171208:
+            item_id = int(item_id)
+        else:
+            item_id = str(item_id)
         c = self.mongodb['d_{0}'.format(date)]
         item = c.find_one({'itemId': item_id})
         return item
@@ -34,6 +40,7 @@ class Cleaner():
         sold_yesterday = int(item['quantitySold']) - int(item_y['quantitySold'])
         return sold_yesterday
 
+    # @log_time_with_name('Cleaner.sales_last_week')
     def sales_last_week(self, item):
         ''' 返回指定商品的上周统计数据 '''
         id = item['itemId']
@@ -45,6 +52,7 @@ class Cleaner():
         sold_two_weeks_ago = item_y.get('quantitySoldLastWeek', 0)
         return sold_last_week, sold_two_weeks_ago
 
+    # @log_time_with_name('Cleaner.is_new')
     def is_new(self, item):
         ''' 指定商品是否为新品 '''
         if is_within_eight_weeks(item['startTime']) and int(item['quantitySold']) > 0:
@@ -52,6 +60,7 @@ class Cleaner():
         else:
             return 0
 
+    # @log_time_with_name('Cleaner.is_hot')
     def is_hot(self, item, record):
         ''' 指定商品是否为爆款 '''
         date_list = sorted(record['sold'].keys(), reverse=True)[:7]
@@ -103,17 +112,19 @@ class Cleaner():
 
         return json.dumps(variations)
 
+    # @log_time_with_name('Cleaner.category_id_top')
     def category_id_top(self, item):
         id = item['categoryID']
         top = self.redis.hget('ebay:top_category_id', id)
         return int(top)
 
+    # @log_time_with_name('Cleaner.records')
     def records(self, item):
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
         # 1. get record of item yesterday
-        id = item['itemId']
-        date = self.date
-        item_y = self.item_someday(id, previous_date(date))
+        item_id = item['itemId']
+        date = previous_date(self.date)
+        item_y = self.item_someday(item_id, date)
         if item_y is not None:
             r = item_y.get('record')
             record = json.loads(r) if r is not None else record
@@ -122,7 +133,7 @@ class Cleaner():
         if  record['price'] is None or record['price'] == {} or len(record['price']) < 14:
             for i in range(14):
                 date = previous_date(date)
-                item_y = self.item_someday(id, date) or {}
+                item_y = self.item_someday(item_id, date) or {}
                 record_y = json.loads(item_y.get('record')) if item_y.get('record') is not None else {}
                 if len(record_y.get('price', {})) >= 14 - i:
                     r = item_y.get('record')
@@ -180,7 +191,7 @@ class Cleaner():
             return
         self.collection.update_one({'itemId': item_id}, {'$set': data})
 
-    @log_time_with_name('data_cleaned')
+    @log_time_with_name('Cleaner.data_cleaned')
     def data_cleaned(self, item):
         ''' 返回指定商品的统计数据 '''
         data = {}
