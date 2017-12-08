@@ -47,10 +47,10 @@ class Cleaner():
         date = last_week(self.date)
         item_y = self.item_someday(id, date)
         if item_y is None:
-            return 0, 0
+            return 0, 0, None
         sold_last_week = int(item['quantitySold']) - int(item_y['quantitySold'])
         sold_two_weeks_ago = item_y.get('quantitySoldLastWeek', 0)
-        return sold_last_week, sold_two_weeks_ago
+        return sold_last_week, sold_two_weeks_ago, item_y
 
     # @log_time_with_name('Cleaner.is_new')
     def is_new(self, item):
@@ -119,19 +119,19 @@ class Cleaner():
         return int(top)
 
     @log_time_with_name('Cleaner.records')
-    def records(self, item):
+    def records(self, item, item_y):
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
         # 1. get record of item yesterday
         item_id = item['itemId']
         date = previous_date(self.date)
-        item_y = self.item_someday(item_id, date)
+        # item_y = self.item_someday(item_id, date)
         if item_y is not None:
             r = item_y.get('record')
             record = json.loads(r) if r is not None else record
             record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
         # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
-        if  record['price'] is None or record['price'] == {} or len(record['price']) < 14:
-            for i in range(14):
+        if  record['price'] is None or record['price'] == {} or len(record['price']) < 1:
+            for i in range(7):
                 date = previous_date(date)
                 item_y = self.item_someday(item_id, date) or {}
                 record_y = json.loads(item_y.get('record')) if item_y.get('record') is not None else {}
@@ -195,9 +195,9 @@ class Cleaner():
     def data_cleaned(self, item):
         ''' 返回指定商品的统计数据 '''
         data = {}
-        data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
+        data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'], item_y = self.sales_last_week(item)
         data['topCategoryID'] = self.category_id_top(item)
-        record, sold_yesterday = self.records(item)
+        record, sold_yesterday = self.records(item, item_y)
         # data['quantitySoldYesterday'] = self.sales_yesterday(item)
         data['quantitySoldYesterday'] = sold_yesterday
         data['record'] = json.dumps(record)
