@@ -3,7 +3,7 @@ import logging
 import traceback
 from datetime import datetime
 
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 from pymysql import IntegrityError
 
@@ -55,8 +55,8 @@ class MongodbPipeline(BasicPipeline):
     def __init__(self):
         try:
             self.collection_detail.create_index([('itemId', ASCENDING)], unique=True)
-            self.collection_detail.create_index([('quantitySoldYesterday', ASCENDING)], unique=False)
-            # self.collection_detail.create_index([('topCategoryID', ASCENDING)], unique=False)
+            self.collection_detail.create_index([('quantitySoldYesterday', DESCENDING)], unique=False)
+            self.collection_detail.create_index([('topCategoryID', ASCENDING)], unique=False)
         except Exception as e:
             logger.warning('Create index fail. exception: \n{0}'.format(e))
 
