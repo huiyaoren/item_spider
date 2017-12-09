@@ -198,7 +198,7 @@ class GoodsStatistician(Statistician):
         ''' 周销量排行前二十商品 '''
         # fixme 12w => 0.4s 有待性能优化
         return [
-            i['itemId'] for i in collection.find(
+            str(i['itemId']) for i in collection.find(
                 {"quantitySoldLastWeek": {'$gt': 1000}}
             ).sort(
                 'quantitySoldLastWeek', pymongo.DESCENDING
