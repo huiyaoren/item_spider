@@ -61,10 +61,10 @@ class GoodsStatistician(Statistician):
         #
         data['total_goods_num'] = self.total_goods_num(c)
         data['sales_goods_num'] = self.sales_goods_num(c)
-        data['total_sold_info'] = json.dumps(self.total_sold_info(c, data['sales_goods_num']))
+        data['total_sold_info'] = json.dumps(self.total_sold_info(c))
         data['shop_sold_info'] = json.dumps(self.shop_sold_info(c))
-        data['goods_sold_info'] = json.dumps(self.goods_sold_info(c, data['total_goods_num']))
-        data['hot_category_ids_info'] = self.hot_category_ids_info(c, data['total_goods_num'])
+        data['goods_sold_info'] = json.dumps(self.goods_sold_info(c, json.loads(data['total_sold_info'])['count']))
+        data['hot_category_ids_info'] = self.hot_category_ids_info(c)
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
         #
         self.insert_to_mysql(data)
@@ -77,25 +77,42 @@ class GoodsStatistician(Statistician):
 
     @log_time_with_name('sales_goods_num')
     def sales_goods_num(self, collection):
-        ''' 有销量商品总数 '''
+        ''' 商品销售总量 '''
         # todo-1 数据太小 真实性 修改查询条件
-        return collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
-
-    @log_time_with_name('total_sold_info')
-    def total_sold_info(self, collection, sales_goods_num):
         c = collection
-        data = {}
-        data['count'] = sales_goods_num
         result = c.aggregate([
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-            {"$project": {
-                "total_sold_info_money": {"$multiply": ["$quantitySoldYesterday", "$price"]},
-                "_id": 0,
-                "categoryID": 1,
-                "quantitySold": 1, },
-            },
+            {'$group': {'_id': 0, 'sales_goods_num': {'$sum': "$quantitySoldYesterday"}}}
         ])
-        data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
+        for r in result:
+            return r.get('sales_goods_num')
+        else:
+            return 0
+
+    @log_time_with_name('total_sold_info')
+    def total_sold_info(self, collection):
+        ''' 单天销量与单天销售额 '''
+        c = collection
+        data = {}
+        data['count'] = collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
+        # result = c.aggregate([
+        #     {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
+        #     {"$project": {
+        #         "total_sold_info_money": {"$multiply": ["$quantitySoldYesterday", "$price"]},
+        #         "_id": 0,
+        #         "categoryID": 1,
+        #         "quantitySold": 1, },
+        #     },
+        # ])
+        # data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
+        #
+        result = c.aggregate([
+            {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
+            {'$group': {'_id': 0, 'total_sold_info': {'$sum': {"$multiply": ["$quantitySoldYesterday", "$price"]}}}}
+        ])
+        data['money'] = 0
+        for r in result:
+            data['money'] = r.get('total_sold_info')
         return data
 
     @log_time_with_name('shop_sold_info')
@@ -165,7 +182,7 @@ class GoodsStatistician(Statistician):
         return data
 
     @log_time_with_name('hot_category_ids_info')
-    def hot_category_ids_info(self, collection, total_goods_num):
+    def hot_category_ids_info(self, collection):
         ''' 商品分类 '''
         top_category_list = [1, 10542, 11116, 11232, 11233, 11450, 11700, 11730, 1249, 12576, 1281, 1293, 1305, 131090,
                              142313, 14308, 14339, 14675, 15032, 159912, 170638, 170769, 172008, 172009, 172176, 20081,
@@ -182,7 +199,7 @@ class GoodsStatistician(Statistician):
         # fixme 12w => 0.4s 有待性能优化
         return [
             i['itemId'] for i in collection.find(
-                {"quantitySoldLastWeek": {'$gt': 100}}
+                {"quantitySoldLastWeek": {'$gt': 1000}}
             ).sort(
                 'quantitySoldLastWeek', pymongo.DESCENDING
             ).limit(20)
@@ -293,10 +310,10 @@ def main():
     mongodb = db_mongodb('mongodb_remote')
     mysql = db_mysql()
     datetime = date()
-
+    #
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
-
+    #
     s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     s.save(process=64)
 
