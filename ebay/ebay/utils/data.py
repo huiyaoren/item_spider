@@ -445,5 +445,18 @@ def item_cleaned(item):
     return o
 
 
+# date
+
+
+def is_new_date(redis=None):
+    redis = redis or db_redis()
+    date = datetime.now().strftime("%Y%m%d")
+    if int(redis.get('ebay:date')) == int(date):
+        return 0
+    else:
+        redis.set('ebay:date', datetime.now().strftime("%Y%m%d"))
+        return 1
+
+
 if __name__ == '__main__':
     pass
