@@ -236,21 +236,21 @@ class GoodsStatistician(Statistician):
 
 
 class ShopStatistician(Statistician):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # todo 统计前删表之前做一次判断 判断 redis 中数据是否为空
-        self.check_redis()
-        self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
 
-    def check_redis(self):
-        ''' 判断当天商店统计数据是否有效 '''
-        r = self.redis
+    def is_not_empty(self):
+        ''' 统计前删表之前判断当天商店统计数据是否有效 '''
+        redis = self.redis
+        if redis.hlen('ebay:shop:basic') > 100000:
+            self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
+            return 1
+        else:
+            return 0
 
     @log_time_with_name('ShopStatistician.save')
     def save(self, process=64):
         r = self.redis
         result = r.hvals('ebay:shop:basic')
-
+        #
         t1 = datetime.now()
         func = self.insert_to_mysql
         pool = Pool(process)
@@ -260,6 +260,7 @@ class ShopStatistician(Statistician):
         pool.close()
         pool.join()
         t2 = datetime.now()
+        #
         try:
             assert t2 - t1 > timedelta(0, 2, 0)  # 耗时太短, 大概率多线程执行异常
         except AssertionError:
@@ -314,12 +315,13 @@ def main():
     mongodb = db_mongodb('mongodb_remote')
     mysql = db_mysql('mysql_remote')
     datetime = date()
-    #
+    # 全站商品数据统计
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
-    #
+    # 全站店铺数据统计
     s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
-    s.save(process=64)
+    if s.is_not_empty():
+        s.save(process=64)
 
 
 if __name__ == '__main__':
