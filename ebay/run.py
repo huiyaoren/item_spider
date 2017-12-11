@@ -9,31 +9,30 @@ except ImportError:
 def run(name='listing_redis_spider'):
     from scrapy.crawler import CrawlerProcess
     from scrapy.utils.project import get_project_settings
-
     process = CrawlerProcess(get_project_settings())
-
     process.crawl(name)
     process.start()
 
 
 def init():
     is_testing = True
-    delete_redis_key([
-        'ebay:item_ids_filter_hyper',
-        'ebay:item_ids_filter',
-        'ebay:item_ids',
+    if is_new_date():
+        delete_redis_key([
+            'ebay:item_ids_filter_hyper',
+            'ebay:item_ids_filter',
+            'ebay:item_ids',
 
-        'ebay:shop:basic',
-        'ebay:shop:count',
-        'ebay:shop:has_sold_count',
-        'ebay:shop:total_sold',
-        'ebay:shop:amount',
-        'ebay:shop:week_sold',
-        'ebay:shop:last_week_sold',
+            'ebay:shop:basic',
+            'ebay:shop:count',
+            'ebay:shop:has_sold_count',
+            'ebay:shop:total_sold',
+            'ebay:shop:amount',
+            'ebay:shop:week_sold',
+            'ebay:shop:last_week_sold',
 
-        'ebay:category_ids',
-        'ebay:category_urls',
-    ])
+            'ebay:category_ids',
+            'ebay:category_urls',
+        ])
     if is_testing:
         insert_category_id([
             177664, 36865, 28162, 20485, 102411, 80913, 9745, 40979, 175636, 123417, 52762, 175643, 20509, 102430,
@@ -82,8 +81,8 @@ def main():
     if type == 'slave':
         prepared = int(args.get(3, 0))
 
-    print(type, processes, prepared)
-
+    print('spiders settings: \ntype={0} \nprocesses={1} \nprepared={2}\n'.format(type, processes, prepared))
+    print('spiders running...')
 
     run_multi('detail_xml_redis_spider', processes, prepared)
 
