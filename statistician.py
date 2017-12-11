@@ -19,7 +19,7 @@ class Statistician():
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.mysql = mysql or db_mysql()
         self.mysql_cursor = self.mysql.cursor()
-        self.mysql_local = mysql or db_mysql('mysql_local')
+        self.mysql_local = db_mysql('mysql_local')
         self.mysql_cursor_local = self.mysql_local.cursor()
         self.date = datetime or date()
 
@@ -41,10 +41,8 @@ class GoodsStatistician(Statistician):
     @log_time_with_name('GoodsStatistician.save')
     def save(self):
         m = self.mongodb
-
         c = m['d_{0}'.format(self.date)]
-        # from pymongo import ASCENDING
-        # c.create_index([('topCategoryID', ASCENDING)])
+        c.create_index([('topCategoryID', pymongo.ASCENDING)])
         # c.create_index([('quantitySoldYesterday', ASCENDING)])
         # c.create_index([('quantitySoldLastWeek', ASCENDING)])
         # c.create_index([('categoryID', ASCENDING)])
@@ -68,7 +66,7 @@ class GoodsStatistician(Statistician):
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
         #
         self.insert_to_mysql(data)
-        self.insert_to_mysql(data, self.mysql_cursor_local)
+        self.insert_to_mysql(data, self.mysql_cursor_local, self.mysql_local)
 
     @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
@@ -206,11 +204,9 @@ class GoodsStatistician(Statistician):
         ]
 
     @log_time_with_name('save_goods_statics')
-    def insert_to_mysql(self, statics_data, cursor=None):
-        print(statics_data['hot_category_ids_info'])
-        # fixme 12w => 0.4s 有待性能优化
+    def insert_to_mysql(self, statics_data, cursor=None, mysql=None):
         cursor = cursor or self.mysql_cursor
-        print(statics_data)
+        mysql = mysql or self.mysql
         # 获取分类名
         sql = "SELECT english_name, platform_category_id FROM erp_spider.erp_saas_goods_category WHERE platform_category_id IN ({0}) AND site=2;"
         cursor.execute(sql.format(','.join(statics_data['hot_category_ids_info'])))
@@ -236,13 +232,19 @@ class GoodsStatistician(Statistician):
             'hot_goods_ids_info': statics_data['hot_goods_ids_info'],
             'hot_category_ids_info': statics_data['hot_category_ids_info'],
         })
-        self.mysql.commit()
+        mysql.commit()
 
 
 class ShopStatistician(Statistician):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # todo 统计前删表之前做一次判断 判断 redis 中数据是否为空
+        self.check_redis()
         self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
+
+    def check_redis(self):
+        ''' 判断当天商店统计数据是否有效 '''
+        r = self.redis
 
     @log_time_with_name('ShopStatistician.save')
     def save(self, process=64):
