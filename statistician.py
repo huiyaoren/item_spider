@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from datetime import datetime, timedelta
 from multiprocessing.pool import Pool
 
@@ -19,9 +20,12 @@ class Statistician():
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.mysql = mysql or db_mysql()
         self.mysql_cursor = self.mysql.cursor()
-        self.mysql_local = db_mysql('mysql_local')
-        self.mysql_cursor_local = self.mysql_local.cursor()
         self.date = datetime or date()
+        try:
+            self.mysql_local = db_mysql('mysql_local')
+            self.mysql_cursor_local = self.mysql_local.cursor()
+        except:
+            pass
 
     def execute_sql(self, sql, data=None, mysql=None, cursor=None):
         mysql = mysql or db_mysql()
@@ -65,8 +69,12 @@ class GoodsStatistician(Statistician):
         data['hot_category_ids_info'] = self.hot_category_ids_info(c)
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
         #
-        self.insert_to_mysql(data)
-        self.insert_to_mysql(data, self.mysql_cursor_local, self.mysql_local)
+        try:
+            self.insert_to_mysql(data)
+            self.insert_to_mysql(data, self.mysql_cursor_local, self.mysql_local)
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning('Get Item Error. \n\nException: {0}\n{1}'.format(e, info))
 
     @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
@@ -75,17 +83,8 @@ class GoodsStatistician(Statistician):
 
     @log_time_with_name('sales_goods_num')
     def sales_goods_num(self, collection):
-        ''' 商品销售总量 '''
-        # todo-1 数据太小 真实性 修改查询条件
-        c = collection
-        result = c.aggregate([
-            {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-            {'$group': {'_id': 0, 'sales_goods_num': {'$sum': "$quantitySoldYesterday"}}}
-        ])
-        for r in result:
-            return r.get('sales_goods_num')
-        else:
-            return 0
+        ''' 有销售商品总量 '''
+        return collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
 
     @log_time_with_name('total_sold_info')
     def total_sold_info(self, collection):
@@ -93,24 +92,23 @@ class GoodsStatistician(Statistician):
         c = collection
         data = {}
         data['count'] = collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
-        # result = c.aggregate([
-        #     {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-        #     {"$project": {
-        #         "total_sold_info_money": {"$multiply": ["$quantitySoldYesterday", "$price"]},
-        #         "_id": 0,
-        #         "categoryID": 1,
-        #         "quantitySold": 1, },
-        #     },
-        # ])
-        # data['money'] = round(sum([i['total_sold_info_money'] for i in result]), 2)
-        #
+        # 单天销量
         result = c.aggregate([
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-            {'$group': {'_id': 0, 'total_sold_info': {'$sum': {"$multiply": ["$quantitySoldYesterday", "$price"]}}}}
+            {'$group': {'_id': 0, 'total_sold_info_count': {'$sum': "$quantitySoldYesterday"}}}
+        ])
+        data['count'] = 0
+        for r in result:
+            data['count'] = r.get('total_sold_info_count')
+        # 单天销售额
+        result = c.aggregate([
+            {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
+            {'$group': {'_id': 0, 'total_sold_info_money': {'$sum': {"$multiply": ["$quantitySoldYesterday", "$price"]}}}}
         ])
         data['money'] = 0
         for r in result:
-            data['money'] = r.get('total_sold_info')
+            data['money'] = r.get('total_sold_info_money')
+        #
         return data
 
     @log_time_with_name('shop_sold_info')
