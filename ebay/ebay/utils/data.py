@@ -142,7 +142,7 @@ def category_ids_from_mysql():
 
 def category_ids_from_redis(num=1000, redis=None):
     r = redis or db_redis()
-    ids = r.smembers('ebay:leaf_category_ids')
+    ids = r.smembers('ebay:leaf_category_ids_us')
     for k, id in enumerate(ids):
         if k >= num:
             break
