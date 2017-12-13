@@ -115,7 +115,7 @@ class Cleaner():
     # @log_time_with_name('Cleaner.category_id_top')
     def category_id_top(self, item):
         id = item['categoryID']
-        top = self.redis.hget('ebay:top_category_id', id)
+        top = self.redis.hget('ebay:top_category_id_us', id)
         return int(top)
 
     @log_time_with_name('Cleaner.records')
