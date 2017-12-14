@@ -65,7 +65,7 @@ class GoodsStatistician(Statistician):
         data['sales_goods_num'] = self.sales_goods_num(c)
         data['total_sold_info'] = json.dumps(self.total_sold_info(c))
         data['shop_sold_info'] = json.dumps(self.shop_sold_info(c))
-        data['goods_sold_info'] = json.dumps(self.goods_sold_info(c, json.loads(data['total_sold_info'])['count']))
+        data['goods_sold_info'] = json.dumps(self.goods_sold_info(c, data['total_goods_num']))
         data['hot_category_ids_info'] = self.hot_category_ids_info(c)
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
         #
