@@ -46,12 +46,14 @@ class GoodsStatistician(Statistician):
     def save(self):
         m = self.mongodb
         c = m['d_{0}'.format(self.date)]
+        # 保证索引已生成
+        print('Check index...')
         c.create_index([('topCategoryID', pymongo.ASCENDING)])
-        # c.create_index([('quantitySoldYesterday', ASCENDING)])
+        c.create_index([('quantitySoldYesterday', pymongo.DESCENDING)])
         # c.create_index([('quantitySoldLastWeek', ASCENDING)])
         # c.create_index([('categoryID', ASCENDING)])
         # c.create_index([('seller', ASCENDING)])
-        # 初始化
+        # 数据初始化
         data = {}
         data['total_goods_num'] = 0
         data['sales_goods_num'] = 0
@@ -60,7 +62,8 @@ class GoodsStatistician(Statistician):
         data['goods_sold_info'] = {}
         data['hot_category_ids_info'] = {}
         data['hot_goods_ids_info'] = []
-        #
+        # 开始统计
+        print('Start statistics...')
         data['total_goods_num'] = self.total_goods_num(c)
         data['sales_goods_num'] = self.sales_goods_num(c)
         data['total_sold_info'] = json.dumps(self.total_sold_info(c))
@@ -68,7 +71,7 @@ class GoodsStatistician(Statistician):
         data['goods_sold_info'] = json.dumps(self.goods_sold_info(c, data['total_goods_num']))
         data['hot_category_ids_info'] = self.hot_category_ids_info(c)
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
-        #
+        # 数据写入
         try:
             self.insert_to_mysql(data)
             self.insert_to_mysql(data, self.mysql_cursor_local, self.mysql_local)
@@ -91,7 +94,6 @@ class GoodsStatistician(Statistician):
         ''' 单天销量与单天销售额 '''
         c = collection
         data = {}
-        data['count'] = collection.find({"quantitySoldYesterday": {'$gt': 0}}).count()
         # 单天销量
         result = c.aggregate([
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
