@@ -9,6 +9,7 @@ from pymongo.errors import DuplicateKeyError
 from redis import Redis
 from pprint import pprint
 
+from ..tests.time_recoder import log_time_with_name
 from ..tokens import Token
 from ..utils.common import bytes_to_str
 from ..configs.database_config import config
@@ -195,6 +196,7 @@ def copy_token():
 
 
 def insert_item_url_to_redis(item_id, item_url, redis=None):
+    # fixme 弃用
     r = redis or db_redis()
     if not is_item_id_duplicated(item_id, r):
         r.lpush('ebay:item_urls', item_url)
@@ -204,6 +206,20 @@ def insert_item_id_to_redis(item_id, redis=None):
     r = redis or db_redis()
     if not is_item_id_duplicated(item_id, r):
         r.lpush('ebay:item_ids', item_id)
+
+
+@log_time_with_name('insert_item_ids_filter_to_redis')
+def insert_item_ids_filter_to_redis(date=None, mongodb=None, redis=None):
+    ''' 将 mongodb 中某天的数据的所有 item 的 item_id 重新注入到 redis 的 ebay:item_ids_filter 中 '''
+    date = date or datetime.now().strftime("%Y%m%d")
+    redis = redis or db_redis()
+    mongodb = mongodb or db_mongodb()
+    #
+    for item in mongodb['d_{date}'.format(date=date)].find({}, {'itemId': 1}):
+        try:
+            redis.sadd('ebay:item_ids_filter', item['itemId'])
+        except KeyError:
+            pass
 
 
 def delete_redis_key(keys, redis=None):
