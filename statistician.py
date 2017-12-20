@@ -47,6 +47,7 @@ class GoodsStatistician(Statistician):
         m = self.mongodb
         c = m['d_{0}'.format(self.date)]
         # 保证索引已生成
+        print('Start goods statistic...')
         print('Check index...')
         c.create_index([('topCategoryID', pymongo.ASCENDING)])
         c.create_index([('quantitySoldYesterday', pymongo.DESCENDING)])
@@ -251,10 +252,11 @@ class ShopStatistician(Statistician):
         r = self.redis
         result = r.hvals('ebay:shop:basic')
         #
+        print('Start shop statistic...')
         t1 = datetime.now()
         func = self.insert_to_mysql
         pool = Pool(process)
-        for shop_list in self.chunks(result, 100):
+        for shop_list in self.chunks(result, 1000):
             pool.apply_async(func, args=(shop_list,))
             # self.insert_to_mysql(shop_list)
         pool.close()
@@ -262,8 +264,10 @@ class ShopStatistician(Statistician):
         t2 = datetime.now()
         #
         try:
-            assert t2 - t1 > timedelta(0, 2, 0)  # 耗时太短, 大概率多线程执行异常
+            assert t2 - t1 > timedelta(0, 2, 0)  # 耗时太短, 大概率多进程执行异常
         except AssertionError:
+            print('AssertionError...')
+            print('Start plan B...')
             for shop_list in self.chunks(result, 100):
                 self.insert_to_mysql(shop_list)
 
