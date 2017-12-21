@@ -51,9 +51,7 @@ class GoodsStatistician(Statistician):
         print('Check index...')
         c.create_index([('topCategoryID', pymongo.ASCENDING)])
         c.create_index([('quantitySoldYesterday', pymongo.DESCENDING)])
-        # c.create_index([('quantitySoldLastWeek', ASCENDING)])
-        # c.create_index([('categoryID', ASCENDING)])
-        # c.create_index([('seller', ASCENDING)])
+        c.create_index([('quantitySoldLastWeek', pymongo.DESCENDING)])
         # 数据初始化
         data = {}
         data['total_goods_num'] = 0
@@ -74,11 +72,11 @@ class GoodsStatistician(Statistician):
         data['hot_goods_ids_info'] = json.dumps(self.hot_goods_ids_info(c))
         # 数据写入
         try:
-            self.insert_to_mysql(data)
-            self.insert_to_mysql(data, self.mysql_cursor_local, self.mysql_local)
+            self.insert_to_mysql(statics_data=data)
+            self.insert_to_mysql(statics_data=data, cursor=self.mysql_cursor_local, mysql=self.mysql_local)
         except Exception as e:
             info = traceback.format_exc()
-            logger.warning('Get Item Error. \n\nException: {0}\n{1}'.format(e, info))
+            logger.warning('Insert to mysql error... \n\nException: {0}\n{1}'.format(e, info))
 
     @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
@@ -120,8 +118,8 @@ class GoodsStatistician(Statistician):
         c = collection
         data = {}
         result = c.aggregate([
-            {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-            {'$group': {'_id': '$seller', 'quantitySoldYesterday': {'$sum': '$quantitySoldYesterday'}}},
+            {'$match': {"quantitySoldLastWeek": {'$gt': 0}}},
+            {'$group': {'_id': '$seller', 'quantitySoldLastWeek': {'$sum': '$quantitySoldLastWeek'}}},
         ])
         # todo-1
         shop_num = self.redis.hlen('ebay:shop:count')
@@ -134,15 +132,15 @@ class GoodsStatistician(Statistician):
         data['has_sold_1_10'] = 0
         for i in result:
             data['has_sold_count'] += 1
-            if i['quantitySoldYesterday'] > 0 and i['quantitySoldYesterday'] <= 10:
+            if i['quantitySoldLastWeek'] > 0 and i['quantitySoldLastWeek'] <= 10:
                 data['has_sold_1_10'] += 1
-            elif i['quantitySoldYesterday'] > 10 and i['quantitySoldYesterday'] <= 30:
+            elif i['quantitySoldLastWeek'] > 10 and i['quantitySoldLastWeek'] <= 30:
                 data['has_sold_11_30'] += 1
-            elif i['quantitySoldYesterday'] > 30 and i['quantitySoldYesterday'] <= 60:
+            elif i['quantitySoldLastWeek'] > 30 and i['quantitySoldLastWeek'] <= 60:
                 data['has_sold_31_60'] += 1
-            elif i['quantitySoldYesterday'] > 60 and i['quantitySoldYesterday'] <= 100:
+            elif i['quantitySoldLastWeek'] > 60 and i['quantitySoldLastWeek'] <= 100:
                 data['has_sold_61_100'] += 1
-            elif i['quantitySoldYesterday'] > 100:
+            elif i['quantitySoldLastWeek'] > 100:
                 data['has_sold_101'] += 1
         return data
 
@@ -183,14 +181,15 @@ class GoodsStatistician(Statistician):
     @log_time_with_name('hot_category_ids_info')
     def hot_category_ids_info(self, collection):
         ''' 商品分类 '''
-        top_category_list = [1, 10542, 11116, 11232, 11233, 11450, 11700, 11730, 1249, 12576, 1281, 1293, 1305, 131090,
-                             142313, 14308, 14339, 14675, 15032, 159912, 170638, 170769, 172008, 172009, 172176, 20081,
-                             20710, 220, 22128, 237, 260, 26395, 267, 281, 293, 2984, 316, 3187, 3252, 353, 40005,
-                             45099, 45100, 550, 58058, 6000, 619, 625, 62682, 63, 64482, 870, 888, 9800, 9815, 99, ]
-        return {
-            str(category): collection.find({"topCategoryID": {'$eq': category}}).count()
-            for category in top_category_list
+        hot_category_ids_info = collection.aggregate([
+            {'$match': {"quantitySoldLastWeek": {'$gt': 0}, }},
+            {'$group': {'_id': "$topCategoryID", 'sold': {'$sum': "$quantitySoldLastWeek"}}}
+        ])
+        result = {
+            str(category_data['_id']): category_data['sold']
+            for category_data in hot_category_ids_info
         }
+        return result
 
     @log_time_with_name('hot_goods_ids_info')
     def hot_goods_ids_info(self, collection):
@@ -323,9 +322,10 @@ def main():
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
     # 全站店铺数据统计
+    # todo 判断优化 redis 中是店铺数据数量与 mysql 中的数量相同时有理由相信当日商店数据已统计过 故不再运行商店统计
     s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     if s.is_not_empty():
-        s.save(process=64)
+        s.save(process=32)
 
 
 if __name__ == '__main__':
