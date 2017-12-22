@@ -157,12 +157,12 @@ class GoodsStatistician(Statistician):
         data['has_sold_11_30'] = 0
         data['has_sold_1_10'] = 0
 
-        data['has_sold_count'] = c.find({"quantitySoldYesterday": {'$gt': 0}}).count()
-        data['has_sold_101'] = c.find({"quantitySoldYesterday": {'$gt': 100}}).count()
-        data['has_sold_61_100'] = c.find({"quantitySoldYesterday": {'$gt': 60, '$lte': 100}}).count()
-        data['has_sold_31_60'] = c.find({"quantitySoldYesterday": {'$gt': 30, '$lte': 61}}).count()
-        data['has_sold_11_30'] = c.find({"quantitySoldYesterday": {'$gt': 10, '$lte': 30}}).count()
-        data['has_sold_1_10'] = c.find({"quantitySoldYesterday": {'$gt': 0, '$lte': 10}}).count()
+        data['has_sold_count'] = c.find({"quantitySoldLastWeek": {'$gt': 0}}).count()
+        data['has_sold_101'] = c.find({"quantitySoldLastWeek": {'$gt': 100}}).count()
+        data['has_sold_61_100'] = c.find({"quantitySoldLastWeek": {'$gt': 60, '$lte': 100}}).count()
+        data['has_sold_31_60'] = c.find({"quantitySoldLastWeek": {'$gt': 30, '$lte': 61}}).count()
+        data['has_sold_11_30'] = c.find({"quantitySoldLastWeek": {'$gt': 10, '$lte': 30}}).count()
+        data['has_sold_1_10'] = c.find({"quantitySoldLastWeek": {'$gt': 0, '$lte': 10}}).count()
 
         # for i in c.find({"quantitySoldYesterday": {'$gt': 0}}):
         #     data['has_sold_count'] += 1
