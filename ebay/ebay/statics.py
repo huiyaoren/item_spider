@@ -92,7 +92,7 @@ class Cleaner():
             # 筛选键值
             for key, var in enumerate(variations['Variation']):
                 variations['Variation'][key] = {
-                    'SKU': var['SKU'],
+                    'SKU': var.get('SKU', ''),
                     'StartPrice': var['StartPrice'],
                     'Quantity': var['Quantity'],
                     'VariationSpecifics': var['VariationSpecifics']['NameValueList'] if isinstance(
@@ -123,15 +123,18 @@ class Cleaner():
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_yesterday': 0, }
         # 1. get record of item yesterday
         item_id = item['itemId']
-        date = self.date
-        item_y = self.item_someday(item_id, previous_date(date))
+        date = previous_date(self.date)
+        item_y = self.item_someday(item_id, date)
         if item_y is not None:
             r = item_y.get('record')
             record = json.loads(r) if r is not None else record
             record['sold_yesterday'] = int(item['quantitySold']) - int(item_y['quantitySold'])
         # * 避免出现漏失一天数据导致的记录丢失 向前继续查找 record 并添加到新 record 中 '''
         if  record['price'] is None or record['price'] == {} or len(record['price']) < 1:
-            for i in range(7):
+            record['sold'].update({date: 0})
+            record['price'].update({date: 0})
+            record['hit'].update({date: 0})
+            for i in range(5):
                 date = previous_date(date)
                 item_y = self.item_someday(item_id, date) or {}
                 record_y = json.loads(item_y.get('record')) if item_y.get('record') is not None else {}
@@ -158,8 +161,7 @@ class Cleaner():
                 record['price'].pop(key)
                 record['hit'].pop(key)
         # 4. old record become new record and return
-        sold_yesterday = record['sold_yesterday']
-        record.pop('sold_yesterday')
+        sold_yesterday = record.pop('sold_yesterday')
         return record, sold_yesterday
 
     @staticmethod
