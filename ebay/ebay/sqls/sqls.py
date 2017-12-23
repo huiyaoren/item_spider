@@ -111,5 +111,26 @@ SQL = {
             KEY `idx_trade_increase_rate` (`trade_increase_rate`) COMMENT '交易增幅',
             KEY `idx_shop_open_time` (`shop_open_time`),
             KEY `idx_total_sold` (`total_sold`) USING BTREE COMMENT '总销量'
-        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='商品表';'''
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='商品表';''',
+    'shop_statistics': '''
+        CREATE TABLE IF NOT EXISTS `shop_statistics_{0}` (
+          `id` int(100) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+          `platform` varchar(20) NOT NULL DEFAULT 'ebay' COMMENT '平台',
+          `shop_name` varchar(255) DEFAULT NULL COMMENT '店铺名称',
+          `shop_feedback_score` int(11) DEFAULT NULL COMMENT '店铺评分',
+          `shop_feedback_percentage` double(10,2) DEFAULT NULL COMMENT '店铺好评率',
+          `sold_goods_count` int(11) DEFAULT NULL COMMENT '店铺里有销量的商品数',
+          `total_goods_count` int(11) DEFAULT NULL COMMENT '店铺商品总数',
+          `total_sold` int(11) DEFAULT NULL COMMENT '店铺日销量',
+          `weeks_sold` int(11) DEFAULT NULL COMMENT '近7天店铺销量',
+          `last_weeks_sold` int(11) DEFAULT NULL COMMENT '上一周店铺销量',
+          `weeks_inc_ratio` double(10,4) DEFAULT NULL COMMENT '周增幅，如：0.1223代表12.23%',
+          `amount` double(20,2) DEFAULT NULL COMMENT '近7天销售金额',
+          `shop_open_time` timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '店铺开张时间',
+          `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+          `updated_at` timestamp NULL DEFAULT NULL COMMENT '更新时间',
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `idx_shop_name` (`platform`,`shop_name`),
+          KEY `idx_weeks_inc_ratio` (`weeks_inc_ratio`)
+        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='店铺统计表';''',
 }
