@@ -235,10 +235,9 @@ class ShopStatistician(Statistician):
         create_table_in_mysql(self.date, SQL['shop_statistics'])
 
     def is_not_empty(self):
-        ''' 统计前删表之前判断当天商店统计数据是否有效 '''
+        ''' 判断当天商店统计数据是否有效 '''
         redis = self.redis
         if redis.hlen('ebay:shop:basic') > 100000:
-            # self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
             return 1
         else:
             return 0
@@ -299,10 +298,6 @@ class ShopStatistician(Statistician):
                 }
         #
         sql = """
-            INSERT INTO erp_spider.shop_statistics (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio ) 
-            VALUES (%(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(sold_goods_count)s, %(total_goods_count)s, %(total_sold)s, %(weeks_sold)s, %(last_weeks_sold)s, %(amount)s, %(shop_open_time)s, %(weeks_inc_ratio)s)
-        """
-        sql = """
             INSERT INTO erp_spider.shop_statistics_{0} (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio ) 
             VALUES (%(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(sold_goods_count)s, %(total_goods_count)s, %(total_sold)s, %(weeks_sold)s, %(last_weeks_sold)s, %(amount)s, %(shop_open_time)s, %(weeks_inc_ratio)s)
         """.format(date())
@@ -324,10 +319,8 @@ def main():
     g = GoodsStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
     g.save()
     # 全站店铺数据统计
-    # todo 判断优化 redis 中是店铺数据数量与 mysql 中的数量相同时有理由相信当日商店数据已统计过 故不再运行商店统计
-    # s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
-    # if s.is_not_empty():
-    #     s.save(process=32)
+    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
+    s.save(process=32)
 
 
 if __name__ == '__main__':
