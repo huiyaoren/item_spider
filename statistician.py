@@ -7,9 +7,10 @@ from multiprocessing.pool import Pool
 import pymongo
 import pymysql
 
+from ebay.ebay.sqls.sqls import SQL
 from ebay.ebay.tests.time_recoder import log_time_with_name
 from ebay.ebay.utils.common import date
-from ebay.ebay.utils.data import db_redis, db_mongodb, db_mysql
+from ebay.ebay.utils.data import db_redis, db_mongodb, db_mysql, create_table_in_mysql
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,10 @@ class Statistician():
             self.mysql_cursor_local = self.mysql_local.cursor()
         except:
             pass
+        self.start_statistician()
+
+    def start_statistician(self):
+        pass
 
     def execute_sql(self, sql, data=None, mysql=None, cursor=None):
         mysql = mysql or db_mysql()
@@ -42,6 +47,9 @@ class Statistician():
 
 
 class GoodsStatistician(Statistician):
+    def start_statistician(self):
+        pass
+
     @log_time_with_name('GoodsStatistician.save')
     def save(self):
         m = self.mongodb
@@ -56,11 +64,11 @@ class GoodsStatistician(Statistician):
         data = {}
         data['total_goods_num'] = 0
         data['sales_goods_num'] = 0
-        data['total_sold_info'] = {}
-        data['shop_sold_info'] = {}
-        data['goods_sold_info'] = {}
+        data['total_sold_info'] = '{}'
+        data['shop_sold_info'] = '{}'
+        data['goods_sold_info'] = '{}'
         data['hot_category_ids_info'] = {}
-        data['hot_goods_ids_info'] = []
+        data['hot_goods_ids_info'] = '[]'
         # 开始统计
         print('Start statistics...')
         data['total_goods_num'] = self.total_goods_num(c)
@@ -76,7 +84,7 @@ class GoodsStatistician(Statistician):
             self.insert_to_mysql(statics_data=data, cursor=self.mysql_cursor_local, mysql=self.mysql_local)
         except Exception as e:
             info = traceback.format_exc()
-            logger.warning('Insert to mysql error... \n\nException: {0}\n{1}'.format(e, info))
+            logger.warning('Insert to mysql error... \n\nException: {0}\n{1}\n'.format(e, info))
 
     @log_time_with_name('total_goods_num')
     def total_goods_num(self, collection):
@@ -164,18 +172,6 @@ class GoodsStatistician(Statistician):
         data['has_sold_11_30'] = c.find({"quantitySoldLastWeek": {'$gt': 10, '$lte': 30}}).count()
         data['has_sold_1_10'] = c.find({"quantitySoldLastWeek": {'$gt': 0, '$lte': 10}}).count()
 
-        # for i in c.find({"quantitySoldYesterday": {'$gt': 0}}):
-        #     data['has_sold_count'] += 1
-        #     if i['quantitySoldYesterday'] > 0 and i['quantitySoldYesterday'] <= 10:
-        #         data['has_sold_1_10'] += 1
-        #     elif i['quantitySoldYesterday'] > 10 and i['quantitySoldYesterday'] <= 30:
-        #         data['has_sold_11_30'] += 1
-        #     elif i['quantitySoldYesterday'] > 30 and i['quantitySoldYesterday'] <= 60:
-        #         data['has_sold_31_60'] += 1
-        #     elif i['quantitySoldYesterday'] > 60 and i['quantitySoldYesterday'] <= 100:
-        #         data['has_sold_61_100'] += 1
-        #     elif i['quantitySoldYesterday'] > 100:
-        #         data['has_sold_101'] += 1
         return data
 
     @log_time_with_name('hot_category_ids_info')
@@ -204,7 +200,7 @@ class GoodsStatistician(Statistician):
         ]
 
     @log_time_with_name('save_goods_statics')
-    def insert_to_mysql(self, statics_data, cursor=None, mysql=None):
+    def insert_to_mysql(self, statics_data=None, cursor=None, mysql=None):
         cursor = cursor or self.mysql_cursor
         mysql = mysql or self.mysql
         # 获取分类名
@@ -216,7 +212,6 @@ class GoodsStatistician(Statistician):
             i[1]: statics_data['hot_category_ids_info'][i[0]]
             for i in {r[1]: r[0] for r in result}.items()
         }
-        statics_data['hot_category_ids_info'] = json.dumps(hot_category_ids_info)
         # 写入所有统计数据
         sql = "DELETE FROM erp_spider.goods_statistics WHERE `date`={0};".format(self.date)
         sql += """INSERT INTO erp_spider.goods_statistics (platform, `date`, total_goods_num, sales_goods_num, total_sold_info, shop_sold_info, goods_sold_info, hot_goods_ids_info, hot_category_ids_info)
@@ -230,18 +225,20 @@ class GoodsStatistician(Statistician):
             'shop_sold_info': statics_data['shop_sold_info'],
             'goods_sold_info': statics_data['goods_sold_info'],
             'hot_goods_ids_info': statics_data['hot_goods_ids_info'],
-            'hot_category_ids_info': statics_data['hot_category_ids_info'],
+            'hot_category_ids_info': json.dumps(hot_category_ids_info),
         })
         mysql.commit()
 
 
 class ShopStatistician(Statistician):
+    def start_statistician(self):
+        create_table_in_mysql(self.date, SQL['shop_statistics'])
 
     def is_not_empty(self):
         ''' 统计前删表之前判断当天商店统计数据是否有效 '''
         redis = self.redis
         if redis.hlen('ebay:shop:basic') > 100000:
-            self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
+            # self.execute_sql("TRUNCATE TABLE erp_spider.shop_statistics;")
             return 1
         else:
             return 0
@@ -249,6 +246,7 @@ class ShopStatistician(Statistician):
     @log_time_with_name('ShopStatistician.save')
     def save(self, process=64):
         r = self.redis
+        print('Get shop data...')
         result = r.hvals('ebay:shop:basic')
         #
         print('Start shop statistic...')
@@ -304,6 +302,10 @@ class ShopStatistician(Statistician):
             INSERT INTO erp_spider.shop_statistics (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio ) 
             VALUES (%(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(sold_goods_count)s, %(total_goods_count)s, %(total_sold)s, %(weeks_sold)s, %(last_weeks_sold)s, %(amount)s, %(shop_open_time)s, %(weeks_inc_ratio)s)
         """
+        sql = """
+            INSERT INTO erp_spider.shop_statistics_{0} (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio ) 
+            VALUES (%(shop_name)s, %(shop_feedback_score)s, %(shop_feedback_percentage)s, %(sold_goods_count)s, %(total_goods_count)s, %(total_sold)s, %(weeks_sold)s, %(last_weeks_sold)s, %(amount)s, %(shop_open_time)s, %(weeks_inc_ratio)s)
+        """.format(date())
         data = [i for i in shop_values(shop_list, redis)]
         #
         try:
@@ -323,9 +325,9 @@ def main():
     g.save()
     # 全站店铺数据统计
     # todo 判断优化 redis 中是店铺数据数量与 mysql 中的数量相同时有理由相信当日商店数据已统计过 故不再运行商店统计
-    s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
-    if s.is_not_empty():
-        s.save(process=32)
+    # s = ShopStatistician(redis=redis, mongodb=mongodb, mysql=mysql, datetime=datetime)
+    # if s.is_not_empty():
+    #     s.save(process=32)
 
 
 if __name__ == '__main__':
