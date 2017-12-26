@@ -2,17 +2,20 @@ import json
 import traceback
 from datetime import datetime
 import logging
+from multiprocessing.pool import Pool
+
+import pymongo
 
 from .tests.time_recoder import log_time_with_name
 from .utils.common import date, previous_date, last_week, is_within_eight_weeks, is_within_six_mouths, previous_days
-from .utils.data import db_mongodb, items_from_mongodb, db_redis
+from .utils.data import db_mongodb, items_from_mongodb, db_redis, item_id_cut
 
 logger = logging.getLogger(__name__)
 
 
 class Cleaner():
-    def __init__(self, date, mongodb):
-        self.date = date
+    def __init__(self, date=None, mongodb=None):
+        self.date = date or datetime.now().strftime("%Y%m%d")
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.collection = self.mongodb['d_{0}'.format(date)]
         self.redis = db_redis()
@@ -28,6 +31,19 @@ class Cleaner():
         c = self.mongodb['d_{0}'.format(date)]
         item = c.find_one({'itemId': item_id})
         return item
+
+    def record_data(self, item_id):
+        c_record = self.mongodb['record']
+        result = c_record.find_one({'itemId': item_id_cut(item_id)})
+        result = result if result is not None else {}
+        record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
+        return record
+
+    def update_records(self, item_id, record_data):
+        ''' 更新商品 record 数据'''
+        c_record = self.mongodb['record']
+        result = c_record.update_one({'itemId': item_id_cut(item_id)},
+                                     {'$set': {str(item_id): record_data, 'update_date': self.date}}, upsert=True)
 
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
@@ -164,6 +180,25 @@ class Cleaner():
         sold_yesterday = record.pop('sold_yesterday')
         return record, sold_yesterday
 
+    def records_rebuild(self, item):
+        item_id = item['itemId']
+        record = self.record_data(item_id)
+
+        sold_total_yesterday = record['sold_total'].get(previous_date(self.date))
+        sold_total_today = item.get('quantitySold')
+        if sold_total_yesterday is not None and sold_total_today is not None:
+            sold_yesterday = sold_total_today - sold_total_yesterday
+        else:
+            sold_yesterday = 0
+
+        record['sold'].update({self.date: sold_yesterday})
+        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
+        record['price'].update({self.date: item.get('price', 0.00)})
+        record['hit'].update({self.date: item.get('hitCount', 0)})
+
+        self.update_records(item_id, record)
+        return record, sold_yesterday
+
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
         ''' 商品一周内有销量的天数是否达到指定值 '''
@@ -200,7 +235,6 @@ class Cleaner():
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['topCategoryID'] = self.category_id_top(item)
         record, sold_yesterday = self.records(item)
-        # data['quantitySoldYesterday'] = self.sales_yesterday(item)
         data['quantitySoldYesterday'] = sold_yesterday
         data['record'] = json.dumps(record)
         data['isHot'] = self.is_hot(item, record)
@@ -272,3 +306,25 @@ class Cleaner():
         elif sold > 0:
             r.zincrby('ebay:sold_info:goods', 'has_sold_1_10', 1)
             r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
+
+@log_time_with_name('init_records_collection')
+def init_records_collection():
+    d = datetime.now().strftime("%Y%m%d")
+    mongodb = db_mongodb('mongodb_remote')
+    collection = mongodb['d_{0}'.format(d)]
+    collection.create_index([('itemId', pymongo.ASCENDING)], unique=True)
+
+    pool = Pool(processes=8)
+    for item in collection.find({"quantitySoldYesterday": {'$gt': 0}}):
+        pool.apply_async(func=foo, args=(item,))
+    pool.close()
+    pool.join()
+    del mongodb
+
+
+def foo(item):
+    cleaner = Cleaner(date=datetime.now().strftime("%Y%m%d"))
+    result = cleaner.records_rebuild(item)
+    print(result)
+    del cleaner
+    return result
