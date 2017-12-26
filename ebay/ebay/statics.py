@@ -33,17 +33,24 @@ class Cleaner():
         return item
 
     def record_data(self, item_id):
-        c_record = self.mongodb['record']
-        result = c_record.find_one({'itemId': item_id_cut(item_id)})
-        result = result if result is not None else {}
-        record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
-        return record
+        # c_record = self.mongodb['record']
+        # result = c_record.find_one({'itemId': item_id_cut(item_id)})
+        # result = result if result is not None else {}
+        # record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
+        # return record
+
+        return {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},}
 
     def update_records(self, item_id, record_data):
         ''' 更新商品 record 数据'''
-        c_record = self.mongodb['record']
-        result = c_record.update_one({'itemId': item_id_cut(item_id)},
-                                     {'$set': {str(item_id): record_data, 'update_date': self.date}}, upsert=True)
+        # mongodb
+        # c_record = self.mongodb['record']
+        # c_record.update_one({'itemId': item_id_cut(item_id)},
+        #                              {'$set': {str(item_id): record_data, 'update_date': self.date}}, upsert=True)
+        # redis_1
+        # self.redis.hmset('ebay:record:{0}'.format(item_id_cut(item_id)), {str(item_id): record_data, 'update_date': self.date})
+        # redis_2
+        self.redis.hset('ebay:record', item_id, record_data)
 
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
@@ -191,10 +198,10 @@ class Cleaner():
         else:
             sold_yesterday = 0
 
-        record['sold'].update({self.date: sold_yesterday})
-        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
-        record['price'].update({self.date: item.get('price', 0.00)})
-        record['hit'].update({self.date: item.get('hitCount', 0)})
+        record['sold'].update({int(self.date): sold_yesterday})
+        record['sold_total'].update({int(self.date): item.get('quantitySold', 0)})
+        record['price'].update({int(self.date): item.get('price', 0.00)})
+        record['hit'].update({int(self.date): item.get('hitCount', 0)})
 
         self.update_records(item_id, record)
         return record, sold_yesterday
@@ -315,8 +322,9 @@ def init_records_collection():
     collection = mongodb['d_{0}'.format(d)]
     collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
-    pool = Pool(processes=8)
-    for item in collection.find({"quantitySoldYesterday": {'$gt': 0}}):
+    pool = Pool(processes=16)
+    # for item in collection.find({"quantitySoldYesterday": {'$gt': 0}}):
+    for item in collection.find({"quantitySold": {'$gt': 0}}):
         pool.apply_async(func=func_init_records, args=(item,))
     pool.close()
     pool.join()
