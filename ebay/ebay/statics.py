@@ -307,22 +307,23 @@ class Cleaner():
             r.zincrby('ebay:sold_info:goods', 'has_sold_1_10', 1)
             r.zincrby('ebay:sold_info:goods', 'has_sold_count', 1)
 
+
 @log_time_with_name('init_records_collection')
 def init_records_collection():
     d = datetime.now().strftime("%Y%m%d")
     mongodb = db_mongodb('mongodb_remote')
     collection = mongodb['d_{0}'.format(d)]
-    collection.create_index([('itemId', pymongo.ASCENDING)], unique=True)
+    collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
     pool = Pool(processes=8)
     for item in collection.find({"quantitySoldYesterday": {'$gt': 0}}):
-        pool.apply_async(func=foo, args=(item,))
+        pool.apply_async(func=func_init_records, args=(item,))
     pool.close()
     pool.join()
     del mongodb
 
 
-def foo(item):
+def func_init_records(item):
     cleaner = Cleaner(date=datetime.now().strftime("%Y%m%d"))
     result = cleaner.records_rebuild(item)
     print(result)
