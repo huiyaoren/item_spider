@@ -193,6 +193,11 @@ def copy_token():
 
 
 # item_id
+def item_id_cut(item_id, digit=7):
+    if isinstance(item_id, int):
+        return item_id % 10 ** digit
+    if isinstance(item_id, str):
+        return int(item_id[-digit:len(item_id)])
 
 
 def insert_item_url_to_redis(item_id, item_url, redis=None):
