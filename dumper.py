@@ -128,6 +128,7 @@ def main():
     goods = 'goods_{0}'.format(day)
     new = 'new_goods_{0}'.format(day)
     hot = 'hot_goods_{0}'.format(day)
+    shop = 'shop_statistics_{0}'.format(day)
     detail = 'd_{0}'.format(day)
     monitor = 'm_{0}'.format(day)
 
@@ -140,6 +141,7 @@ def main():
     pool.apply_async(func=dump_mysql, args=(goods,))
     pool.apply_async(func=dump_mysql, args=(new,))
     pool.apply_async(func=dump_mysql, args=(hot,))
+    pool.apply_async(func=dump_mysql, args=(shop,))
     pool.close()
     pool.join()
 
