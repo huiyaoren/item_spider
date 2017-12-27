@@ -38,8 +38,9 @@ class Cleaner():
         # result = result if result is not None else {}
         # record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
         # return record
-
-        return {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},}
+        record = self.redis.hget('ebay:record', item_id)
+        record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},} if record is None else json.loads(str(record, encoding='utf8'))
+        return record
 
     def update_records(self, item_id, record_data):
         ''' 更新商品 record 数据'''
@@ -50,7 +51,7 @@ class Cleaner():
         # redis_1
         # self.redis.hmset('ebay:record:{0}'.format(item_id_cut(item_id)), {str(item_id): record_data, 'update_date': self.date})
         # redis_2
-        self.redis.hset('ebay:record', item_id, record_data)
+        self.redis.hset('ebay:record', item_id, json.dumps(record_data))
 
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
@@ -198,10 +199,11 @@ class Cleaner():
         else:
             sold_yesterday = 0
 
-        record['sold'].update({int(self.date): sold_yesterday})
-        record['sold_total'].update({int(self.date): item.get('quantitySold', 0)})
-        record['price'].update({int(self.date): item.get('price', 0.00)})
-        record['hit'].update({int(self.date): item.get('hitCount', 0)})
+        record['sold'].update({self.date: sold_yesterday})
+        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
+        record['price'].update({self.date: item.get('price', 0.00)})
+        record['hit'].update({self.date: item.get('hitCount', 0)})
+        record['upd'] = int(self.date)
 
         self.update_records(item_id, record)
         return record, sold_yesterday
@@ -323,17 +325,26 @@ def init_records_collection():
     collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
     pool = Pool(processes=16)
-    # for item in collection.find({"quantitySoldYesterday": {'$gt': 0}}):
-    for item in collection.find({"quantitySold": {'$gt': 0}}):
-        pool.apply_async(func=func_init_records, args=(item,))
+    count = collection.find().count()
+    for i in range(0, count, 200):
+        pool.apply_async(func=func_init_records, args=(i, 1000))
     pool.close()
     pool.join()
     del mongodb
 
 
-def func_init_records(item):
-    cleaner = Cleaner(date=datetime.now().strftime("%Y%m%d"))
-    result = cleaner.records_rebuild(item)
-    print(result)
-    del cleaner
-    return result
+def func_init_records(skip, limit, filter=None):
+    d = datetime.now().strftime("%Y%m%d")
+    mongodb = db_mongodb('mongodb_remote')
+    collection = mongodb['d_{0}'.format(d)]
+    filter = filter or {"itemId": {'$gt': 0}}
+    # for item in collection.find(filter, skip=skip, limit=limit):
+    for item in collection.find().skip(skip).limit(limit):
+        try:
+            cleaner = Cleaner(date=datetime.now().strftime("%Y%m%d"), mongodb=mongodb)
+            result = cleaner.records_rebuild(item)
+            print(result)
+            del cleaner
+        except Exception as e:
+            info = traceback.format_exc()
+            logger.warning("Unknown Mongodb Error. Exception: \n{0}\n{1}".format(e, info))
