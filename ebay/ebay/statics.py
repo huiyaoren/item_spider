@@ -344,7 +344,6 @@ def func_init_records(skip, limit, day=None):
         try:
             result = cleaner.records_rebuild(item)
             print(result)
-            del cleaner
         except Exception as e:
             info = traceback.format_exc()
             logger.warning("Unknown Mongodb Error. Exception: \n{0}\n{1}".format(e, info))
