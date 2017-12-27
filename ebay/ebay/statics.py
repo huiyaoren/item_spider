@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class Cleaner():
-    def __init__(self, date=None, mongodb=None):
+    def __init__(self, date=None, mongodb=None, redis=None):
         self.date = date or datetime.now().strftime("%Y%m%d")
         self.mongodb = mongodb or db_mongodb('mongodb_remote')
         self.collection = self.mongodb['d_{0}'.format(date)]
-        self.redis = db_redis()
+        self.redis = redis or db_redis()
 
     @log_time_with_name('Cleaner.item_someday')
     def item_someday(self, item_id, date):
@@ -336,11 +336,12 @@ def init_records_collection():
 
 def func_init_records(skip, limit, day=None):
     d = day or datetime.now().strftime("%Y%m%d")
+    redis = db_redis()
     mongodb = db_mongodb('mongodb_remote')
     collection = mongodb['d_{0}'.format(d)]
+    cleaner = Cleaner(date=d, mongodb=mongodb, redis=redis)
     for item in collection.find().skip(skip).limit(limit):
         try:
-            cleaner = Cleaner(date=d, mongodb=mongodb)
             result = cleaner.records_rebuild(item)
             print(result)
             del cleaner
