@@ -319,29 +319,28 @@ class Cleaner():
 
 @log_time_with_name('init_records_collection')
 def init_records_collection():
-    d = datetime.now().strftime("%Y%m%d")
+    day = datetime.now().strftime("%Y%m%d")
     mongodb = db_mongodb('mongodb_remote')
-    collection = mongodb['d_{0}'.format(d)]
+    collection = mongodb['d_{0}'.format(day)]
     collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
     pool = Pool(processes=16)
     count = collection.find().count()
-    for i in range(0, count, 200):
-        pool.apply_async(func=func_init_records, args=(i, 1000))
+    limit = 1000
+    for i in range(0, count, limit):
+        pool.apply_async(func=func_init_records, args=(i, limit, day))
     pool.close()
     pool.join()
     del mongodb
 
 
-def func_init_records(skip, limit, filter=None):
-    d = datetime.now().strftime("%Y%m%d")
+def func_init_records(skip, limit, day=None):
+    d = day or datetime.now().strftime("%Y%m%d")
     mongodb = db_mongodb('mongodb_remote')
     collection = mongodb['d_{0}'.format(d)]
-    filter = filter or {"itemId": {'$gt': 0}}
-    # for item in collection.find(filter, skip=skip, limit=limit):
     for item in collection.find().skip(skip).limit(limit):
         try:
-            cleaner = Cleaner(date=datetime.now().strftime("%Y%m%d"), mongodb=mongodb)
+            cleaner = Cleaner(date=d, mongodb=mongodb)
             result = cleaner.records_rebuild(item)
             print(result)
             del cleaner
