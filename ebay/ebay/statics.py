@@ -38,7 +38,7 @@ class Cleaner():
         # result = result if result is not None else {}
         # record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
         # return record
-        record = self.redis.hget('ebay:record', item_id)
+        record = self.redis.hget('ebay:record:{0}'.format(item_id_cut(item_id, 4)), item_id)
         record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},} if record is None else json.loads(str(record, encoding='utf8'))
         return record
 
@@ -51,7 +51,7 @@ class Cleaner():
         # redis_1
         # self.redis.hmset('ebay:record:{0}'.format(item_id_cut(item_id)), {str(item_id): record_data, 'update_date': self.date})
         # redis_2
-        self.redis.hset('ebay:record', item_id, json.dumps(record_data))
+        self.redis.hset('ebay:record:{0}'.format(item_id_cut(item_id, 4)), item_id, json.dumps(record_data))
 
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
@@ -193,20 +193,34 @@ class Cleaner():
         record = self.record_data(item_id)
 
         sold_total_yesterday = record['sold_total'].get(previous_date(self.date))
+        sold_total_last_week = record['sold_total'].get(previous_days(self.date, 7))
+        sold_total_two_weeks_ago = record['sold_total'].get(previous_days(self.date, 14))
         sold_total_today = item.get('quantitySold')
-        if sold_total_yesterday is not None and sold_total_today is not None:
-            sold_yesterday = sold_total_today - sold_total_yesterday
-        else:
-            sold_yesterday = 0
+        # if sold_total_yesterday is not None and sold_total_today is not None:
+        #     sold_yesterday = sold_total_today - sold_total_yesterday
+        # else:
+        #     sold_yesterday = 0
+
+        def minus(number, cut):
+            if number is not None and cut is not None:
+                result = number - cut
+            else:
+                result = 0
+            return result
+
+        sold_yesterday = minus(sold_total_today, sold_total_yesterday)
+        sold_last_week = minus(sold_total_today, sold_total_last_week)
+        sold_two_weeks_ago = minus(sold_total_last_week, sold_total_two_weeks_ago)
 
         record['sold'].update({self.date: sold_yesterday})
-        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
         record['price'].update({self.date: item.get('price', 0.00)})
         record['hit'].update({self.date: item.get('hitCount', 0)})
+        record_pure = record
+        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
         record['upd'] = int(self.date)
 
         self.update_records(item_id, record)
-        return record, sold_yesterday
+        return record_pure, sold_yesterday, sold_last_week, sold_two_weeks_ago
 
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
@@ -241,9 +255,12 @@ class Cleaner():
     def data_cleaned(self, item):
         ''' 返回指定商品的统计数据 '''
         data = {}
-        data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         data['topCategoryID'] = self.category_id_top(item)
+        data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         record, sold_yesterday = self.records(item)
+        # record, sold_yesterday, sold_last_week, sold_two_weeks_ago = self.records_rebuild(item)
+        # data['quantitySoldLastWeek'] = sold_last_week
+        # data['quantitySoldTwoWeeksAgo'] = sold_two_weeks_ago
         data['quantitySoldYesterday'] = sold_yesterday
         data['record'] = json.dumps(record)
         data['isHot'] = self.is_hot(item, record)
