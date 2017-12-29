@@ -227,6 +227,7 @@ class Cleaner():
         data['topCategoryID'] = self.category_id_top(item)
         data['quantitySoldLastWeek'], data['quantitySoldTwoWeeksAgo'] = self.sales_last_week(item)
         record, sold_yesterday = self.records(item)
+        # todo-1 一下为重构的 record 内容 待服务器内存添加后部署
         # record, sold_yesterday, sold_last_week, sold_two_weeks_ago = self.records_rebuild(item)
         # data['quantitySoldLastWeek'] = sold_last_week
         # data['quantitySoldTwoWeeksAgo'] = sold_two_weeks_ago
@@ -308,16 +309,18 @@ class Cleaner():
 
 @log_time_with_name('init_records_collection')
 def init_records_collection():
+    ''' 初始化 record 数据 '''
+    # todo-1 待服务器内存添加后运行
     days = [datetime.now().strftime("%Y%m%d")]
     mongodb = db_mongodb('mongodb_remote')
 
-    pool = Pool(processes=8)
+    pool = Pool(processes=64)
     for day in days:
         collection = mongodb['d_{0}'.format(day)]
         collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
         count = collection.find().count()
-        limit = 10000
+        limit = 100000
         for i in range(0, count, limit):
             pool.apply_async(func=func_init_records, args=(i, limit, day))
     pool.close()
@@ -371,6 +374,7 @@ class ItemRecord():
             'sold_total': record_raw['t'],
             'update_date': record_raw['d'],
         }
+        # todo 数据储存进一步压缩以节省内存
         return record
 
     def _decode(self, record):
@@ -381,6 +385,7 @@ class ItemRecord():
             't': record['sold_total'],
             'd': record['update_date'],
         }
+        # todo 数据储存进一步压缩以节省内存
         return record
 
     def update(self, sold, price, hit, sold_total, date=None):
@@ -390,6 +395,7 @@ class ItemRecord():
         self.record['hit'].update({date: hit})
         self.record['sold_total'].update({date: sold_total})
         self.record['update_date'] = int(date)
+        # todo-1 Check record 长度 大于 15 时删除 15 日以前数据
         return self.record
 
     def save(self):
