@@ -32,27 +32,6 @@ class Cleaner():
         item = c.find_one({'itemId': item_id})
         return item
 
-    def record_data(self, item_id):
-        # c_record = self.mongodb['record']
-        # result = c_record.find_one({'itemId': item_id_cut(item_id)})
-        # result = result if result is not None else {}
-        # record = result.get(str(item_id), {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},})
-        # return record
-        record = self.redis.hget('ebay:record:{0}'.format(item_id_cut(item_id, 4)), item_id)
-        record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {},} if record is None else json.loads(str(record, encoding='utf8'))
-        return record
-
-    def update_records(self, item_id, record_data):
-        ''' 更新商品 record 数据'''
-        # mongodb
-        # c_record = self.mongodb['record']
-        # c_record.update_one({'itemId': item_id_cut(item_id)},
-        #                              {'$set': {str(item_id): record_data, 'update_date': self.date}}, upsert=True)
-        # redis_1
-        # self.redis.hmset('ebay:record:{0}'.format(item_id_cut(item_id)), {str(item_id): record_data, 'update_date': self.date})
-        # redis_2
-        self.redis.hset('ebay:record:{0}'.format(item_id_cut(item_id, 4)), item_id, json.dumps(record_data))
-
     def sales_yesterday(self, item):
         ''' 返回指定商品的昨日数据 '''
         # 已弃用 被 records 代替
@@ -190,37 +169,27 @@ class Cleaner():
 
     def records_rebuild(self, item):
         item_id = item['itemId']
-        record = self.record_data(item_id)
+        record = ItemRecord(item_id=item_id, redis=self.redis, date=self.date)
 
         sold_total_yesterday = record['sold_total'].get(previous_date(self.date))
         sold_total_last_week = record['sold_total'].get(previous_days(self.date, 7))
         sold_total_two_weeks_ago = record['sold_total'].get(previous_days(self.date, 14))
         sold_total_today = item.get('quantitySold')
-        # if sold_total_yesterday is not None and sold_total_today is not None:
-        #     sold_yesterday = sold_total_today - sold_total_yesterday
-        # else:
-        #     sold_yesterday = 0
 
-        def minus(number, cut):
-            if number is not None and cut is not None:
-                result = number - cut
-            else:
-                result = 0
-            return result
+        sold_yesterday = record._minus(sold_total_today, sold_total_yesterday)
+        sold_last_week = record._minus(sold_total_today, sold_total_last_week)
+        sold_two_weeks_ago = record._minus(sold_total_last_week, sold_total_two_weeks_ago)
 
-        sold_yesterday = minus(sold_total_today, sold_total_yesterday)
-        sold_last_week = minus(sold_total_today, sold_total_last_week)
-        sold_two_weeks_ago = minus(sold_total_last_week, sold_total_two_weeks_ago)
+        record.update(
+            sold=sold_yesterday,
+            price=item.get('price', 0.00),
+            hit=item.get('hitCount', 0),
+            sold_total=item.get('quantitySold', 0),
+            date=int(self.date)
+        )
+        record.save()
 
-        record['sold'].update({self.date: sold_yesterday})
-        record['price'].update({self.date: item.get('price', 0.00)})
-        record['hit'].update({self.date: item.get('hitCount', 0)})
-        record_pure = record
-        record['sold_total'].update({self.date: item.get('quantitySold', 0)})
-        record['upd'] = int(self.date)
-
-        self.update_records(item_id, record)
-        return record_pure, sold_yesterday, sold_last_week, sold_two_weeks_ago
+        return record.pure(), sold_yesterday, sold_last_week, sold_two_weeks_ago
 
     @staticmethod
     def is_had_sales_in_a_week(date, item_id, days_have_sales=3, mongodb=None):
@@ -341,9 +310,9 @@ def init_records_collection():
     collection = mongodb['d_{0}'.format(day)]
     collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
-    pool = Pool(processes=16)
+    pool = Pool(processes=8)
     count = collection.find().count()
-    limit = 1000
+    limit = 10000
     for i in range(0, count, limit):
         pool.apply_async(func=func_init_records, args=(i, limit, day))
     pool.close()
@@ -364,3 +333,74 @@ def func_init_records(skip, limit, day=None):
         except Exception as e:
             info = traceback.format_exc()
             logger.warning("Unknown Mongodb Error. Exception: \n{0}\n{1}".format(e, info))
+
+
+class ItemRecord():
+    def __init__(self, item_id, redis=None, date=None):
+        self.item_id = item_id
+        self.redis = redis or db_redis()
+        self.date = date or datetime.now().strftime('%Y%m%d')
+        self.record = self.get_record(item_id, self.redis)
+
+    def get_record(self, item_id, redis):
+        record = redis.hget('ebay:record:{0}'.format(item_id_cut(item_id, 4)), item_id)
+        if record is None:
+            record = {'sold': {}, 'price': {}, 'hit': {}, 'sold_total': {}, }
+        else:
+            record_raw = json.loads(str(record, encoding='utf8'))
+            record = self._encode(record_raw)
+        return record
+
+    def _minus(self, number, cut):
+        if number is not None and cut is not None:
+            result = number - cut
+        else:
+            result = 0
+        return result
+
+    def _encode(self, record_raw):
+        record = {
+            'sold': record_raw['s'],
+            'price': record_raw['p'],
+            'hit': record_raw['h'],
+            'sold_total': record_raw['t'],
+            'update_date': record_raw['d'],
+        }
+        return record
+
+    def _decode(self, record):
+        record = {
+            's': record['sold'],
+            'p': record['price'],
+            'h': record['hit'],
+            't': record['sold_total'],
+            'd': record['update_date'],
+        }
+        return record
+
+    def update(self, sold, price, hit, sold_total, date=None):
+        date = date or self.date
+        self.record['sold'].update({date: sold})
+        self.record['price'].update({date: price})
+        self.record['hit'].update({date: hit})
+        self.record['sold_total'].update({date: sold_total})
+        self.record['update_date'] = int(date)
+        return self.record
+
+    def save(self):
+        record_raw = self._decode(self.record)
+        self.redis.hset('ebay:record:{0}'.format(item_id_cut(self.item_id, 4)), self.item_id, json.dumps(record_raw))
+
+    def pure(self):
+        return {
+            'sold': self.record['sold'],
+            'price': self.record['price'],
+            'hit': self.record['hit'],
+        }
+
+    def __getitem__(self, item):
+        return self.record[item]
+
+    def __getattr__(self, item):
+        if item == 'data':
+            return self.record
