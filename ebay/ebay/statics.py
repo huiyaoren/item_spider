@@ -305,16 +305,18 @@ class Cleaner():
 
 @log_time_with_name('init_records_collection')
 def init_records_collection():
-    day = datetime.now().strftime("%Y%m%d")
+    days = [datetime.now().strftime("%Y%m%d")]
     mongodb = db_mongodb('mongodb_remote')
-    collection = mongodb['d_{0}'.format(day)]
-    collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
 
     pool = Pool(processes=8)
-    count = collection.find().count()
-    limit = 10000
-    for i in range(0, count, limit):
-        pool.apply_async(func=func_init_records, args=(i, limit, day))
+    for day in days:
+        collection = mongodb['d_{0}'.format(day)]
+        collection.create_index([('itemId', pymongo.ASCENDING)], unique=True, background=True)
+
+        count = collection.find().count()
+        limit = 10000
+        for i in range(0, count, limit):
+            pool.apply_async(func=func_init_records, args=(i, limit, day))
     pool.close()
     pool.join()
     del mongodb
