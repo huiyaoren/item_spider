@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from multiprocessing.pool import Pool
 
+import sys
+
 from ebay.ebay.tests.time_recoder import log_time_with_name
 
 
@@ -124,7 +126,13 @@ def dump_mongodb(collection):
 
 @log_time_with_name('MongodbDumper.import')
 def main():
-    day = datetime.now().strftime("%Y%m%d")
+    args = dict(enumerate(sys.argv))
+    day = args.get(1) or datetime.now().strftime("%Y%m%d")
+    if len(day) != 8:
+        raise Exception
+    print('date={0}'.format(day))
+    print('Start dumper...')
+
     goods = 'goods_{0}'.format(day)
     new = 'new_goods_{0}'.format(day)
     hot = 'hot_goods_{0}'.format(day)
