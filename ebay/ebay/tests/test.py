@@ -58,9 +58,6 @@ def test_get_detail_xml():
           <RequesterCredentials>
             <eBayAuthToken>AgAAAA**AQAAAA**aAAAAA**TFk/WQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6ACkoWoD5CHoQydj6x9nY+seQ**kMADAA**AAMAAA**7VtL67+uDGoPGwpzzegnSCLgL9ZwsNRQHBaZ8T6zTQuqDg8NXWGU37zosAe7c/KcRGEzb60QX3nV1ujxFDsMwI9Kw4CAPTqVOBXz72l6mhT9m2oiVX0dCAsYd0GKMTgIrO1+uhizmiIXej3Uh7NIF8L/76k/tiS/E304JsrTmKrk2r2Rr+dST1ONfj8fb5TFzeDen0hmBzgRctchyjPesIFTRd7WupOtbi6ciScQ/yYCqfH7GRGQADCIaiMnIpdQUfnwigoNoi4OyP/mH7tr03WfCDlHTAi1Ret2LsfXh0UAYi8rwuMtVSAvP52fRtwe4lom3DzBt2jB7U7rj8KZ89ea30SAIXVsag/vo3B0jkl64pSB5/zKbBPRrG5qZ+28aDKuUSuAfn9lPNCF//esp4QIF7HIPUeioLgQK5WoPT9/BCPmn0Y+tNMAPSEcUWTY42WwahoN1eYpBgqX/hZolTvupd5907NkDTxYHfij6WtcGQdHfHBWCPGHrgWcdLefochtz7pDpVzdHYCUQbv4bVzHQNbVfhNHCMp4LZ63qrkJVpWsmSeSgZi5dVECI7gp0t/Rq1y5uBsRJK6OViZS02jYw0MR7kjAyrIsK43bP4Pz8wwvpfyuaoxkgvziCaM35taQuB3qlUPeawULUSFX6olCC0kMZqdUT5HPqYD2+YTj2n0wBXvP7Lbkj3gejSbelCwS6XHdKqAXP2gY93eBtbogLic7//FGdnQvbbISceo/9hgdXKbNBcMh0zoQ0KRm</eBayAuthToken>
           </RequesterCredentials>
-            <ErrorLanguage>en_US</ErrorLanguage>
-            <WarningLevel>High</WarningLevel>
-              <!--Enter an ItemID-->
           <ItemID>351755095213</ItemID>
         </GetItemRequest>
     '''
@@ -693,12 +690,10 @@ def test_insert_category_ids_to_redis():
         redis.lpush('ebay:category_urls', url)
 
 
-@log_time_with_name('run')
-def run(result):
-    print()
+def test_get_detail_variation(result=None):
     import xmltodict
     import json
-    from pprint import pprint
+    result = result or test_get_detail_xml()
     result = xmltodict.parse(result)
 
     variation = result.get('GetItemResponse').get('Item').get('Variations')
@@ -720,19 +715,24 @@ def run(result):
             'VariationSpecifics': var['VariationSpecifics']['NameValueList'] if isinstance(var['VariationSpecifics']['NameValueList'], list) else [var['VariationSpecifics']['NameValueList']],
             'SellingStatus': var['SellingStatus'],
         }
-        print()
 
     variation['VariationSpecificsSet'] = variation['VariationSpecificsSet']['NameValueList'] if isinstance(variation['VariationSpecificsSet']['NameValueList'], list) else [variation['VariationSpecificsSet']['NameValueList']]
 
     print(json.dumps(variation))
 
 
+def test_is_hot():
+    from ebay.ebay.utils.data import db_mongodb
+    from ebay.ebay.statics import Cleaner
+    cleaner = Cleaner(date='20171122', mongodb=None)
+    dates = [20171205]
+    mongo = db_mongodb('mongodb_remote')
+    for date in dates:
+        result = mongo['d_{0}'.format(date)].find_one({'itemId': '292299493024'})
+        print(result)
+        print(cleaner.data_cleaned(result))
+        break
+
+
 if __name__ == '__main__':
-    import xmltodict
-    import json
-    from pprint import pprint
-
-    result = test_get_detail_xml()
-
-
-    run(result)
+    test_is_hot()
