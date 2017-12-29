@@ -253,12 +253,15 @@ class Cleaner():
         r.hsetnx('ebay:shop:basic', seller, json.dumps(shop))
         # 店铺商品总数
         r.hincrby('ebay:shop:count', seller, 1)
+        # 店铺总销量
+        if i['quantitySold'] > 0:
+            r.hincrby('ebay:shop:total_sold', seller, i['quantitySold'])
         # 店铺日销量
         if i['quantitySoldYesterday'] > 0:
             # 店铺单日有销量商品总数
             r.hincrby('ebay:shop:has_sold_count', seller, 1)
-            # 店铺日销量
-            r.hincrby('ebay:shop:total_sold', seller, i['quantitySoldYesterday'])
+            # # 店铺日销量
+            # r.hincrby('ebay:shop:total_sold', seller, i['quantitySoldYesterday'])
         # 店铺周销量
         if i['quantitySoldLastWeek'] > 0:
             r.hincrby('ebay:shop:week_sold', seller, i['quantitySoldLastWeek'])
