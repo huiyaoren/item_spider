@@ -67,7 +67,7 @@ class GoodsStatistician(Statistician):
         data['total_sold_info'] = '{}'
         data['shop_sold_info'] = '{}'
         data['goods_sold_info'] = '{}'
-        data['hot_category_ids_info'] = {}
+        data['hot_category_ids_info'] = {'0':'0'}
         data['hot_goods_ids_info'] = '[]'
         # 开始统计
         print('Start statistics...')
