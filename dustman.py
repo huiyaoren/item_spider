@@ -59,7 +59,7 @@ def main():
     argv = dict(enumerate(sys.argv))
     dustman = Dustman(
         dir_=argv.get(1, '/host/DL/'),
-        day_ago=argv.get(2, 9999),
+        day_ago=int(argv.get(2, 9999)),
         types=argv.get(3, 'sql,bson,json'),
         test=True,
     )
