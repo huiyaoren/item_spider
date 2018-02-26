@@ -61,7 +61,7 @@ def main():
         dir_=argv.get(1, '/host/DL/'),
         day_ago=int(argv.get(2, 9999)),
         types=argv.get(3, 'sql,bson,json'),
-        test=True,
+        test=False,
     )
     dustman.dusting()
 
