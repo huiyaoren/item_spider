@@ -48,15 +48,16 @@ class Dustman():
                     print('deleting file: {0}...'.format(item))
                     if not self.test:
                         os.remove(file_name)
-                    self.deleted_list.append(item)
                 except IsADirectoryError:
                     print('pass... {0} is a Directory.'.format(item))
+                    continue
                 except Exception as e:
                     info = traceback.format_exc()
                     print('pass... something Wrong: {0} \n{1}'.format(e, info))
                     continue
                     pass
                 print('deleted.')
+                self.deleted_list.append(item)
 
         print('done.')
         self.log_deleted()
