@@ -71,5 +71,6 @@ class MyRetryMiddleware(RetryMiddleware):
             data = data.get('GetItemResponse')
             if 'Ack' not in data.keys() or data.get('Ack') == 'Failure':
                 print(data['Ack'])
+                spider.logger.info(data['Ack'])
                 return self._retry(request, 'Ack Error', spider) or response
         return response
