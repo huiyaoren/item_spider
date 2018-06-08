@@ -86,8 +86,8 @@ class Connection:
 
 def captcha_recognizer():
     y = Connection(
-        username='wslshanlin',
-        password='1994180438',
+        username='',
+        password='',
         appid=4149,
         appkey='8576e00849d04f656c2bec09d0f01018',
     )
@@ -98,7 +98,7 @@ def captcha_recognizer():
 recognizer = captcha_recognizer()
 
 if __name__ == '__main__':
-    username = 'wslshanlin'
+    username = ''
     password = input('Please input your password... > ')
     appid = 4149
     appkey = '8576e00849d04f656c2bec09d0f01018'
