@@ -6,6 +6,9 @@ from lxml import etree
 
 from ebay.ebay.utils.data import db_redis, db_mysql
 
+'''
+商品分类数据预处理
+'''
 
 def get_category_ids():
     url = 'https://api.ebay.com/ws/api.dll'
