@@ -6,6 +6,10 @@ from pymongo.errors import DuplicateKeyError
 from ebay.ebay.utils.common import date
 from ebay.ebay.utils.data import db_redis, db_mongodb, db_mysql
 
+'''
+爬虫数据监控
+'''
+
 
 class Monitor():
     def __init__(self):
