@@ -25,16 +25,16 @@
 
 ## Script
 
-分类数据预处理: category.py
+    分类数据预处理: category.py
 
-数据库备份: dumper.py
+    数据库备份: dumper.py
 
-数据库备份清理: dustman.py
+    数据库备份清理: dustman.py
 
-爬虫数据监控: monitor.py
+    爬虫数据监控: monitor.py
 
-图形验证码识别: recognizer.py
+    图形验证码识别: recognizer.py
 
-自动化注册: register.py
+    自动化注册: register.py
 
-数据统计: statistician.py
+    数据统计: statistician.py
