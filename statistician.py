@@ -14,6 +14,10 @@ from ebay.ebay.utils.data import db_redis, db_mongodb, db_mysql, create_table_in
 
 logger = logging.getLogger(__name__)
 
+'''
+商品数据统计
+'''
+
 
 class Statistician():
     def __init__(self, redis=None, mongodb=None, mysql=None, datetime=None):
@@ -67,7 +71,7 @@ class GoodsStatistician(Statistician):
         data['total_sold_info'] = '{}'
         data['shop_sold_info'] = '{}'
         data['goods_sold_info'] = '{}'
-        data['hot_category_ids_info'] = {'0':'0'}
+        data['hot_category_ids_info'] = {'0': '0'}
         data['hot_goods_ids_info'] = '[]'
         # 开始统计
         print('Start statistics...')
@@ -112,7 +116,8 @@ class GoodsStatistician(Statistician):
         # 单天销售额
         result = c.aggregate([
             {'$match': {"quantitySoldYesterday": {'$gt': 0}}},
-            {'$group': {'_id': 0, 'total_sold_info_money': {'$sum': {"$multiply": ["$quantitySoldYesterday", "$price"]}}}}
+            {'$group': {'_id': 0,
+                        'total_sold_info_money': {'$sum': {"$multiply": ["$quantitySoldYesterday", "$price"]}}}}
         ])
         data['money'] = 0
         for r in result:
@@ -272,6 +277,7 @@ class ShopStatistician(Statistician):
         redis = redis or db_redis()
         mysql = mysql or db_mysql()
         cursor = mysql.cursor()
+
         #
         def shop_values(shop_list, redis=None):
             r = redis or db_redis()
@@ -296,6 +302,7 @@ class ShopStatistician(Statistician):
                     'shop_open_time': shop['shop_open_time'],
                     'weeks_inc_ratio': (shop['week_sold'] - shop['last_week_sold']) / (shop['last_week_sold'] + 1)
                 }
+
         #
         sql = """
             INSERT INTO erp_spider.shop_statistics_{0} (shop_name, shop_feedback_score, shop_feedback_percentage, sold_goods_count, total_goods_count, total_sold, weeks_sold, last_weeks_sold, amount, shop_open_time, weeks_inc_ratio ) 
