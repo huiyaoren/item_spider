@@ -6,31 +6,49 @@
 > 一个基于 spider-redis 的分布式爬虫
 
 
-## spider
+## Spider
 
-detail_json_redis_spider.py
+商品详情爬虫
 
-detail_xml_redis_spider.py
+    detail_json_redis_spider.py
+    
+    detail_xml_redis_spider.py
 
-listing_redis_spider.py
+商品列表爬虫
 
-listing_spider.py
+    listing_redis_spider.py
+    
+    listing_spider.py
+    
+    listing_xml_redis_spider.py
 
-listing_xml_redis_spider.py
 
+## Script
 
-## script
+分类数据预处理
 
-category.py
+    category.py
 
-dumper.py
+数据库备份
 
-dustman.py
+    dumper.py
 
-monitor.py
+数据库备份清理
 
-recognizer.py
+    dustman.py
 
-register.py
+爬虫数据监控
 
-statistician.py
+    monitor.py
+
+图形验证码识别
+
+    recognizer.py
+
+自动化注册
+
+    register.py
+
+数据统计
+
+    statistician.py
