@@ -5,6 +5,8 @@
 
 > 一个基于 spider-redis 的分布式爬虫
 
+架构设计: https://www.jianshu.com/p/cd4054bbc757
+
 
 ## Spider
 
@@ -25,16 +27,30 @@
 
 ## Script
 
-    分类数据预处理: category.py
+    category.py - 分类数据预处理 
 
-    数据库备份: dumper.py
+    dumper.py - 数据库备份 
 
-    数据库备份清理: dustman.py
+    dustman.py - 数据库备份清理 
 
-    爬虫数据监控: monitor.py
+    monitor.py - 爬虫数据监控 
 
-    图形验证码识别: recognizer.py
+    recognizer.py - 图形验证码识别 
 
-    自动化注册: register.py
+    register.py - 自动化注册 
 
-    数据统计: statistician.py
+    statistician.py - 数据统计 
+
+## Pipeline
+
+    CleanPipeline - 数据清洗
+    
+    MongodbPipeline - MongoDB 写入
+    
+    MysqlPipeline - Mysql 写入
+    
+    NewItemPipeline - 新上架商品写入
+    
+    HotItemPipeline - 热销商品写入
+    
+    ShopStatisticsPipeline - 店铺信息统计
