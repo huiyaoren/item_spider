@@ -15,6 +15,10 @@ from selenium.webdriver.support.wait import WebDriverWait
 from ebay.ebay.utils.data import db_mongodb
 from recognizer import recognizer
 
+'''
+开发者账号注册
+'''
+
 
 class Register():
     def __init__(self, browser):
