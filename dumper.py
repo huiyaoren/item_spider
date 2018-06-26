@@ -6,6 +6,9 @@ import sys
 
 from ebay.ebay.tests.time_recoder import log_time_with_name
 
+'''
+定时数据库备份
+'''
 
 class Dumper():
     def __init__(self, date=None):
