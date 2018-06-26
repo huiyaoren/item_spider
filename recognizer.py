@@ -1,5 +1,9 @@
 import http.client, mimetypes, urllib, json, time, requests
 
+'''
+图片验证码识别
+'''
+
 
 class Connection:
     apiurl = 'http://api.yundama.com/api.php'
